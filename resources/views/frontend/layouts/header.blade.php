@@ -1,7 +1,7 @@
 <div class="preloader">
     <div class="loading-container">
         <div class="loading"></div>
-        <div id="loading-icon"><img src="images/loader.svg" alt=""></div>
+        <div id="loading-icon"><img src="images/loader.png" alt=""></div>
     </div>
 </div>
 <!-- Preloader End -->
@@ -13,7 +13,7 @@
             <div class="container">
                 <!-- Logo Start -->
                 <a class="navbar-brand" href="./">
-                    <img src="images/logo.svg" alt="Logo">
+                    <img src="images/logo.png" alt="Logo" style="width: 60px; height: auto;">
                 </a>
                 <!-- Logo End -->
 

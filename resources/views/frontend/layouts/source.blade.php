@@ -7,7 +7,7 @@
 <meta name="keywords" content="">
 <meta name="author" content="Awaiken">
 <!-- Page Title -->
-<title>Dentaire - Dentist & Dental Clinic HTML Template</title>
+<title>PKSPKSG</title>
 <!-- Favicon Icon -->
 <link rel="shortcut icon" type="image/x-icon" href="images/favicon.png">
 <!-- Google Fonts Css-->
