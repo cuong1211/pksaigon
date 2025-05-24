@@ -45,4 +45,28 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    /**
+     * Relationship với Posts
+     */
+    public function posts()
+    {
+        return $this->hasMany(Post::class, 'author_id');
+    }
+
+    /**
+     * Get posts count
+     */
+    public function getPostsCountAttribute()
+    {
+        return $this->posts()->count();
+    }
+
+    /**
+     * Get published posts count
+     */
+    public function getPublishedPostsCountAttribute()
+    {
+        return $this->posts()->where('status', 'published')->count();
+    }
 }

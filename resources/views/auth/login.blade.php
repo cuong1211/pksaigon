@@ -1,813 +1,365 @@
 <!DOCTYPE html>
-
-<html lang="en">
-	<!--begin::Head-->
-	<head>   
-    <base href="{{ asset('backend') }}/">
-		<title>Highend</title>
-		<meta charset="utf-8">
-		<meta name="description" content="The most advanced Bootstrap Admin Theme on Themeforest trusted by 94,000 beginners and professionals. Multi-demo, Dark Mode, RTL support and complete React, Angular, Vue &amp; Laravel versions. Grab your copy now and get life-time updates for free.">
-		<meta name="keywords" content="Metronic, bootstrap, bootstrap 5, Angular, VueJs, React, Laravel, admin themes, web design, figma, web development, free templates, free admin themes, bootstrap theme, bootstrap template, bootstrap dashboard, bootstrap dak mode, bootstrap button, bootstrap datepicker, bootstrap timepicker, fullcalendar, datatables, flaticon">
-		<meta name="viewport" content="width=device-width, initial-scale=1">
-		<meta property="og:locale" content="en_US">
-		<meta property="og:type" content="article">
-		<meta property="og:title" content="Metronic - Bootstrap 5 HTML, VueJS, React, Angular &amp; Laravel Admin Dashboard Theme">
-		<meta property="og:url" content="http://ntechuniverse.com/">
-		<meta property="og:site_name" content="Keenthemes | Metronic">
-		<link rel="canonical" href="https://nicepage.com/?sscid=21k7_l1qxa&">
-		<link rel="shortcut icon" href="assets/media/logos/favicon.ico">
-		<!--begin::Fonts-->
-		<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700">
-		<!--end::Fonts-->
-		<!--begin::Global Stylesheets Bundle(used by all pages)-->
-		<link href="assets/plugins/global/plugins.bundle.css" rel="stylesheet" type="text/css">
-		<link href="assets/css/style.bundle.css" rel="stylesheet" type="text/css">
-		<!--end::Global Stylesheets Bundle-->
-	<style type="text/css">.apexcharts-canvas {
-  position: relative;
-  user-select: none;
-  /* cannot give overflow: hidden as it will crop tooltips which overflow outside chart area */
-}
-
-
-/* scrollbar is not visible by default for legend, hence forcing the visibility */
-.apexcharts-canvas ::-webkit-scrollbar {
-  -webkit-appearance: none;
-  width: 6px;
-}
-
-.apexcharts-canvas ::-webkit-scrollbar-thumb {
-  border-radius: 4px;
-  background-color: rgba(0, 0, 0, .5);
-  box-shadow: 0 0 1px rgba(255, 255, 255, .5);
-  -webkit-box-shadow: 0 0 1px rgba(255, 255, 255, .5);
-}
-
-
-.apexcharts-inner {
-  position: relative;
-}
-
-.apexcharts-text tspan {
-  font-family: inherit;
-}
-
-.legend-mouseover-inactive {
-  transition: 0.15s ease all;
-  opacity: 0.20;
-}
-
-.apexcharts-series-collapsed {
-  opacity: 0;
-}
-
-.apexcharts-tooltip {
-  border-radius: 5px;
-  box-shadow: 2px 2px 6px -4px #999;
-  cursor: default;
-  font-size: 14px;
-  left: 62px;
-  opacity: 0;
-  pointer-events: none;
-  position: absolute;
-  top: 20px;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  white-space: nowrap;
-  z-index: 12;
-  transition: 0.15s ease all;
-}
-
-.apexcharts-tooltip.apexcharts-active {
-  opacity: 1;
-  transition: 0.15s ease all;
-}
-
-.apexcharts-tooltip.apexcharts-theme-light {
-  border: 1px solid #e3e3e3;
-  background: rgba(255, 255, 255, 0.96);
-}
-
-.apexcharts-tooltip.apexcharts-theme-dark {
-  color: #fff;
-  background: rgba(30, 30, 30, 0.8);
-}
-
-.apexcharts-tooltip * {
-  font-family: inherit;
-}
-
-
-.apexcharts-tooltip-title {
-  padding: 6px;
-  font-size: 15px;
-  margin-bottom: 4px;
-}
-
-.apexcharts-tooltip.apexcharts-theme-light .apexcharts-tooltip-title {
-  background: #ECEFF1;
-  border-bottom: 1px solid #ddd;
-}
-
-.apexcharts-tooltip.apexcharts-theme-dark .apexcharts-tooltip-title {
-  background: rgba(0, 0, 0, 0.7);
-  border-bottom: 1px solid #333;
-}
-
-.apexcharts-tooltip-text-y-value,
-.apexcharts-tooltip-text-goals-value,
-.apexcharts-tooltip-text-z-value {
-  display: inline-block;
-  font-weight: 600;
-  margin-left: 5px;
-}
-
-.apexcharts-tooltip-text-y-label:empty,
-.apexcharts-tooltip-text-y-value:empty,
-.apexcharts-tooltip-text-goals-label:empty,
-.apexcharts-tooltip-text-goals-value:empty,
-.apexcharts-tooltip-text-z-value:empty {
-  display: none;
-}
-
-.apexcharts-tooltip-text-y-value,
-.apexcharts-tooltip-text-goals-value,
-.apexcharts-tooltip-text-z-value {
-  font-weight: 600;
-}
-
-.apexcharts-tooltip-text-goals-label, 
-.apexcharts-tooltip-text-goals-value {
-  padding: 6px 0 5px;
-}
-
-.apexcharts-tooltip-goals-group, 
-.apexcharts-tooltip-text-goals-label, 
-.apexcharts-tooltip-text-goals-value {
-  display: flex;
-}
-.apexcharts-tooltip-text-goals-label:not(:empty),
-.apexcharts-tooltip-text-goals-value:not(:empty) {
-  margin-top: -6px;
-}
-
-.apexcharts-tooltip-marker {
-  width: 12px;
-  height: 12px;
-  position: relative;
-  top: 0px;
-  margin-right: 10px;
-  border-radius: 50%;
-}
-
-.apexcharts-tooltip-series-group {
-  padding: 0 10px;
-  display: none;
-  text-align: left;
-  justify-content: left;
-  align-items: center;
-}
-
-.apexcharts-tooltip-series-group.apexcharts-active .apexcharts-tooltip-marker {
-  opacity: 1;
-}
-
-.apexcharts-tooltip-series-group.apexcharts-active,
-.apexcharts-tooltip-series-group:last-child {
-  padding-bottom: 4px;
-}
-
-.apexcharts-tooltip-series-group-hidden {
-  opacity: 0;
-  height: 0;
-  line-height: 0;
-  padding: 0 !important;
-}
-
-.apexcharts-tooltip-y-group {
-  padding: 6px 0 5px;
-}
-
-.apexcharts-tooltip-box, .apexcharts-custom-tooltip {
-  padding: 4px 8px;
-}
-
-.apexcharts-tooltip-boxPlot {
-  display: flex;
-  flex-direction: column-reverse;
-}
-
-.apexcharts-tooltip-box>div {
-  margin: 4px 0;
-}
-
-.apexcharts-tooltip-box span.value {
-  font-weight: bold;
-}
-
-.apexcharts-tooltip-rangebar {
-  padding: 5px 8px;
-}
-
-.apexcharts-tooltip-rangebar .category {
-  font-weight: 600;
-  color: #777;
-}
-
-.apexcharts-tooltip-rangebar .series-name {
-  font-weight: bold;
-  display: block;
-  margin-bottom: 5px;
-}
-
-.apexcharts-xaxistooltip {
-  opacity: 0;
-  padding: 9px 10px;
-  pointer-events: none;
-  color: #373d3f;
-  font-size: 13px;
-  text-align: center;
-  border-radius: 2px;
-  position: absolute;
-  z-index: 10;
-  background: #ECEFF1;
-  border: 1px solid #90A4AE;
-  transition: 0.15s ease all;
-}
-
-.apexcharts-xaxistooltip.apexcharts-theme-dark {
-  background: rgba(0, 0, 0, 0.7);
-  border: 1px solid rgba(0, 0, 0, 0.5);
-  color: #fff;
-}
-
-.apexcharts-xaxistooltip:after,
-.apexcharts-xaxistooltip:before {
-  left: 50%;
-  border: solid transparent;
-  content: " ";
-  height: 0;
-  width: 0;
-  position: absolute;
-  pointer-events: none;
-}
-
-.apexcharts-xaxistooltip:after {
-  border-color: rgba(236, 239, 241, 0);
-  border-width: 6px;
-  margin-left: -6px;
-}
-
-.apexcharts-xaxistooltip:before {
-  border-color: rgba(144, 164, 174, 0);
-  border-width: 7px;
-  margin-left: -7px;
-}
-
-.apexcharts-xaxistooltip-bottom:after,
-.apexcharts-xaxistooltip-bottom:before {
-  bottom: 100%;
-}
-
-.apexcharts-xaxistooltip-top:after,
-.apexcharts-xaxistooltip-top:before {
-  top: 100%;
-}
-
-.apexcharts-xaxistooltip-bottom:after {
-  border-bottom-color: #ECEFF1;
-}
-
-.apexcharts-xaxistooltip-bottom:before {
-  border-bottom-color: #90A4AE;
-}
-
-.apexcharts-xaxistooltip-bottom.apexcharts-theme-dark:after {
-  border-bottom-color: rgba(0, 0, 0, 0.5);
-}
-
-.apexcharts-xaxistooltip-bottom.apexcharts-theme-dark:before {
-  border-bottom-color: rgba(0, 0, 0, 0.5);
-}
-
-.apexcharts-xaxistooltip-top:after {
-  border-top-color: #ECEFF1
-}
-
-.apexcharts-xaxistooltip-top:before {
-  border-top-color: #90A4AE;
-}
-
-.apexcharts-xaxistooltip-top.apexcharts-theme-dark:after {
-  border-top-color: rgba(0, 0, 0, 0.5);
-}
-
-.apexcharts-xaxistooltip-top.apexcharts-theme-dark:before {
-  border-top-color: rgba(0, 0, 0, 0.5);
-}
-
-.apexcharts-xaxistooltip.apexcharts-active {
-  opacity: 1;
-  transition: 0.15s ease all;
-}
-
-.apexcharts-yaxistooltip {
-  opacity: 0;
-  padding: 4px 10px;
-  pointer-events: none;
-  color: #373d3f;
-  font-size: 13px;
-  text-align: center;
-  border-radius: 2px;
-  position: absolute;
-  z-index: 10;
-  background: #ECEFF1;
-  border: 1px solid #90A4AE;
-}
-
-.apexcharts-yaxistooltip.apexcharts-theme-dark {
-  background: rgba(0, 0, 0, 0.7);
-  border: 1px solid rgba(0, 0, 0, 0.5);
-  color: #fff;
-}
-
-.apexcharts-yaxistooltip:after,
-.apexcharts-yaxistooltip:before {
-  top: 50%;
-  border: solid transparent;
-  content: " ";
-  height: 0;
-  width: 0;
-  position: absolute;
-  pointer-events: none;
-}
-
-.apexcharts-yaxistooltip:after {
-  border-color: rgba(236, 239, 241, 0);
-  border-width: 6px;
-  margin-top: -6px;
-}
-
-.apexcharts-yaxistooltip:before {
-  border-color: rgba(144, 164, 174, 0);
-  border-width: 7px;
-  margin-top: -7px;
-}
-
-.apexcharts-yaxistooltip-left:after,
-.apexcharts-yaxistooltip-left:before {
-  left: 100%;
-}
-
-.apexcharts-yaxistooltip-right:after,
-.apexcharts-yaxistooltip-right:before {
-  right: 100%;
-}
-
-.apexcharts-yaxistooltip-left:after {
-  border-left-color: #ECEFF1;
-}
-
-.apexcharts-yaxistooltip-left:before {
-  border-left-color: #90A4AE;
-}
-
-.apexcharts-yaxistooltip-left.apexcharts-theme-dark:after {
-  border-left-color: rgba(0, 0, 0, 0.5);
-}
-
-.apexcharts-yaxistooltip-left.apexcharts-theme-dark:before {
-  border-left-color: rgba(0, 0, 0, 0.5);
-}
-
-.apexcharts-yaxistooltip-right:after {
-  border-right-color: #ECEFF1;
-}
-
-.apexcharts-yaxistooltip-right:before {
-  border-right-color: #90A4AE;
-}
-
-.apexcharts-yaxistooltip-right.apexcharts-theme-dark:after {
-  border-right-color: rgba(0, 0, 0, 0.5);
-}
-
-.apexcharts-yaxistooltip-right.apexcharts-theme-dark:before {
-  border-right-color: rgba(0, 0, 0, 0.5);
-}
-
-.apexcharts-yaxistooltip.apexcharts-active {
-  opacity: 1;
-}
-
-.apexcharts-yaxistooltip-hidden {
-  display: none;
-}
-
-.apexcharts-xcrosshairs,
-.apexcharts-ycrosshairs {
-  pointer-events: none;
-  opacity: 0;
-  transition: 0.15s ease all;
-}
-
-.apexcharts-xcrosshairs.apexcharts-active,
-.apexcharts-ycrosshairs.apexcharts-active {
-  opacity: 1;
-  transition: 0.15s ease all;
-}
-
-.apexcharts-ycrosshairs-hidden {
-  opacity: 0;
-}
-
-.apexcharts-selection-rect {
-  cursor: move;
-}
-
-.svg_select_boundingRect, .svg_select_points_rot {
-  pointer-events: none;
-  opacity: 0;
-  visibility: hidden;
-}
-.apexcharts-selection-rect + g .svg_select_boundingRect,
-.apexcharts-selection-rect + g .svg_select_points_rot {
-  opacity: 0;
-  visibility: hidden;
-}
-
-.apexcharts-selection-rect + g .svg_select_points_l,
-.apexcharts-selection-rect + g .svg_select_points_r {
-  cursor: ew-resize;
-  opacity: 1;
-  visibility: visible;
-}
-
-.svg_select_points {
-  fill: #efefef;
-  stroke: #333;
-  rx: 2;
-}
-
-.apexcharts-svg.apexcharts-zoomable.hovering-zoom {
-  cursor: crosshair
-}
-
-.apexcharts-svg.apexcharts-zoomable.hovering-pan {
-  cursor: move
-}
-
-.apexcharts-zoom-icon,
-.apexcharts-zoomin-icon,
-.apexcharts-zoomout-icon,
-.apexcharts-reset-icon,
-.apexcharts-pan-icon,
-.apexcharts-selection-icon,
-.apexcharts-menu-icon,
-.apexcharts-toolbar-custom-icon {
-  cursor: pointer;
-  width: 20px;
-  height: 20px;
-  line-height: 24px;
-  color: #6E8192;
-  text-align: center;
-}
-
-.apexcharts-zoom-icon svg,
-.apexcharts-zoomin-icon svg,
-.apexcharts-zoomout-icon svg,
-.apexcharts-reset-icon svg,
-.apexcharts-menu-icon svg {
-  fill: #6E8192;
-}
-
-.apexcharts-selection-icon svg {
-  fill: #444;
-  transform: scale(0.76)
-}
-
-.apexcharts-theme-dark .apexcharts-zoom-icon svg,
-.apexcharts-theme-dark .apexcharts-zoomin-icon svg,
-.apexcharts-theme-dark .apexcharts-zoomout-icon svg,
-.apexcharts-theme-dark .apexcharts-reset-icon svg,
-.apexcharts-theme-dark .apexcharts-pan-icon svg,
-.apexcharts-theme-dark .apexcharts-selection-icon svg,
-.apexcharts-theme-dark .apexcharts-menu-icon svg,
-.apexcharts-theme-dark .apexcharts-toolbar-custom-icon svg {
-  fill: #f3f4f5;
-}
-
-.apexcharts-canvas .apexcharts-zoom-icon.apexcharts-selected svg,
-.apexcharts-canvas .apexcharts-selection-icon.apexcharts-selected svg,
-.apexcharts-canvas .apexcharts-reset-zoom-icon.apexcharts-selected svg {
-  fill: #008FFB;
-}
-
-.apexcharts-theme-light .apexcharts-selection-icon:not(.apexcharts-selected):hover svg,
-.apexcharts-theme-light .apexcharts-zoom-icon:not(.apexcharts-selected):hover svg,
-.apexcharts-theme-light .apexcharts-zoomin-icon:hover svg,
-.apexcharts-theme-light .apexcharts-zoomout-icon:hover svg,
-.apexcharts-theme-light .apexcharts-reset-icon:hover svg,
-.apexcharts-theme-light .apexcharts-menu-icon:hover svg {
-  fill: #333;
-}
-
-.apexcharts-selection-icon,
-.apexcharts-menu-icon {
-  position: relative;
-}
-
-.apexcharts-reset-icon {
-  margin-left: 5px;
-}
-
-.apexcharts-zoom-icon,
-.apexcharts-reset-icon,
-.apexcharts-menu-icon {
-  transform: scale(0.85);
-}
-
-.apexcharts-zoomin-icon,
-.apexcharts-zoomout-icon {
-  transform: scale(0.7)
-}
-
-.apexcharts-zoomout-icon {
-  margin-right: 3px;
-}
-
-.apexcharts-pan-icon {
-  transform: scale(0.62);
-  position: relative;
-  left: 1px;
-  top: 0px;
-}
-
-.apexcharts-pan-icon svg {
-  fill: #fff;
-  stroke: #6E8192;
-  stroke-width: 2;
-}
-
-.apexcharts-pan-icon.apexcharts-selected svg {
-  stroke: #008FFB;
-}
-
-.apexcharts-pan-icon:not(.apexcharts-selected):hover svg {
-  stroke: #333;
-}
-
-.apexcharts-toolbar {
-  position: absolute;
-  z-index: 11;
-  max-width: 176px;
-  text-align: right;
-  border-radius: 3px;
-  padding: 0px 6px 2px 6px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.apexcharts-menu {
-  background: #fff;
-  position: absolute;
-  top: 100%;
-  border: 1px solid #ddd;
-  border-radius: 3px;
-  padding: 3px;
-  right: 10px;
-  opacity: 0;
-  min-width: 110px;
-  transition: 0.15s ease all;
-  pointer-events: none;
-}
-
-.apexcharts-menu.apexcharts-menu-open {
-  opacity: 1;
-  pointer-events: all;
-  transition: 0.15s ease all;
-}
-
-.apexcharts-menu-item {
-  padding: 6px 7px;
-  font-size: 12px;
-  cursor: pointer;
-}
-
-.apexcharts-theme-light .apexcharts-menu-item:hover {
-  background: #eee;
-}
-
-.apexcharts-theme-dark .apexcharts-menu {
-  background: rgba(0, 0, 0, 0.7);
-  color: #fff;
-}
-
-@media screen and (min-width: 768px) {
-  .apexcharts-canvas:hover .apexcharts-toolbar {
-    opacity: 1;
-  }
-}
-
-.apexcharts-datalabel.apexcharts-element-hidden {
-  opacity: 0;
-}
-
-.apexcharts-pie-label,
-.apexcharts-datalabels,
-.apexcharts-datalabel,
-.apexcharts-datalabel-label,
-.apexcharts-datalabel-value {
-  cursor: default;
-  pointer-events: none;
-}
-
-.apexcharts-pie-label-delay {
-  opacity: 0;
-  animation-name: opaque;
-  animation-duration: 0.3s;
-  animation-fill-mode: forwards;
-  animation-timing-function: ease;
-}
-
-.apexcharts-canvas .apexcharts-element-hidden {
-  opacity: 0;
-}
-
-.apexcharts-hide .apexcharts-series-points {
-  opacity: 0;
-}
-
-.apexcharts-gridline,
-.apexcharts-annotation-rect,
-.apexcharts-tooltip .apexcharts-marker,
-.apexcharts-area-series .apexcharts-area,
-.apexcharts-line,
-.apexcharts-zoom-rect,
-.apexcharts-toolbar svg,
-.apexcharts-area-series .apexcharts-series-markers .apexcharts-marker.no-pointer-events,
-.apexcharts-line-series .apexcharts-series-markers .apexcharts-marker.no-pointer-events,
-.apexcharts-radar-series path,
-.apexcharts-radar-series polygon {
-  pointer-events: none;
-}
-
-
-/* markers */
-
-.apexcharts-marker {
-  transition: 0.15s ease all;
-}
-
-@keyframes opaque {
-  0% {
-    opacity: 0;
-  }
-  100% {
-    opacity: 1;
-  }
-}
-
-
-/* Resize generated styles */
-
-@keyframes resizeanim {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 0;
-  }
-}
-
-.resize-triggers {
-  animation: 1ms resizeanim;
-  visibility: hidden;
-  opacity: 0;
-}
-
-.resize-triggers,
-.resize-triggers>div,
-.contract-trigger:before {
-  content: " ";
-  display: block;
-  position: absolute;
-  top: 0;
-  left: 0;
-  height: 100%;
-  width: 100%;
-  overflow: hidden;
-}
-
-.resize-triggers>div {
-  background: #eee;
-  overflow: auto;
-}
-
-.contract-trigger:before {
-  width: 200%;
-  height: 200%;
-}</style></head>
-	<!--end::Head-->
-	<!--begin::Body-->
-	<body id="kt_body" class="bg-body">
-		<!--begin::Main-->
-		<div class="d-flex flex-column flex-root">
-			<!--begin::Authentication - Sign-in -->
-			<div class="d-flex flex-column flex-column-fluid bgi-position-y-bottom position-x-center bgi-no-repeat bgi-size-contain bgi-attachment-fixed" style="background-image: url(assets/media/illustrations/sketchy-1/14.png">
-				<!--begin::Content-->
-				<div class="d-flex flex-center flex-column flex-column-fluid p-10 pb-lg-20">
-					<!--begin::Logo-->
-
-					<!--end::Logo-->
-					<!--begin::Wrapper-->
-					<div class="w-lg-500px bg-body rounded shadow-sm p-10 p-lg-15 mx-auto">
-						<!--begin::Form-->
-						<form class="form w-100 fv-plugins-bootstrap5 fv-plugins-framework" novalidate="novalidate" id="kt_sign_in_form" action="{{route('backend.postLogin')}}" method="POST">
-							@csrf
-							<!--begin::Heading-->
-							<div class="text-center mb-10">
-								<!--begin::Title-->
-								<h1 class="text-dark mb-3">Đăng nhập vào Highend</h1>
-								<!--end::Title-->
-								<!--begin::Link-->
-								<!--end::Link-->
-							</div>
-							<!--begin::Heading-->
-							<!--begin::Input group-->
-							<div class="fv-row mb-10 fv-plugins-icon-container">
-								<!--begin::Label-->
-								<label class="form-label fs-6 fw-bolder text-dark">Email</label>
-								<!--end::Label-->
-								<!--begin::Input-->
-								<input class="form-control form-control-lg form-control-solid" type="text" name="email" autocomplete="off">
-								<!--end::Input-->
-							<div class="fv-plugins-message-container invalid-feedback"></div></div>
-							<!--end::Input group-->
-							<!--begin::Input group-->
-							<div class="fv-row mb-10 fv-plugins-icon-container">
-								<!--begin::Wrapper-->
-								<div class="d-flex flex-stack mb-2">
-									<!--begin::Label-->
-									<label class="form-label fw-bolder text-dark fs-6 mb-0">Mật khẩu</label>
-									<!--end::Label-->
-									<!--begin::Link-->
-									<a href="../../demo8/dist/authentication/flows/basic/password-reset.html" class="link-primary fs-6 fw-bolder">Quên mật khẩu</a>
-									<!--end::Link-->
-								</div>
-								<!--end::Wrapper-->
-								<!--begin::Input-->
-								<input class="form-control form-control-lg form-control-solid" type="password" name="password" autocomplete="off">
-								<!--end::Input-->
-							<div class="fv-plugins-message-container invalid-feedback"></div></div>
-              @if(session('error'))
-    <div>{{ session('error') }}</div>
-@endif
-							<!--end::Input group-->
-							<!--begin::Actions-->
-							<div class="text-center">
-								<!--begin::Submit button-->
-                {{-- <div class="text-gray-400 fw-bold fs-4">Chưa có tài khoản --}}
-                  {{-- <a href="{{route('logup')}}" class="link-primary fw-bolder"> Đăng ký</a></div> --}}
-								<button type="submit" id="kt_sign_in_submit" class="btn btn-lg btn-primary w-100 mb-5">
-									<span class="indicator-label">Đăng nhập</span>
-									<span class="indicator-progress">Please wait...
-									<span class="spinner-border spinner-border-sm align-middle ms-2"></span></span>
-								</button>
-								<!--end::Submit button-->
-								<!--begin::Separator-->
-								
-							</div>
-							<!--end::Actions-->
-						<div></div></form>
-						<!--end::Form-->
-					</div>
-					<!--end::Wrapper-->
-				</div>
-				<!--end::Content-->
-				<!--begin::Footer-->
-				<div class="d-flex flex-center flex-column-auto p-10">
-					<!--begin::Links-->
-
-					<!--end::Links-->
-				</div>
-				<!--end::Footer-->
-			</div>
-			<!--end::Authentication - Sign-in-->
-		</div>
-		<!--end::Main-->
-
-		<!--begin::Javascript-->
-		<!--begin::Global Javascript Bundle(used by all pages)-->
-		{{-- <script src="assets/plugins/global/plugins.bundle.js"></script> --}}
-		<script src="assets/js/scripts.bundle.js"></script>
-		<!--end::Global Javascript Bundle-->
-		<!--begin::Page Custom Javascript(used by this page)-->
-		<script src="assets/js/custom/authentication/sign-in/general.js"></script>
-		<!--end::Page Custom Javascript-->
-		<!--end::Javascript-->
-	</body>
-	<!--end::Body-->
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng nhập - Hệ thống quản lý</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .login-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 450px;
+            padding: 40px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .login-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .logo h1 {
+            color: #333;
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .logo p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+            position: relative;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 15px 20px;
+            border: 2px solid #e1e5e9;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-input.error {
+            border-color: #e74c3c;
+            background: #fdf2f2;
+        }
+
+        .error-message {
+            color: #e74c3c;
+            font-size: 13px;
+            margin-top: 5px;
+            display: block;
+        }
+
+        .forgot-password {
+            text-align: right;
+            margin-top: 10px;
+        }
+
+        .forgot-password a {
+            color: #667eea;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .forgot-password a:hover {
+            text-decoration: underline;
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .login-btn:active {
+            transform: translateY(0);
+        }
+
+        .login-btn.loading {
+            pointer-events: none;
+        }
+
+        .spinner {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 10px;
+        }
+
+        .login-btn.loading .spinner {
+            display: inline-block;
+        }
+
+        .login-btn.loading .btn-text {
+            opacity: 0.7;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .alert {
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            font-size: 14px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+        }
+
+        .alert-error {
+            background: #fdf2f2;
+            color: #e74c3c;
+            border: 1px solid #fadbd8;
+        }
+
+        .alert-success {
+            background: #f0fff4;
+            color: #27ae60;
+            border: 1px solid #d5f4e6;
+        }
+
+        .alert-icon {
+            margin-right: 10px;
+            font-size: 18px;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            color: #666;
+            font-size: 13px;
+        }
+
+        /* Responsive */
+        @media (max-width: 480px) {
+            .login-container {
+                padding: 30px 25px;
+                margin: 10px;
+            }
+
+            .logo h1 {
+                font-size: 24px;
+            }
+        }
+
+        /* Animation */
+        .login-container {
+            animation: slideUp 0.6s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Input icons */
+        .input-icon {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #999;
+            font-size: 18px;
+        }
+
+        .form-group.has-icon .form-input {
+            padding-right: 50px;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="logo">
+            <h1>🏥 Healthcare System</h1>
+            <p>Hệ thống quản lý y tế</p>
+        </div>
+
+        <form action="{{route('backend.postLogin')}}" method="POST" id="loginForm">
+            @csrf
+            
+            <!-- Alert Messages -->
+            @if(session('error'))
+                <div class="alert alert-error">
+                    <span class="alert-icon">⚠️</span>
+                    <span>{{ session('error') }}</span>
+                </div>
+            @endif
+
+            @if(session('success'))
+                <div class="alert alert-success">
+                    <span class="alert-icon">✅</span>
+                    <span>{{ session('success') }}</span>
+                </div>
+            @endif
+
+            <div class="form-group has-icon">
+                <label class="form-label" for="email">Email</label>
+                <input 
+                    type="email" 
+                    id="email"
+                    name="email" 
+                    class="form-input @error('email') error @enderror"
+                    value="{{ old('email') }}"
+                    placeholder="Nhập địa chỉ email của bạn"
+                    required
+                >
+                <span class="input-icon">📧</span>
+                @error('email')
+                    <span class="error-message">{{ $message }}</span>
+                @enderror
+            </div>
+
+            <div class="form-group has-icon">
+                <label class="form-label" for="password">Mật khẩu</label>
+                <input 
+                    type="password" 
+                    id="password"
+                    name="password" 
+                    class="form-input @error('password') error @enderror"
+                    placeholder="Nhập mật khẩu của bạn"
+                    required
+                >
+                <span class="input-icon">🔒</span>
+                @error('password')
+                    <span class="error-message">{{ $message }}</span>
+                @enderror
+                <div class="forgot-password">
+                    <a href="#">Quên mật khẩu?</a>
+                </div>
+            </div>
+
+            <button type="submit" class="login-btn" id="loginBtn">
+                <span class="spinner"></span>
+                <span class="btn-text">Đăng nhập</span>
+            </button>
+        </form>
+
+        <div class="footer">
+            <p>&copy; 2025 Healthcare System. All rights reserved.</p>
+        </div>
+    </div>
+
+    <script>
+        // Form submission handling
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            const btn = document.getElementById('loginBtn');
+            btn.classList.add('loading');
+            
+            // Reset after 3 seconds if no response
+            setTimeout(() => {
+                btn.classList.remove('loading');
+            }, 3000);
+        });
+
+        // Input focus animations
+        document.querySelectorAll('.form-input').forEach(input => {
+            input.addEventListener('focus', function() {
+                this.parentElement.style.transform = 'translateY(-2px)';
+            });
+            
+            input.addEventListener('blur', function() {
+                this.parentElement.style.transform = 'translateY(0)';
+            });
+        });
+
+        // Auto-hide alerts after 5 seconds
+        document.querySelectorAll('.alert').forEach(alert => {
+            setTimeout(() => {
+                alert.style.opacity = '0';
+                alert.style.transform = 'translateY(-10px)';
+                setTimeout(() => {
+                    alert.remove();
+                }, 300);
+            }, 5000);
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && e.ctrlKey) {
+                document.getElementById('loginForm').submit();
+            }
+        });
+    </script>
+</body>
 </html>
