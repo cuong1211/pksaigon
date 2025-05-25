@@ -4,7 +4,9 @@ use App\Http\Controllers\Admin\AuthController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\PostController;
 use Illuminate\Support\Facades\Route;
-
+use App\Http\Controllers\Admin\ServiceController; 
+use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -28,17 +30,30 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/', function () {
             return view('backend.pages.main');
         })->name('admin');
-        
+
         // Posts Management
         Route::resource('posts', PostController::class);
         Route::patch('posts/{id}/toggle-featured', [PostController::class, 'toggleFeatured'])->name('posts.toggle-featured');
-        
-        // Các route admin khác sẽ được thêm vào đây
-        // Route::resource('patients', PatientController::class);
-        // Route::resource('medicines', MedicineController::class);
-        // Route::resource('appointments', AppointmentController::class);
-        // Route::resource('services', ServiceController::class);
-        // Route::resource('contacts', ContactController::class);
-        // Route::resource('marketing-staff', MarketingStaffController::class);
+
+        // Thêm routes cho Service
+        Route::resource('service', ServiceController::class);
+
+        // Route tạo slug cho service
+        Route::get('create-slug', function (Request $request) {
+            $name = $request->get('name');
+            $modelType = $request->get('modelType');
+
+            $slug = Str::slug($name);
+
+            // Kiểm tra slug có tồn tại không
+            if ($modelType == 'service') {
+                $exists = App\Models\Service::where('slug', $slug)->exists();
+                if ($exists) {
+                    $slug = $slug . '-' . time();
+                }
+            }
+
+            return response()->json(['slug' => $slug]);
+        })->name('slug');
     });
 });

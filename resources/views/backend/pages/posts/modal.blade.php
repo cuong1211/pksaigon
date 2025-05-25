@@ -7,9 +7,12 @@
                     <h2 class="fw-bolder modal-title"></h2>
                     <div id="kt_modal_add_post_close" class="btn btn-icon btn-sm btn-active-icon-primary btn-close">
                         <span class="svg-icon svg-icon-1">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
-                                <rect opacity="0.5" x="6" y="17.3137" width="16" height="2" rx="1" transform="rotate(-45 6 17.3137)" fill="black"/>
-                                <rect x="7.41422" y="6" width="16" height="2" rx="1" transform="rotate(45 7.41422 6)" fill="black"/>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                                fill="none">
+                                <rect opacity="0.5" x="6" y="17.3137" width="16" height="2" rx="1"
+                                    transform="rotate(-45 6 17.3137)" fill="black" />
+                                <rect x="7.41422" y="6" width="16" height="2" rx="1"
+                                    transform="rotate(45 7.41422 6)" fill="black" />
                             </svg>
                         </span>
                     </div>
@@ -18,7 +21,7 @@
                 <div class="modal-body py-10 px-lg-17">
                     <div class="scroll-y me-n7 pe-7" id="kt_modal_add_post_scroll">
                         <input type="hidden" name="id" value="">
-                        
+
                         <!-- Alert container -->
                         <div class="alert alert-danger print-error-msg" style="display:none">
                             <ul></ul>
@@ -30,33 +33,39 @@
                                 <!-- Title -->
                                 <div class="fv-row mb-7">
                                     <label class="required fs-6 fw-bold mb-2">Tiêu đề bài viết</label>
-                                    <input type="text" class="form-control form-control-solid" placeholder="Nhập tiêu đề bài viết" name="title"/>
+                                    <input type="text" class="form-control form-control-solid"
+                                        placeholder="Nhập tiêu đề bài viết" name="title" />
                                 </div>
 
                                 <!-- Excerpt -->
                                 <div class="fv-row mb-7">
                                     <label class="fs-6 fw-bold mb-2">Tóm tắt</label>
-                                    <textarea class="form-control form-control-solid" placeholder="Tóm tắt ngắn gọn về bài viết" name="excerpt" rows="3"></textarea>
-                                    <div class="form-text">Tối đa 500 ký tự. Nếu để trống sẽ tự động tạo từ nội dung</div>
+                                    <textarea class="form-control form-control-solid" placeholder="Tóm tắt ngắn gọn về bài viết" name="excerpt"
+                                        rows="3"></textarea>
+                                    <div class="form-text">Tối đa 500 ký tự. Nếu để trống sẽ tự động tạo từ nội dung
+                                    </div>
                                 </div>
 
                                 <!-- Content -->
                                 <div class="fv-row mb-7">
                                     <label class="required fs-6 fw-bold mb-2">Nội dung bài viết</label>
-                                    <textarea class="form-control form-control-solid" placeholder="Nhập nội dung bài viết" name="content" rows="10" id="post_content"></textarea>
+                                    <textarea class="form-control form-control-solid" placeholder="Nhập nội dung bài viết" name="content" rows="10"
+                                        id="post_content"></textarea>
                                 </div>
 
                                 <!-- Featured Image -->
                                 <div class="fv-row mb-7">
                                     <label class="fs-6 fw-bold mb-2">Ảnh đại diện</label>
-                                    <input type="file" class="form-control form-control-solid" name="featured_image" accept="image/*"/>
+                                    <input type="file" class="form-control form-control-solid" name="featured_image"
+                                        accept="image/*" />
                                     <div class="form-text">Chấp nhận: JPEG, PNG, JPG, GIF. Tối đa 2MB</div>
-                                    
+
                                     <!-- Current image preview -->
                                     <div id="current_image_preview" class="mt-3" style="display: none;">
                                         <label class="fs-7 fw-bold text-gray-600">Ảnh hiện tại:</label>
                                         <div class="mt-2">
-                                            <img id="current_image" src="" class="img-fluid rounded" style="max-height: 150px;">
+                                            <img id="current_image" src="" class="img-fluid rounded"
+                                                style="max-height: 150px;">
                                         </div>
                                     </div>
 
@@ -64,8 +73,10 @@
                                     <div id="new_image_preview" class="mt-3" style="display: none;">
                                         <label class="fs-7 fw-bold text-gray-600">Ảnh mới:</label>
                                         <div class="mt-2">
-                                            <img id="preview_img" src="" class="img-fluid rounded" style="max-height: 150px;">
-                                            <button type="button" class="btn btn-sm btn-light-danger mt-2" onclick="removeNewImage()">Xóa ảnh</button>
+                                            <img id="preview_img" src="" class="img-fluid rounded"
+                                                style="max-height: 150px;">
+                                            <button type="button" class="btn btn-sm btn-light-danger mt-2"
+                                                onclick="removeNewImage()">Xóa ảnh</button>
                                         </div>
                                     </div>
                                 </div>
@@ -86,7 +97,8 @@
                                 <!-- Featured -->
                                 <div class="fv-row mb-7">
                                     <div class="form-check form-switch form-check-custom form-check-solid">
-                                        <input class="form-check-input" type="checkbox" name="is_featured" id="is_featured"/>
+                                        <input class="form-check-input" type="checkbox" name="is_featured"
+                                            id="is_featured" />
                                         <label class="form-check-label fw-bold fs-6" for="is_featured">
                                             Bài viết nổi bật
                                         </label>
@@ -135,48 +147,48 @@
 </div>
 
 @push('jscustom')
-<script>
-// Image preview functionality
-$('input[name="featured_image"]').on('change', function() {
-    const file = this.files[0];
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            $('#preview_img').attr('src', e.target.result);
-            $('#new_image_preview').show();
-        };
-        reader.readAsDataURL(file);
-    }
-});
+    <script>
+        // Image preview functionality
+        $('input[name="featured_image"]').on('change', function() {
+            const file = this.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    $('#preview_img').attr('src', e.target.result);
+                    $('#new_image_preview').show();
+                };
+                reader.readAsDataURL(file);
+            }
+        });
 
-function removeNewImage() {
-    $('input[name="featured_image"]').val('');
-    $('#new_image_preview').hide();
-}
+        function removeNewImage() {
+            $('input[name="featured_image"]').val('');
+            $('#new_image_preview').hide();
+        }
 
-// SEO Preview Updates
-function updateSEOPreview() {
-    const title = $('input[name="title"]').val() || 'Tiêu đề bài viết';
-    const excerpt = $('textarea[name="excerpt"]').val() || 'Mô tả bài viết...';
-    const slug = title.toLowerCase()
-        .replace(/[àáạảãâầấậẩẫăằắặẳẵ]/g, 'a')
-        .replace(/[èéẹẻẽêềếệểễ]/g, 'e')
-        .replace(/[ìíịỉĩ]/g, 'i')
-        .replace(/[òóọỏõôồốộổỗơờớợởỡ]/g, 'o')
-        .replace(/[ùúụủũưừứựửữ]/g, 'u')
-        .replace(/[ỳýỵỷỹ]/g, 'y')
-        .replace(/đ/g, 'd')
-        .replace(/[^a-z0-9\s-]/g, '')
-        .replace(/\s+/g, '-')
-        .replace(/-+/g, '-')
-        .trim('-');
+        // SEO Preview Updates
+        function updateSEOPreview() {
+            const title = $('input[name="title"]').val() || 'Tiêu đề bài viết';
+            const excerpt = $('textarea[name="excerpt"]').val() || 'Mô tả bài viết...';
+            const slug = title.toLowerCase()
+                .replace(/[àáạảãâầấậẩẫăằắặẳẵ]/g, 'a')
+                .replace(/[èéẹẻẽêềếệểễ]/g, 'e')
+                .replace(/[ìíịỉĩ]/g, 'i')
+                .replace(/[òóọỏõôồốộổỗơờớợởỡ]/g, 'o')
+                .replace(/[ùúụủũưừứựửữ]/g, 'u')
+                .replace(/[ỳýỵỷỹ]/g, 'y')
+                .replace(/đ/g, 'd')
+                .replace(/[^a-z0-9\s-]/g, '')
+                .replace(/\s+/g, '-')
+                .replace(/-+/g, '-')
+                .trim('-');
 
-    $('#seo_title').text(title);
-    $('#seo_url').text(`{{ url('/') }}/posts/${slug || 'slug'}`);
-    $('#seo_description').text(excerpt.substring(0, 160) + (excerpt.length > 160 ? '...' : ''));
-}
+            $('#seo_title').text(title);
+            $('#seo_url').text(`{{ url('/') }}/posts/${slug || 'slug'}`);
+            $('#seo_description').text(excerpt.substring(0, 160) + (excerpt.length > 160 ? '...' : ''));
+        }
 
-// Update SEO preview on input
-$(document).on('keyup', 'input[name="title"], textarea[name="excerpt"]', updateSEOPreview);
-</script>
+        // Update SEO preview on input
+        $(document).on('keyup', 'input[name="title"], textarea[name="excerpt"]', updateSEOPreview);
+    </script>
 @endpush
