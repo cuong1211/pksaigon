@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\ServiceRequest;
 use App\Models\Service;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Yajra\DataTables\Facades\DataTables;
 
@@ -35,9 +36,12 @@ class ServiceController extends Controller
         try {
             $data = $request->validated();
 
-            // Tạo slug nếu chưa có
-            if (empty($data['slug'])) {
-                $data['slug'] = Str::slug($data['name']);
+            // Xử lý upload ảnh
+            if ($request->hasFile('image')) {
+                $image = $request->file('image');
+                $imageName = time() . '_' . Str::random(10) . '.' . $image->getClientOriginalExtension();
+                $imagePath = $image->storeAs('services', $imageName, 'public');
+                $data['image'] = $imagePath;
             }
 
             Service::create($data);
@@ -47,6 +51,7 @@ class ServiceController extends Controller
                 'title' => 'Thành công',
                 'content' => 'Thêm dịch vụ thành công!'
             ]);
+
         } catch (\Exception $e) {
             return response()->json([
                 'type' => 'error',
@@ -70,7 +75,10 @@ class ServiceController extends Controller
         }
 
         $service = Service::findOrFail($id);
-        return response()->json($service);
+        return response()->json([
+            'type' => 'success',
+            'data' => $service
+        ]);
     }
 
     /**
@@ -90,9 +98,18 @@ class ServiceController extends Controller
             $service = Service::findOrFail($id);
             $data = $request->validated();
 
-            // Tạo slug nếu chưa có
-            if (empty($data['slug'])) {
-                $data['slug'] = Str::slug($data['name']);
+            // Xử lý upload ảnh mới
+            if ($request->hasFile('image')) {
+                // Xóa ảnh cũ
+                if ($service->image && Storage::disk('public')->exists($service->image)) {
+                    Storage::disk('public')->delete($service->image);
+                }
+
+                // Upload ảnh mới
+                $image = $request->file('image');
+                $imageName = time() . '_' . Str::random(10) . '.' . $image->getClientOriginalExtension();
+                $imagePath = $image->storeAs('services', $imageName, 'public');
+                $data['image'] = $imagePath;
             }
 
             $service->update($data);
@@ -102,6 +119,7 @@ class ServiceController extends Controller
                 'title' => 'Thành công',
                 'content' => 'Cập nhật dịch vụ thành công!'
             ]);
+
         } catch (\Exception $e) {
             return response()->json([
                 'type' => 'error',
@@ -122,6 +140,12 @@ class ServiceController extends Controller
             }
 
             $service = Service::findOrFail($id);
+
+            // Xóa ảnh nếu có
+            if ($service->image && Storage::disk('public')->exists($service->image)) {
+                Storage::disk('public')->delete($service->image);
+            }
+
             $service->delete();
 
             return response()->json([
@@ -129,6 +153,7 @@ class ServiceController extends Controller
                 'title' => 'Thành công',
                 'content' => 'Xóa dịch vụ thành công!'
             ]);
+
         } catch (\Exception $e) {
             return response()->json([
                 'type' => 'error',
@@ -143,14 +168,16 @@ class ServiceController extends Controller
      */
     private function getList()
     {
-        $query = Service::select(['id', 'name', 'description', 'price', 'duration', 'is_active', 'slug', 'image', 'created_at']);
+        $query = Service::select(['id', 'name', 'description', 'type', 'price', 'duration', 
+                                 'image', 'is_active', 'created_at']);
 
         // Apply search filter
         if (request()->has('search_table') && !empty(request()->search_table)) {
             $search = request()->search_table;
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                    ->orWhere('description', 'like', "%{$search}%");
+                    ->orWhere('description', 'like', "%{$search}%")
+                    ->orWhere('type', 'like', "%{$search}%");
             });
         }
 
@@ -159,35 +186,59 @@ class ServiceController extends Controller
             $query->where('is_active', request()->status_filter);
         }
 
-        // Apply price range filter
-        if (request()->has('price_range_filter') && !empty(request()->price_range_filter)) {
-            $priceRange = request()->price_range_filter;
-            if ($priceRange === '1000000+') {
-                $query->where('price', '>=', 1000000);
-            } else {
-                $ranges = explode('-', $priceRange);
-                if (count($ranges) === 2) {
-                    $query->whereBetween('price', [(float)$ranges[0], (float)$ranges[1]]);
-                }
-            }
+        // Apply type filter
+        if (request()->has('type_filter') && !empty(request()->type_filter)) {
+            $query->where('type', request()->type_filter);
         }
 
         $services = $query->orderBy('created_at', 'desc')->get();
+        
         return DataTables::of($services)
-            ->addColumn('formatted_price', function ($service) {
-                return number_format($service->price, 0, '.', '.') . ' VNĐ';
+            ->addColumn('image_display', function ($service) {
+                if ($service->image && Storage::disk('public')->exists($service->image)) {
+                    return asset('storage/' . $service->image);
+                }
+                return asset('images/default-service.png');
             })
             ->addColumn('status_badge', function ($service) {
                 if ($service->is_active) {
                     return '<span class="badge badge-light-success">Hoạt động</span>';
                 } else {
-                    return '<span class="badge badge-light-danger">Tạm dừng</span>';
+                    return '<span class="badge badge-light-danger">Ngưng hoạt động</span>';
+                }
+            })
+            ->addColumn('type_badge', function ($service) {
+                $typeLabels = [
+                    'consultation' => ['label' => 'Tư vấn', 'class' => 'badge-light-info'],
+                    'treatment' => ['label' => 'Điều trị', 'class' => 'badge-light-success'],
+                    'examination' => ['label' => 'Khám bệnh', 'class' => 'badge-light-primary'],
+                    'surgery' => ['label' => 'Phẫu thuật', 'class' => 'badge-light-warning'],
+                ];
+                
+                $type = $typeLabels[$service->type] ?? ['label' => $service->type, 'class' => 'badge-light-secondary'];
+                return '<span class="badge ' . $type['class'] . '">' . $type['label'] . '</span>';
+            })
+            ->addColumn('formatted_price', function ($service) {
+                return number_format($service->price, 0, '.', '.') . ' VNĐ';
+            })
+            ->addColumn('formatted_duration', function ($service) {
+                if (!$service->duration) return '-';
+                
+                $hours = intval($service->duration / 60);
+                $minutes = $service->duration % 60;
+                
+                if ($hours > 0 && $minutes > 0) {
+                    return "{$hours}h {$minutes}p";
+                } elseif ($hours > 0) {
+                    return "{$hours}h";
+                } else {
+                    return "{$minutes}p";
                 }
             })
             ->addColumn('short_description', function ($service) {
-                return Str::limit($service->description, 50);
+                return $service->description ? Str::limit($service->description, 50) : '-';
             })
-            ->rawColumns(['status_badge'])
+            ->rawColumns(['status_badge', 'type_badge'])
             ->make(true);
     }
 
@@ -200,20 +251,34 @@ class ServiceController extends Controller
             $total = Service::count();
             $active = Service::where('is_active', true)->count();
             $inactive = Service::where('is_active', false)->count();
-            $averagePrice = Service::avg('price');
+            $avgPrice = Service::avg('price');
+            
+            // Count by types
+            $consultation = Service::where('type', 'consultation')->count();
+            $treatment = Service::where('type', 'treatment')->count();
+            $examination = Service::where('type', 'examination')->count();
+            $surgery = Service::where('type', 'surgery')->count();
 
             return response()->json([
                 'total' => $total,
                 'active' => $active,
                 'inactive' => $inactive,
-                'average_price' => $averagePrice ? number_format($averagePrice, 0, '.', '.') . ' VNĐ' : '0 VNĐ'
+                'avg_price' => number_format($avgPrice, 0, '.', '.') . ' VNĐ',
+                'consultation' => $consultation,
+                'treatment' => $treatment,
+                'examination' => $examination,
+                'surgery' => $surgery
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'total' => 0,
                 'active' => 0,
                 'inactive' => 0,
-                'average_price' => '0 VNĐ'
+                'avg_price' => '0 VNĐ',
+                'consultation' => 0,
+                'treatment' => 0,
+                'examination' => 0,
+                'surgery' => 0
             ]);
         }
     }
@@ -232,6 +297,15 @@ class ServiceController extends Controller
                     'title' => 'Lỗi',
                     'content' => 'Không có dịch vụ nào được chọn!'
                 ], 400);
+            }
+
+            $services = Service::whereIn('id', $ids)->get();
+            
+            // Xóa ảnh của các dịch vụ
+            foreach ($services as $service) {
+                if ($service->image && Storage::disk('public')->exists($service->image)) {
+                    Storage::disk('public')->delete($service->image);
+                }
             }
 
             $deletedCount = Service::whereIn('id', $ids)->delete();

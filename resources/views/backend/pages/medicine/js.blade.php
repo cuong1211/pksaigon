@@ -2,7 +2,7 @@
     // Private functions
     let search_table = '';
     let status_filter = '';
-    let type_filter = '';
+    let alert_filter = '';
 
     // Load statistics on page load
     $(document).ready(function() {
@@ -17,12 +17,12 @@
             className: 'row-selected'
         },
         ajax: {
-            url: "{{ route('service.show', 'get-list') }}",
+            url: "{{ route('medicine.show', 'get-list') }}",
             type: 'GET',
             data: function(d) {
                 d.search_table = search_table;
                 d.status_filter = status_filter;
-                d.type_filter = type_filter;
+                d.alert_filter = alert_filter;
             }
         },
         columns: [{
@@ -31,8 +31,8 @@
                 searchable: false,
                 render: function(data, type, row, meta) {
                     return '<div class="form-check form-check-sm form-check-custom form-check-solid">' +
-                           '<input class="form-check-input" type="checkbox" value="' + row.id + '" />' +
-                           '</div>';
+                        '<input class="form-check-input" type="checkbox" value="' + row.id + '" />' +
+                        '</div>';
                 },
             },
             {
@@ -40,25 +40,21 @@
                 orderable: false,
                 searchable: false,
                 render: function(data, type, row, meta) {
-                    return '<img src="' + data + '" class="service-thumbnail" alt="' + row.name + '">';
+                    return '<img src="' + data + '" class="medicine-thumbnail" alt="' + row.name + '">';
                 }
             },
             {
                 data: 'name',
                 render: function(data, type, row, meta) {
-                    let html = '<div class="service-info">';
-                    html += '<div class="service-name">' + data + '</div>';
-                    if (row.short_description && row.short_description !== '-') {
-                        html += '<div class="text-muted fs-7 mt-1">' + row.short_description + '</div>';
+                    let html = '<div class="medicine-info">';
+                    html += '<div class="medicine-name">' + data + '</div>';
+                    html += '<code class="medicine-code">' + row.code + '</code>';
+                    html += '<div class="text-muted fs-7">' + row.unit + '</div>';
+                    if (row.alerts) {
+                        html += '<div class="alert-badges mt-2">' + row.alerts + '</div>';
                     }
                     html += '</div>';
                     return html;
-                }
-            },
-            {
-                data: 'type',
-                render: function(data, type, row, meta) {
-                    return row.type_badge;
                 }
             },
             {
@@ -68,15 +64,39 @@
                 }
             },
             {
-                data: 'formatted_duration',
+                data: 'quantity',
                 render: function(data, type, row, meta) {
-                    return '<span class="duration-display">' + (data || '-') + '</span>';
+                    return '<div class="quantity-display">' +
+                        row.quantity_badge +
+                        '<div class="text-muted fs-8">Min: ' + row.min_quantity + '</div>' +
+                        '</div>';
                 }
             },
             {
-                data: 'description',
+                data: 'manufacturer',
                 render: function(data, type, row, meta) {
-                    return row.short_description || '<span class="text-muted">-</span>';
+                    return data || '<span class="text-muted">-</span>';
+                }
+            },
+            {
+                data: 'formatted_expiry_date',
+                render: function(data, type, row, meta) {
+                    if (!data) return '<span class="text-muted">-</span>';
+
+                    // Kiểm tra hạn sử dụng
+                    let expiryDate = new Date(row.expiry_date);
+                    let today = new Date();
+                    let diffTime = expiryDate - today;
+                    let diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+                    let badgeClass = 'badge-light-primary';
+                    if (diffDays < 0) {
+                        badgeClass = 'badge-light-danger';
+                    } else if (diffDays <= 30) {
+                        badgeClass = 'badge-light-warning';
+                    }
+
+                    return '<span class="badge ' + badgeClass + '">' + data + '</span>';
                 }
             },
             {
@@ -110,7 +130,7 @@
             }
         ]
     });
-    
+
     dt.on('draw', function() {
         KTMenu.createInstances();
         updateBulkActions();
@@ -129,21 +149,21 @@
 
     function updateBulkActions() {
         var checkedCount = $('#kt_customers_table tbody input[type="checkbox"]:checked').length;
-        
+
         if (checkedCount > 0) {
-            $('[data-kt-services-table-toolbar="base"]').addClass('d-none');
-            $('[data-kt-services-table-toolbar="selected"]').removeClass('d-none');
-            $('[data-kt-services-table-select="selected_count"]').text(checkedCount);
+            $('[data-kt-medicines-table-toolbar="base"]').addClass('d-none');
+            $('[data-kt-medicines-table-toolbar="selected"]').removeClass('d-none');
+            $('[data-kt-medicines-table-select="selected_count"]').text(checkedCount);
         } else {
-            $('[data-kt-services-table-toolbar="base"]').removeClass('d-none');
-            $('[data-kt-services-table-toolbar="selected"]').addClass('d-none');
+            $('[data-kt-medicines-table-toolbar="base"]').removeClass('d-none');
+            $('[data-kt-medicines-table-toolbar="selected"]').addClass('d-none');
         }
     }
 
     // Load statistics
     function loadStatistics() {
         $.ajax({
-            url: "{{ route('service.show', 'get-statistics') }}",
+            url: "{{ route('medicine.show', 'get-statistics') }}",
             type: 'GET',
             success: function(data) {
                 $('#statsContainer').html(`
@@ -153,12 +173,12 @@
                                 <div class="d-flex align-items-center">
                                     <div class="symbol symbol-50px me-5">
                                         <span class="symbol-label bg-light-primary">
-                                            <i class="fas fa-cog text-primary fs-2x"></i>
+                                            <i class="fas fa-pills text-primary fs-2x"></i>
                                         </span>
                                     </div>
                                     <div class="d-flex flex-column">
                                         <span class="text-dark fw-bolder fs-2">${data.total || 0}</span>
-                                        <span class="text-muted fw-bold fs-7">Tổng dịch vụ</span>
+                                        <span class="text-muted fw-bold fs-7">Tổng thuốc</span>
                                     </div>
                                 </div>
                             </div>
@@ -186,64 +206,64 @@
                             <div class="card-body">
                                 <div class="d-flex align-items-center">
                                     <div class="symbol symbol-50px me-5">
+                                        <span class="symbol-label bg-light-warning">
+                                            <i class="fas fa-exclamation-triangle text-warning fs-2x"></i>
+                                        </span>
+                                    </div>
+                                    <div class="d-flex flex-column">
+                                        <span class="text-dark fw-bolder fs-2">${data.low_stock || 0}</span>
+                                        <span class="text-muted fw-bold fs-7">Sắp hết</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-2">
+                        <div class="card stats-card card-xl-stretch mb-xl-8">
+                            <div class="card-body">
+                                <div class="d-flex align-items-center">
+                                    <div class="symbol symbol-50px me-5">
+                                        <span class="symbol-label bg-light-warning">
+                                            <i class="fas fa-clock text-warning fs-2x"></i>
+                                        </span>
+                                    </div>
+                                    <div class="d-flex flex-column">
+                                        <span class="text-dark fw-bolder fs-2">${data.expiring_soon || 0}</span>
+                                        <span class="text-muted fw-bold fs-7">Sắp hết hạn</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-2">
+                        <div class="card stats-card card-xl-stretch mb-xl-8">
+                            <div class="card-body">
+                                <div class="d-flex align-items-center">
+                                    <div class="symbol symbol-50px me-5">
+                                        <span class="symbol-label bg-light-danger">
+                                            <i class="fas fa-times-circle text-danger fs-2x"></i>
+                                        </span>
+                                    </div>
+                                    <div class="d-flex flex-column">
+                                        <span class="text-dark fw-bolder fs-2">${data.expired || 0}</span>
+                                        <span class="text-muted fw-bold fs-7">Hết hạn</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-2">
+                        <div class="card stats-card card-xl-stretch mb-xl-8">
+                            <div class="card-body">
+                                <div class="d-flex align-items-center">
+                                    <div class="symbol symbol-50px me-5">
                                         <span class="symbol-label bg-light-info">
-                                            <i class="fas fa-comments text-info fs-2x"></i>
+                                            <i class="fas fa-dollar-sign text-info fs-2x"></i>
                                         </span>
                                     </div>
                                     <div class="d-flex flex-column">
-                                        <span class="text-dark fw-bolder fs-2">${data.consultation || 0}</span>
-                                        <span class="text-muted fw-bold fs-7">Tư vấn</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-xl-2">
-                        <div class="card stats-card card-xl-stretch mb-xl-8">
-                            <div class="card-body">
-                                <div class="d-flex align-items-center">
-                                    <div class="symbol symbol-50px me-5">
-                                        <span class="symbol-label bg-light-success">
-                                            <i class="fas fa-heartbeat text-success fs-2x"></i>
-                                        </span>
-                                    </div>
-                                    <div class="d-flex flex-column">
-                                        <span class="text-dark fw-bolder fs-2">${data.treatment || 0}</span>
-                                        <span class="text-muted fw-bold fs-7">Điều trị</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-xl-2">
-                        <div class="card stats-card card-xl-stretch mb-xl-8">
-                            <div class="card-body">
-                                <div class="d-flex align-items-center">
-                                    <div class="symbol symbol-50px me-5">
-                                        <span class="symbol-label bg-light-primary">
-                                            <i class="fas fa-stethoscope text-primary fs-2x"></i>
-                                        </span>
-                                    </div>
-                                    <div class="d-flex flex-column">
-                                        <span class="text-dark fw-bolder fs-2">${data.examination || 0}</span>
-                                        <span class="text-muted fw-bold fs-7">Khám bệnh</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-xl-2">
-                        <div class="card stats-card card-xl-stretch mb-xl-8">
-                            <div class="card-body">
-                                <div class="d-flex align-items-center">
-                                    <div class="symbol symbol-50px me-5">
-                                        <span class="symbol-label bg-light-success">
-                                            <i class="fas fa-dollar-sign text-success fs-2x"></i>
-                                        </span>
-                                    </div>
-                                    <div class="d-flex flex-column">
-                                        <span class="text-dark fw-bolder fs-2">${data.avg_price || '0 VNĐ'}</span>
-                                        <span class="text-muted fw-bold fs-7">Giá TB</span>
+                                        <span class="text-dark fw-bolder fs-2">${data.total_value || '0 VNĐ'}</span>
+                                        <span class="text-muted fw-bold fs-7">Giá trị tồn</span>
                                     </div>
                                 </div>
                             </div>
@@ -256,12 +276,12 @@
             }
         });
     }
-    
+
     $('.btn-close').on('click', function() {
         form_reset();
         $('#kt_modal_add_customer').modal('hide');
     });
-    
+
     $('#kt_modal_add_customer_cancel').on('click', function() {
         form_reset();
     });
@@ -276,61 +296,61 @@
         $('#image-preview-container').hide();
         $('.print-error-msg').hide();
     }
-    
+
     $(document).on('click', '.btn-edit', function(e) {
         console.log('edit')
         e.preventDefault();
         form_reset();
         let data = $(this).data('data');
         let modal = $('#kt_modal_add_customer_form');
-        modal.find('.modal-title').text('Sửa thông tin dịch vụ');
+        modal.find('.modal-title').text('Sửa thông tin thuốc');
         modal.find('input[name=id]').val(data.id);
         modal.find('input[name=name]').val(data.name);
+        modal.find('input[name=code]').val(data.code);
         modal.find('textarea[name=description]').val(data.description);
-        modal.find('select[name=type]').val(data.type);
-        
-        // FIX: Parse price to remove decimal places for display
-        let price = parseFloat(data.price);
-        modal.find('input[name=price]').val(Math.round(price)); // Remove .00 decimal
-        
-        modal.find('input[name=duration]').val(data.duration);
+        modal.find('input[name=unit]').val(data.unit);
+        modal.find('input[name=price]').val(data.price);
+        modal.find('input[name=quantity]').val(data.quantity);
+        modal.find('input[name=min_quantity]').val(data.min_quantity);
+        modal.find('input[name=manufacturer]').val(data.manufacturer);
+        modal.find('input[name=expiry_date]').val(data.expiry_date);
         modal.find('input[name=is_active]').prop('checked', data.is_active == 1);
-        
+
         // Show current image if exists
-        if (data.image_display && data.image_display !== '/images/default-service.png') {
+        if (data.image_display && data.image_display !== '/images/default-medicine.png') {
             $('#image-preview').attr('src', data.image_display);
             $('#image-preview-container').show();
         }
     });
-    
+
     $(document).on('click', '.btn-add', function(e) {
         console.log('add')
         e.preventDefault();
         form_reset();
         let modal = $('#kt_modal_add_customer_form');
-        modal.find('.modal-title').text('Thêm dịch vụ mới');
+        modal.find('.modal-title').text('Thêm thuốc mới');
         modal.find('input[name=id]').val('');
         modal.trigger('reset');
     });
-    
+
     $('#kt_modal_add_customer_form').on('submit', function(e) {
         e.preventDefault();
         let formData = new FormData(this);
         let type = 'POST',
-            url = "{{ route('service.store') }}",
+            url = "{{ route('medicine.store') }}",
             id = $('form#kt_modal_add_customer_form input[name=id]').val();
-        
+
         if (parseInt(id)) {
             console.log('edit');
             type = 'POST';
             formData.append('_method', 'PUT');
-            url = "{{ route('service.update', ':id') }}".replace(':id', id);
+            url = "{{ route('medicine.update', ':id') }}".replace(':id', id);
         }
-        
+
         // Show loading
         $('#kt_modal_add_customer_submit').attr('data-kt-indicator', 'on');
         $('#kt_modal_add_customer_submit').prop('disabled', true);
-        
+
         $.ajax({
             url: url,
             headers: {
@@ -372,12 +392,12 @@
             }
         });
     });
-    
+
     $(document).on('click', '.btn-delete', function(e) {
         e.preventDefault();
         let id = $(this).data('id');
         Swal.fire({
-            text: "Bạn có muốn xóa dịch vụ này không?",
+            text: "Bạn có muốn xóa thuốc này không?",
             icon: "warning",
             showCancelButton: true,
             buttonsStyling: false,
@@ -390,7 +410,7 @@
         }).then(function(result) {
             if (result.value) {
                 $.ajax({
-                    url: "{{ route('service.destroy', ':id') }}".replace(':id', id),
+                    url: "{{ route('medicine.destroy', ':id') }}".replace(':id', id),
                     headers: {
                         'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
                     },
@@ -415,7 +435,7 @@
     });
 
     // Handle bulk delete
-    $(document).on('click', '[data-kt-services-table-select="delete_selected"]', function(e) {
+    $(document).on('click', '[data-kt-medicines-table-select="delete_selected"]', function(e) {
         e.preventDefault();
         let selectedIds = [];
         $('#kt_customers_table tbody input[type="checkbox"]:checked').each(function() {
@@ -425,7 +445,7 @@
         if (selectedIds.length === 0) return;
 
         Swal.fire({
-            text: "Bạn có muốn xóa " + selectedIds.length + " dịch vụ đã chọn không?",
+            text: "Bạn có muốn xóa " + selectedIds.length + " thuốc đã chọn không?",
             icon: "warning",
             showCancelButton: true,
             buttonsStyling: false,
@@ -438,7 +458,7 @@
         }).then(function(result) {
             if (result.value) {
                 $.ajax({
-                    url: "{{ route('service.destroy', 'bulk') }}",
+                    url: "{{ route('medicine.destroy', 'bulk') }}",
                     headers: {
                         'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
                     },
@@ -466,20 +486,20 @@
             }
         });
     });
-    
+
     $(".search_table").on('change keyup', function() {
         let data = $(this).val();
         let filter = $(this).data('filter');
-        
+
         if (filter === 'status') {
             status_filter = data;
-        } else if (filter === 'type') {
-            type_filter = data;
+        } else if (filter === 'alert') {
+            alert_filter = data;
         } else {
             search_table = data;
         }
-        
-        console.log('Search:', search_table, 'Status:', status_filter, 'Type:', type_filter);
+
+        console.log('Search:', search_table, 'Status:', status_filter, 'Alert:', alert_filter);
         dt.ajax.reload();
     });
 </script>

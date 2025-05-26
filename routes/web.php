@@ -3,10 +3,13 @@
 use App\Http\Controllers\Admin\AuthController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\PostController;
+use App\Http\Controllers\Admin\ServiceController;
+use App\Http\Controllers\Admin\MedicineController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Admin\ServiceController; 
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Artisan;
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -35,8 +38,11 @@ Route::middleware(['auth'])->group(function () {
         Route::resource('posts', PostController::class);
         Route::patch('posts/{id}/toggle-featured', [PostController::class, 'toggleFeatured'])->name('posts.toggle-featured');
 
-        // Thêm routes cho Service
+        // Services Management (Updated)
         Route::resource('service', ServiceController::class);
+
+        // Medicine Management
+        Route::resource('medicine', MedicineController::class);
 
         // Route tạo slug cho service
         Route::get('create-slug', function (Request $request) {
@@ -56,4 +62,10 @@ Route::middleware(['auth'])->group(function () {
             return response()->json(['slug' => $slug]);
         })->name('slug');
     });
+});
+
+// Route storage link (cho development)
+Route::get('/storage-link', function () {
+    Artisan::call('storage:link');
+    return 'Storage link created!';
 });

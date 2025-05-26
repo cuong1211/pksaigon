@@ -4,7 +4,7 @@
         <!--begin::Modal content-->
         <div class="modal-content">
             <!--begin::Form-->
-            <form class="form" id="kt_modal_add_customer_form">
+            <form class="form" id="kt_modal_add_customer_form" enctype="multipart/form-data">
                 @csrf
                 <!--begin::Modal header-->
                 <div class="modal-header" id="kt_modal_add_customer_header">
@@ -40,73 +40,112 @@
                         data-kt-scroll-wrappers="#kt_modal_add_customer_scroll" data-kt-scroll-offset="300px">
                         <input type="hidden" name="id" value="">
                         
-                        <!--begin::Input group - Tên dịch vụ-->
-                        <div class="fv-row mb-7">
-                            <label class="required fs-6 fw-bold mb-2">Tên dịch vụ</label>
-                            <input type="text" class="form-control form-control-solid" placeholder="Nhập tên dịch vụ"
-                                name="name" />
+                        <!--begin::Row-->
+                        <div class="row">
+                            <!--begin::Col-->
+                            <div class="col-md-6">
+                                <!--begin::Input group - Tên dịch vụ-->
+                                <div class="fv-row mb-7">
+                                    <label class="required fs-6 fw-bold mb-2">Tên dịch vụ</label>
+                                    <input type="text" class="form-control form-control-solid" placeholder="Nhập tên dịch vụ"
+                                        name="name" />
+                                </div>
+                                <!--end::Input group-->
+                            </div>
+                            <!--end::Col-->
+                            <!--begin::Col-->
+                            <div class="col-md-6">
+                                <!--begin::Input group - Loại dịch vụ-->
+                                <div class="fv-row mb-7">
+                                    <label class="required fs-6 fw-bold mb-2">Loại dịch vụ</label>
+                                    <select class="form-select form-select-solid" name="type">
+                                        <option value="">Chọn loại dịch vụ</option>
+                                        <option value="consultation">Tư vấn</option>
+                                        <option value="treatment">Điều trị</option>
+                                        <option value="examination">Khám bệnh</option>
+                                        <option value="surgery">Phẫu thuật</option>
+                                    </select>
+                                </div>
+                                <!--end::Input group-->
+                            </div>
+                            <!--end::Col-->
                         </div>
-                        <!--end::Input group-->
+                        <!--end::Row-->
 
-                        <!--begin::Input group - Slug-->
+                        <!--begin::Input group - Mô tả-->
                         <div class="fv-row mb-7">
-                            <label class="fs-6 fw-bold mb-2">Slug</label>
-                            <input type="text" class="form-control form-control-solid" placeholder="Tự động tạo từ tên dịch vụ" name="slug"
-                                readonly />
-                        </div>
-                        <!--end::Input group-->
-
-                        <!--begin::Input group - Mô tả ngắn-->
-                        <div class="fv-row mb-7">
-                            <label class="fs-6 fw-bold mb-2">Mô tả ngắn</label>
-                            <textarea class="form-control form-control-solid" rows="3" placeholder="Nhập mô tả ngắn về dịch vụ"
+                            <label class="fs-6 fw-bold mb-2">Mô tả</label>
+                            <textarea class="form-control form-control-solid" rows="3" placeholder="Nhập mô tả về dịch vụ"
                                 name="description"></textarea>
                         </div>
                         <!--end::Input group-->
 
-                        <!--begin::Input group - Nội dung chi tiết-->
-                        <div class="fv-row mb-7">
-                            <label class="fs-6 fw-bold mb-2">Nội dung chi tiết</label>
-                            <textarea class="form-control form-control-solid" rows="5" placeholder="Nhập nội dung chi tiết về dịch vụ"
-                                name="content"></textarea>
-                        </div>
-                        <!--end::Input group-->
-
-                        <!--begin::Input group - Giá và thời gian-->
+                        <!--begin::Row-->
                         <div class="row">
+                            <!--begin::Col-->
                             <div class="col-md-6">
+                                <!--begin::Input group - Giá-->
                                 <div class="fv-row mb-7">
                                     <label class="required fs-6 fw-bold mb-2">Giá dịch vụ (VNĐ)</label>
                                     <input type="number" class="form-control form-control-solid" placeholder="0"
                                         name="price" min="0" step="1000" />
                                 </div>
+                                <!--end::Input group-->
                             </div>
+                            <!--end::Col-->
+                            <!--begin::Col-->
                             <div class="col-md-6">
+                                <!--begin::Input group - Thời gian-->
                                 <div class="fv-row mb-7">
-                                    <label class="fs-6 fw-bold mb-2">Thời gian thực hiện</label>
-                                    <input type="text" class="form-control form-control-solid" placeholder="VD: 30 phút, 1 giờ"
-                                        name="duration" />
+                                    <label class="fs-6 fw-bold mb-2">Thời gian (phút)</label>
+                                    <input type="number" class="form-control form-control-solid" placeholder="30"
+                                        name="duration" min="1" />
+                                    <div class="form-text">Thời gian thực hiện dịch vụ (tính bằng phút)</div>
                                 </div>
+                                <!--end::Input group-->
                             </div>
+                            <!--end::Col-->
                         </div>
-                        <!--end::Input group-->
+                        <!--end::Row-->
+
+                        <!--begin::Row-->
+                        <div class="row">
+                            <!--begin::Col-->
+                            <div class="col-md-6">
+                                <!--begin::Input group - Trạng thái-->
+                                <div class="fv-row mb-7">
+                                    <label class="fs-6 fw-bold mb-2">Trạng thái</label>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" name="is_active" id="is_active" checked>
+                                        <label class="form-check-label fs-6 fw-bold" for="is_active">
+                                            Hoạt động
+                                        </label>
+                                    </div>
+                                </div>
+                                <!--end::Input group-->
+                            </div>
+                            <!--end::Col-->
+                        </div>
+                        <!--end::Row-->
 
                         <!--begin::Input group - Hình ảnh-->
                         <div class="fv-row mb-7">
-                            <label class="fs-6 fw-bold mb-2">Hình ảnh</label>
-                            <input type="text" class="form-control form-control-solid" placeholder="Đường dẫn hình ảnh"
-                                name="image" />
-                        </div>
-                        <!--end::Input group-->
-
-                        <!--begin::Input group - Trạng thái-->
-                        <div class="fv-row mb-7">
-                            <div class="form-check form-switch">
-                                <input class="form-check-input" type="checkbox" name="is_active" id="is_active" checked>
-                                <label class="form-check-label fs-6 fw-bold" for="is_active">
-                                    Trạng thái hoạt động
-                                </label>
+                            <label class="fs-6 fw-bold mb-2">Hình ảnh dịch vụ</label>
+                            <input type="file" class="form-control form-control-solid" name="image" 
+                                   accept="image/*" onchange="previewImage(this)" />
+                            <div class="form-text">Chấp nhận: JPEG, PNG, JPG, GIF. Tối đa 2MB</div>
+                            
+                            <!--begin::Image preview-->
+                            <div id="image-preview-container" class="mt-3" style="display: none;">
+                                <label class="fs-7 fw-bold text-gray-600">Preview:</label>
+                                <div class="mt-2">
+                                    <img id="image-preview" src="" class="img-fluid rounded" style="max-height: 150px;">
+                                    <button type="button" class="btn btn-sm btn-light-danger mt-2" onclick="removeImage()">
+                                        Xóa ảnh
+                                    </button>
+                                </div>
                             </div>
+                            <!--end::Image preview-->
                         </div>
                         <!--end::Input group-->
 
@@ -123,7 +162,8 @@
                     <button type="submit" id="kt_modal_add_customer_submit" class="btn btn-primary">
                         <span class="indicator-label">Xác nhận</span>
                         <span class="indicator-progress">Đang xử lý...
-                            <span class="spinner-border spinner-border-sm align-middle ms-2"></span></span>
+                            <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
+                        </span>
                     </button>
                     <!--end::Button-->
                 </div>
@@ -133,28 +173,33 @@
         </div>
     </div>
 </div>
-@push('jscustom')
-    {{-- get value form input name when change --}}
-    <script>
-        $('input[name="name"]').on('keyup', function() {
-            var name = $(this).val();
-            convertToSlug(name);
-        });
 
-        function convertToSlug(name) {
-            $.ajax({
-                type: 'get',
-                url: '{{ route('slug') }}',
-                dataType: 'json',
-                data: {
-                    name,
-                    modelType: 'service'
-                },
-                success: function(response) {
-                    console.log(response);
-                    $('input[name="slug"]').val(response.slug);
-                }
-            });
+@push('jscustom')
+    <script>
+        // Preview image function
+        function previewImage(input) {
+            const container = document.getElementById('image-preview-container');
+            const preview = document.getElementById('image-preview');
+            
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.src = e.target.result;
+                    container.style.display = 'block';
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        // Remove image function
+        function removeImage() {
+            const input = document.querySelector('input[name="image"]');
+            const container = document.getElementById('image-preview-container');
+            const preview = document.getElementById('image-preview');
+            
+            input.value = '';
+            preview.src = '';
+            container.style.display = 'none';
         }
     </script>
 @endpush

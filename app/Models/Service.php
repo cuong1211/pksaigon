@@ -2,8 +2,9 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
 
 class Service extends Model
 {
@@ -11,41 +12,87 @@ class Service extends Model
 
     protected $fillable = [
         'name',
-        'slug',
         'description',
-        'content',
+        'type',
         'price',
         'duration',
-        'is_active',
-        'image'
+        'image',
+        'is_active'
     ];
 
     protected $casts = [
         'price' => 'decimal:2',
-        'is_active' => 'boolean',
+        'is_active' => 'boolean'
     ];
 
-    /**
-     * Get the route key for the model.
-     */
-    public function getRouteKeyName()
+    // Accessor để lấy URL đầy đủ của ảnh
+    public function getImageUrlAttribute()
     {
-        return 'slug';
+        if ($this->image && Storage::disk('public')->exists($this->image)) {
+            return Storage::url($this->image);
+        }
+        return asset('images/default-service.png'); // Ảnh mặc định
     }
 
-    /**
-     * Scope a query to only include active services.
-     */
+    // Accessor để format thời gian dịch vụ
+    public function getFormattedDurationAttribute()
+    {
+        if (!$this->duration) return null;
+        
+        $hours = intval($this->duration / 60);
+        $minutes = $this->duration % 60;
+        
+        if ($hours > 0 && $minutes > 0) {
+            return "{$hours}h {$minutes}p";
+        } elseif ($hours > 0) {
+            return "{$hours}h";
+        } else {
+            return "{$minutes}p";
+        }
+    }
+
+    // Accessor để lấy tên loại dịch vụ
+    public function getTypeNameAttribute()
+    {
+        $typeLabels = [
+            'consultation' => 'Tư vấn',
+            'treatment' => 'Điều trị',
+            'examination' => 'Khám bệnh',
+            'surgery' => 'Phẫu thuật'
+        ];
+
+        return $typeLabels[$this->type] ?? $this->type;
+    }
+
+    // Accessor để lấy giá format
+    public function getFormattedPriceAttribute()
+    {
+        return number_format($this->price, 0, '.', '.') . ' VNĐ';
+    }
+
+    // Scope để lọc dịch vụ đang hoạt động
     public function scopeActive($query)
     {
         return $query->where('is_active', true);
     }
 
-    /**
-     * Get formatted price
-     */
-    public function getFormattedPriceAttribute()
+    // Scope để lọc theo loại dịch vụ
+    public function scopeByType($query, $type)
     {
-        return number_format($this->price, 0, '.', '.') . ' VNĐ';
+        return $query->where('type', $type);
+    }
+
+    // Scope để lọc theo khoảng giá
+    public function scopePriceRange($query, $minPrice = null, $maxPrice = null)
+    {
+        if ($minPrice !== null) {
+            $query->where('price', '>=', $minPrice);
+        }
+        
+        if ($maxPrice !== null) {
+            $query->where('price', '<=', $maxPrice);
+        }
+        
+        return $query;
     }
 }

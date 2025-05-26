@@ -166,6 +166,27 @@
                         <span class="menu-title">Quản lý dịch vụ</span>
                     </a>
                 </div>
+                <div class="menu-item">
+                    <a class="menu-link" href="{{ route('medicine.index') }}">
+                        <span class="menu-icon">
+                            <span class="svg-icon svg-icon-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                    viewBox="0 0 24 24" fill="none">
+                                    <path
+                                        d="M20 6H16V4C16 2.9 15.1 2 14 2H10C8.9 2 8 2.9 8 4V6H4C3.4 6 3 6.4 3 7C3 7.6 3.4 8 4 8H5V19C5 20.1 5.9 21 7 21H17C18.1 21 19 20.1 19 19V8H20C20.6 8 21 7.6 21 7C21 6.4 20.6 6 20 6ZM10 4H14V6H10V4ZM17 19H7V8H17V19Z"
+                                        fill="black" />
+                                    <path
+                                        d="M9 10C8.4 10 8 10.4 8 11V17C8 17.6 8.4 18 9 18C9.6 18 10 17.6 10 17V11C10 10.4 9.6 10 9 10Z"
+                                        fill="black" />
+                                    <path
+                                        d="M15 10C14.4 10 14 10.4 14 11V17C14 17.6 14.4 18 15 18C15.6 18 16 17.6 16 17V11C16 10.4 15.6 10 15 10Z"
+                                        fill="black" />
+                                </svg>
+                            </span>
+                        </span>
+                        <span class="menu-title">Quản lý thuốc</span>
+                    </a>
+                </div>
                 {{-- <div data-kt-menu-trigger="click" class="menu-item menu-accordion">
                     <span class="menu-link">
                         <span class="menu-icon">

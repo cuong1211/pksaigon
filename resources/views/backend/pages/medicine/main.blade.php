@@ -1,10 +1,10 @@
 @extends('backend.layout.index')
 
-@section('title', 'Quản lý dịch vụ')
+@section('title', 'Quản lý thuốc')
 
 @section('breadcrumb')
     <div class="page-title d-flex flex-column me-5">
-        <h1 class="d-flex flex-column text-dark fw-bolder fs-3 mb-0">Quản lý dịch vụ</h1>
+        <h1 class="d-flex flex-column text-dark fw-bolder fs-3 mb-0">Quản lý thuốc</h1>
         <ul class="breadcrumb breadcrumb-separatorless fw-bold fs-7 pt-1">
             <li class="breadcrumb-item text-muted">
                 <a href="{{ route('admin') }}" class="text-muted text-hover-primary">Trang chủ</a>
@@ -12,7 +12,7 @@
             <li class="breadcrumb-item">
                 <span class="bullet bg-gray-200 w-5px h-2px"></span>
             </li>
-            <li class="breadcrumb-item text-dark">Quản lý dịch vụ</li>
+            <li class="breadcrumb-item text-dark">Quản lý thuốc</li>
         </ul>
     </div>
 @endsection
@@ -22,75 +22,8 @@
         <div class="post d-flex flex-column-fluid" id="kt_post">
             <div id="kt_content_container" class="container">
                 <!-- Statistics Cards -->
-               <div class="row g-5 g-xl-8 mb-8" id="statsContainer">
-                    <div class="col-xl-3">
-                        <div class="card card-xl-stretch mb-xl-8">
-                            <div class="card-body">
-                                <div class="d-flex align-items-center">
-                                    <div class="symbol symbol-50px me-5">
-                                        <span class="symbol-label bg-light-primary">
-                                            <i class="fas fa-cogs text-primary fs-2x"></i>
-                                        </span>
-                                    </div>
-                                    <div class="d-flex flex-column">
-                                        <span class="text-dark fw-bolder fs-2" id="total-services">0</span>
-                                        <span class="text-muted fw-bold fs-7">Tổng dịch vụ</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-xl-3">
-                        <div class="card card-xl-stretch mb-xl-8">
-                            <div class="card-body">
-                                <div class="d-flex align-items-center">
-                                    <div class="symbol symbol-50px me-5">
-                                        <span class="symbol-label bg-light-success">
-                                            <i class="fas fa-check-circle text-success fs-2x"></i>
-                                        </span>
-                                    </div>
-                                    <div class="d-flex flex-column">
-                                        <span class="text-dark fw-bolder fs-2" id="active-services">0</span>
-                                        <span class="text-muted fw-bold fs-7">Đang hoạt động</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-xl-3">
-                        <div class="card card-xl-stretch mb-xl-8">
-                            <div class="card-body">
-                                <div class="d-flex align-items-center">
-                                    <div class="symbol symbol-50px me-5">
-                                        <span class="symbol-label bg-light-warning">
-                                            <i class="fas fa-pause-circle text-warning fs-2x"></i>
-                                        </span>
-                                    </div>
-                                    <div class="d-flex flex-column">
-                                        <span class="text-dark fw-bolder fs-2" id="inactive-services">0</span>
-                                        <span class="text-muted fw-bold fs-7">Tạm dừng</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-xl-3">
-                        <div class="card card-xl-stretch mb-xl-8">
-                            <div class="card-body">
-                                <div class="d-flex align-items-center">
-                                    <div class="symbol symbol-50px me-5">
-                                        <span class="symbol-label bg-light-info">
-                                            <i class="fas fa-dollar-sign text-info fs-2x"></i>
-                                        </span>
-                                    </div>
-                                    <div class="d-flex flex-column">
-                                        <span class="text-dark fw-bolder fs-2" id="average-price">0 VNĐ</span>
-                                        <span class="text-muted fw-bold fs-7">Giá trung bình</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                <div class="row g-5 g-xl-8 mb-8" id="statsContainer">
+                    <!-- Stats sẽ được load bằng Ajax -->
                 </div>
 
                 <!-- Main Table Card -->
@@ -108,15 +41,15 @@
                                             fill="black" />
                                     </svg>
                                 </span>
-                                <input type="text" data-kt-services-table-filter="search"
+                                <input type="text" data-kt-medicines-table-filter="search"
                                     class="form-control form-control-solid w-250px ps-15 search_table"
-                                    placeholder="Tìm kiếm dịch vụ..." />
+                                    placeholder="Tìm kiếm thuốc..." />
                             </div>
                         </div>
 
                         <div class="card-toolbar">
                             <div class="d-flex justify-content-end align-items-center"
-                                data-kt-services-table-toolbar="base">
+                                data-kt-medicines-table-toolbar="base">
                                 <!-- Status Filter -->
                                 <select class="form-select form-select-solid w-150px me-3 search_table"
                                     data-filter="status">
@@ -125,13 +58,12 @@
                                     <option value="0">Ngưng hoạt động</option>
                                 </select>
 
-                                <!-- Type Filter -->
-                                <select class="form-select form-select-solid w-150px me-3 search_table" data-filter="type">
-                                    <option value="">Tất cả loại</option>
-                                    <option value="consultation">Tư vấn</option>
-                                    <option value="treatment">Điều trị</option>
-                                    <option value="examination">Khám bệnh</option>
-                                    <option value="surgery">Phẫu thuật</option>
+                                <!-- Alert Filter -->
+                                <select class="form-select form-select-solid w-150px me-3 search_table" data-filter="alert">
+                                    <option value="">Tất cả cảnh báo</option>
+                                    <option value="low_stock">Sắp hết</option>
+                                    <option value="expiring">Sắp hết hạn</option>
+                                    <option value="expired">Đã hết hạn</option>
                                 </select>
 
                                 <!-- Export Button -->
@@ -151,32 +83,31 @@
                                     Xuất dữ liệu
                                 </button>
 
-                                <!-- Add Service Button -->
+                                <!-- Add Medicine Button -->
                                 <button type="button" class="btn btn-primary btn-add" data-bs-toggle="modal"
                                     data-bs-target="#kt_modal_add_customer">
                                     <span class="svg-icon svg-icon-2">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
                                             viewBox="0 0 24 24" fill="none">
                                             <rect opacity="0.5" x="11.364" y="20.364" width="16" height="2"
-                                                rx="1" transform="rotate(-90 11.364 20.364)"
-                                                fill="currentColor" />
+                                                rx="1" transform="rotate(-90 11.364 20.364)" fill="currentColor" />
                                             <rect x="4.364" y="11.364" width="16" height="2" rx="1"
                                                 fill="currentColor" />
                                         </svg>
                                     </span>
-                                    Thêm dịch vụ
+                                    Thêm thuốc
                                 </button>
                             </div>
 
                             <!-- Bulk Actions (Hidden by default) -->
                             <div class="d-flex justify-content-end align-items-center d-none"
-                                data-kt-services-table-toolbar="selected">
+                                data-kt-medicines-table-toolbar="selected">
                                 <div class="fw-bolder me-5">
-                                    <span class="me-2" data-kt-services-table-select="selected_count"></span>
+                                    <span class="me-2" data-kt-medicines-table-select="selected_count"></span>
                                     đã chọn
                                 </div>
                                 <button type="button" class="btn btn-danger"
-                                    data-kt-services-table-select="delete_selected">
+                                    data-kt-medicines-table-select="delete_selected">
                                     Xóa các mục đã chọn
                                 </button>
                             </div>
@@ -195,11 +126,11 @@
                                         </div>
                                     </th>
                                     <th class="min-w-125px">Ảnh</th>
-                                    <th class="min-w-200px">Thông tin dịch vụ</th>
-                                    <th class="min-w-100px">Loại</th>
+                                    <th class="min-w-200px">Thông tin thuốc</th>
                                     <th class="min-w-100px">Giá</th>
-                                    <th class="min-w-100px">Thời gian</th>
-                                    <th class="min-w-125px">Mô tả</th>
+                                    <th class="min-w-100px">Tồn kho</th>
+                                    <th class="min-w-125px">Nhà sản xuất</th>
+                                    <th class="min-w-100px">Hạn sử dụng</th>
                                     <th class="min-w-100px">Trạng thái</th>
                                     <th class="text-end min-w-100px">Thao tác</th>
                                 </tr>
@@ -211,8 +142,8 @@
                     </div>
                 </div>
 
-                <!-- Modal Add/Edit Service -->
-                @include('backend.pages.service.modal')
+                <!-- Modal Add/Edit Medicine -->
+                @include('backend.pages.medicine.modal')
             </div>
         </div>
     </div>
@@ -220,39 +151,42 @@
 
 @push('jscustom')
     <script src="assets/plugins/custom/datatables/datatables.bundle.js"></script>
-    @include('backend.pages.service.js')
+    @include('backend.pages.medicine.js')
 @endpush
 
 @push('csscustom')
     <style>
-        /* Custom styles for services management */
+        /* Custom styles for medicines management */
         .container {
             max-width: 100%;
             margin: 0 auto;
         }
 
-        .service-thumbnail {
+        .medicine-thumbnail {
             width: 60px;
             height: 40px;
             object-fit: cover;
             border-radius: 4px;
         }
 
-        .service-info {
+        .medicine-info {
             display: flex;
             flex-direction: column;
         }
 
-        .service-name {
+        .medicine-name {
             font-weight: 600;
             color: #181C32;
             line-height: 1.4;
         }
 
-        .service-description {
+        .medicine-code {
             color: #7E8299;
-            font-size: 13px;
-            line-height: 1.3;
+            font-size: 12px;
+            background-color: #F1F1F2;
+            padding: 2px 6px;
+            border-radius: 4px;
+            display: inline-block;
             margin-top: 2px;
         }
 
@@ -279,9 +213,23 @@
             font-size: 14px;
         }
 
-        .duration-display {
-            font-weight: 500;
-            color: #3F4254;
+        .quantity-display {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .alert-badges {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            margin-top: 4px;
+        }
+
+        .alert-badge {
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 12px;
         }
 
         /* Responsive adjustments */
