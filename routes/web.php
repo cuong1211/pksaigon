@@ -5,7 +5,9 @@ use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\PostController;
 use App\Http\Controllers\Admin\ServiceController;
 use App\Http\Controllers\Admin\MedicineController;
-use App\Http\Controllers\Admin\MedicineImportController; // Thêm dòng này
+use App\Http\Controllers\Admin\MedicineImportController;
+use App\Http\Controllers\Admin\PatientController;
+use App\Http\Controllers\Admin\ExaminationController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -45,8 +47,18 @@ Route::middleware(['auth'])->group(function () {
         // Medicine Management
         Route::resource('medicine', MedicineController::class);
 
-        // Medicine Import Management - Thêm routes này
+        // Medicine Import Management
         Route::resource('medicine-import', MedicineImportController::class);
+
+        // Patient Management
+        Route::resource('patient', PatientController::class);
+        Route::get('patient/{id}/history', [PatientController::class, 'getExaminationHistory'])->name('patient.history');
+
+        // Examination Management
+        Route::resource('examination', ExaminationController::class);
+        Route::post('examination/{id}/generate-qr', [ExaminationController::class, 'generatePaymentQR'])->name('examination.generatePaymentQR');
+        Route::get('examination/{id}/check-payment', [ExaminationController::class, 'checkPaymentStatus'])->name('examination.checkPaymentStatus');
+        Route::post('examination/payment-webhook', [ExaminationController::class, 'handlePaymentWebhook'])->name('examination.paymentWebhook');
 
         // Route tạo slug cho service
         Route::get('create-slug', function (Request $request) {
@@ -67,6 +79,9 @@ Route::middleware(['auth'])->group(function () {
         })->name('slug');
     });
 });
+
+// Public webhook route (không cần auth)
+Route::post('/webhook/payment', [ExaminationController::class, 'handlePaymentWebhook'])->name('public.paymentWebhook');
 
 // Route storage link (cho development)
 Route::get('/storage-link', function () {

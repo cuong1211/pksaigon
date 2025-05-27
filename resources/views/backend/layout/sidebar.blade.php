@@ -206,6 +206,42 @@
                         <span class="menu-title">Nhập thuốc</span>
                     </a>
                 </div>
+                <div class="menu-item">
+                    <a class="menu-link" href="{{ route('patient.index') }}">
+                        <span class="menu-icon">
+                            <span class="svg-icon svg-icon-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                    viewBox="0 0 24 24" fill="none">
+                                    <path opacity="0.3"
+                                        d="M22 12C22 17.5 17.5 22 12 22C6.5 22 2 17.5 2 12C2 6.5 6.5 2 12 2C17.5 2 22 6.5 22 12ZM12 7C10.3 7 9 8.3 9 10C9 11.7 10.3 13 12 13C13.7 13 15 11.7 15 10C15 8.3 13.7 7 12 7Z"
+                                        fill="black" />
+                                    <path
+                                        d="M12 22C14.6 22 17 21 18.7 19.4C17.9 16.9 15.2 15 12 15C8.8 15 6.09999 16.9 5.3 19.4C6.99999 21 9.4 22 12 22Z"
+                                        fill="black" />
+                                </svg>
+                            </span>
+                        </span>
+                        <span class="menu-title">Quản lý bệnh nhân</span>
+                    </a>
+                </div>
+
+                <!-- Examination Management -->
+                <div class="menu-item">
+                    <a class="menu-link" href="{{ route('examination.index') }}">
+                        <span class="menu-icon">
+                            <span class="svg-icon svg-icon-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                    viewBox="0 0 24 24" fill="none">
+                                    <path
+                                        d="M20 6H16V4C16 2.9 15.1 2 14 2H10C8.9 2 8 2.9 8 4V6H4C3.4 6 3 6.4 3 7C3 7.6 3.4 8 4 8H5V19C5 20.1 5.9 21 7 21H17C18.1 21 19 20.1 19 19V8H20C20.6 8 21 7.6 21 7C21 6.4 20.6 6 20 6ZM10 4H14V6H10V4ZM17 19H7V8H17V19Z"
+                                        fill="black" />
+                                    <path opacity="0.3" d="M9 10V17H11V10H9ZM13 10V17H15V10H13Z" fill="black" />
+                                </svg>
+                            </span>
+                        </span>
+                        <span class="menu-title">Danh sách khám</span>
+                    </a>
+                </div>
                 {{-- <div data-kt-menu-trigger="click" class="menu-item menu-accordion">
                     <span class="menu-link">
                         <span class="menu-icon">
