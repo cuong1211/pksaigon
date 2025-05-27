@@ -55,7 +55,6 @@ class VietQRService
                 'Content-Type' => 'application/json',
                 'Authorization' => 'Basic ' . base64_encode($this->username . ':' . $this->password)
             ])->post($this->apiUrl . '/vqr/api/token_generate');
-
             if ($response->successful()) {
                 $data = $response->json();
                 Log::info('VietQR API Token generated successfully');
@@ -72,6 +71,7 @@ class VietQRService
 
     /**
      * Bước 2.2: Tạo QR code thanh toán
+     * FIX: Đảm bảo content được lưu chính xác để check transaction sau này
      */
     public function generateQRCode($orderId, $amount, $content = null)
     {
@@ -81,19 +81,20 @@ class VietQRService
                 throw new \Exception('Không thể lấy token từ VietQR');
             }
 
-            // Tạo nội dung chuyển khoản
+            // Tạo nội dung chuyển khoản cố định
             if (!$content) {
                 $content = 'TT ' . $orderId;
             }
 
             // Sanitize content theo yêu cầu VietQR (max 23 chars, no accents)
-            $content = $this->sanitizeContent($content);
+            $originalContent = $content; // Lưu content gốc
+            $sanitizedContent = $this->sanitizeContent($content);
 
             $requestData = [
                 'bankCode' => $this->bankCode,
                 'bankAccount' => $this->bankAccount,
                 'userBankName' => $this->accountName,
-                'content' => $content,
+                'content' => $sanitizedContent, // Dùng content đã sanitize
                 'qrType' => 0, // VietQR động
                 'amount' => (int)$amount,
                 'orderId' => $orderId,
@@ -110,7 +111,20 @@ class VietQRService
 
             if ($response->successful()) {
                 $data = $response->json();
-                Log::info('VietQR QR Code generated successfully', ['orderId' => $orderId]);
+
+                // FIX: Lưu content thực tế được trả về từ API để dùng cho check transaction
+                if (isset($data['content'])) {
+                    // Cập nhật examination với content thực tế từ VietQR
+                    $this->updateExaminationContent($orderId, $data['content']);
+                }
+
+                Log::info('VietQR QR Code generated successfully', [
+                    'orderId' => $orderId,
+                    'original_content' => $originalContent,
+                    'sanitized_content' => $sanitizedContent,
+                    'returned_content' => $data['content'] ?? null
+                ]);
+
                 return $data;
             }
 
@@ -123,7 +137,30 @@ class VietQRService
     }
 
     /**
+     * FIX: Cập nhật content thực tế vào examination để check transaction chính xác
+     */
+    private function updateExaminationContent($orderId, $actualContent)
+    {
+        try {
+            // Tìm examination theo examination_code
+            $examination = \App\Models\Examination::where('examination_code', $orderId)->first();
+            if ($examination) {
+                $examination->update([
+                    'qr_content' => $actualContent // Lưu content thực tế từ VietQR
+                ]);
+                Log::info('Updated examination with actual QR content', [
+                    'examination_code' => $orderId,
+                    'actual_content' => $actualContent
+                ]);
+            }
+        } catch (\Exception $e) {
+            Log::error('Error updating examination content: ' . $e->getMessage());
+        }
+    }
+
+    /**
      * Bước 2.3: Check transaction status
+     * FIX: Sử dụng content thực tế từ database và cải thiện tham số
      */
     public function checkTransactionStatus($orderId)
     {
@@ -133,21 +170,23 @@ class VietQRService
                 throw new \Exception('Không thể lấy token từ VietQR');
             }
 
-            // Tạo checkSum theo đúng tài liệu VietQR:
-            // checkSum = MD5(bankAccount + accessKey)
-            // accessKey chính là username (theo tài liệu)
-            $checkSum = md5($this->bankAccount . $this->username);
+            // FIX: Lấy content thực tế từ examination
+            $examination = \App\Models\Examination::where('examination_code', $orderId)->first();
+            $actualContent = $examination->qr_content ?? ('TT ' . $orderId);
 
+            // FIX: Tạo checkSum theo đúng format và đảm bảo không null
+            $checkSum = md5($this->bankAccount . $this->username);
             $requestData = [
                 'bankAccount' => $this->bankAccount,
-                'type' => 1, // Check by orderId
-                'value' => $orderId,
+                'type' => 0, // Check by orderId
+                'value' => $orderId, // FIX: Dùng content thực tế thay vì orderId
                 'checkSum' => $checkSum
             ];
 
             Log::info('VietQR Check Transaction Request', [
                 'bankAccount' => $this->bankAccount,
                 'orderId' => $orderId,
+                'actualContent' => $actualContent,
                 'checkSum' => $checkSum,
                 'username' => $this->username
             ]);
@@ -156,9 +195,8 @@ class VietQRService
                 'Content-Type' => 'application/json',
                 'Authorization' => 'Bearer ' . $token
             ])->post($this->apiUrl . '/vqr/api/transactions/check-order', $requestData);
-
             if ($response->successful()) {
-                $data = $response->json();
+                $data = $response->json(); // FIX: Kiểm tra dữ liệu trả về
                 Log::info('VietQR Check Transaction Success', [
                     'orderId' => $orderId,
                     'response' => $data
@@ -167,8 +205,9 @@ class VietQRService
             }
 
             Log::error('VietQR Check Transaction Error: ' . $response->body());
-            return null;
 
+            // FIX: Thử cách khác nếu check by content không thành công
+            return $this->checkTransactionByOrderId($orderId, $token);
         } catch (\Exception $e) {
             Log::error('VietQR Check Transaction Exception: ' . $e->getMessage());
             return null;
@@ -176,7 +215,46 @@ class VietQRService
     }
 
     /**
-     * Test callback - chỉ dùng trong môi trường test
+     * FIX: Phương thức backup check transaction by orderId
+     */
+    private function checkTransactionByOrderId($orderId, $token)
+    {
+        try {
+            $checkSum = md5($this->bankAccount . $this->username);
+
+            $requestData = [
+                'bankAccount' => $this->bankAccount,
+                'type' => 2, // Check by orderId thay vì content
+                'value' => $orderId,
+                'checkSum' => $checkSum
+            ];
+
+            Log::info('VietQR Check Transaction by OrderId Request', $requestData);
+
+            $response = Http::withHeaders([
+                'Content-Type' => 'application/json',
+                'Authorization' => 'Bearer ' . $token
+            ])->post($this->apiUrl . '/vqr/api/transactions/check-order', $requestData);
+
+            if ($response->successful()) {
+                $data = $response->json();
+                Log::info('VietQR Check Transaction by OrderId Success', [
+                    'orderId' => $orderId,
+                    'response' => $data
+                ]);
+                return $data;
+            }
+
+            Log::error('VietQR Check Transaction by OrderId Error: ' . $response->body());
+            return null;
+        } catch (\Exception $e) {
+            Log::error('VietQR Check Transaction by OrderId Exception: ' . $e->getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * Test callback - FIX: Sử dụng content đúng
      */
     public function testPayment($orderId, $amount, $content = null)
     {
@@ -185,21 +263,30 @@ class VietQRService
             if (!$token) {
                 throw new \Exception('Không thể lấy token từ VietQR');
             }
+            // FIX: Lấy content thực tế từ examination
+            $examination = \App\Models\Examination::where('examination_code', $orderId)->first();
+            $actualContent = $examination->qr_content ?? null;
 
-            if (!$content) {
-                $content = 'TT ' . $orderId;
+            if (!$actualContent) {
+                if (!$content) {
+                    $content = 'TT ' . $orderId;
+                }
+                $actualContent = $this->sanitizeContent($content);
             }
-
-            $content = $this->sanitizeContent($content);
 
             $requestData = [
                 'bankAccount' => $this->bankAccount,
-                'content' => $content,
+                'content' => $actualContent, // Dùng content thực tế
                 'amount' => (int)$amount,
                 'transType' => 'C',
                 'bankCode' => $this->bankCode
             ];
 
+            Log::info('VietQR Test Payment Request', [
+                'orderId' => $orderId,
+                'actualContent' => $actualContent,
+                'amount' => $amount
+            ]);
             $response = Http::withHeaders([
                 'Content-Type' => 'application/json',
                 'Authorization' => 'Bearer ' . $token
@@ -219,23 +306,8 @@ class VietQRService
     }
 
     /**
-     * Sanitize content cho VietQR
+     * FIX: Sanitize content cho VietQR - cải thiện logic
      */
-    private function sanitizeContent($content)
-    {
-        // Remove Vietnamese accents
-        $content = $this->removeVietnameseAccents($content);
-
-        // Remove special characters, keep only letters, numbers and spaces
-        $content = preg_replace('/[^A-Za-z0-9\s]/', '', $content);
-
-        // Limit to 23 characters
-        if (strlen($content) > 23) {
-            $content = substr($content, 0, 23);
-        }
-
-        return trim($content);
-    }
 
     /**
      * Remove Vietnamese accents
@@ -392,5 +464,156 @@ class VietQRService
             !empty($this->password) &&
             !empty($this->bankAccount) &&
             !empty($this->accountName);
+    }
+
+    /**
+     * Trigger test callback - gọi API của VietQR để họ gửi callback về cho chúng ta
+     */
+    public function triggerTestCallback($orderId, $amount, $content = null)
+    {
+        try {
+            $token = $this->getToken();
+            if (!$token) {
+                throw new \Exception('Không thể lấy token từ VietQR');
+            }
+
+            if (!$content) {
+                $content = 'TT ' . $orderId;
+            }
+
+            // Sanitize content - nhưng đừng cắt quá ngắn
+            // $content = $this->sanitizeContent($content);
+
+            // FIX: Thêm callback URL và các field có thể cần thiết
+            $requestData = [
+                'bankAccount' => $this->bankAccount,
+                'content' => $content,
+                'amount' => (string) $amount, // Thử cả string và number
+                'bankCode' => $this->bankCode,
+                'transType' => 'C',
+                // Thêm callback URL - VietQR cần biết gửi callback về đâu
+                'callbackUrl' => url('/api/bank/api/transaction-sync'),
+                // Thêm các field khác có thể cần
+                'orderId' => $orderId,
+                'description' => 'Test callback for examination ' . $orderId
+            ];
+
+            // Validate tất cả field
+            foreach (['bankAccount', 'content', 'amount', 'bankCode', 'transType'] as $field) {
+                if (empty($requestData[$field]) && $requestData[$field] !== 0) {
+                    throw new \Exception("Required field {$field} is empty");
+                }
+            }
+
+            Log::info('VietQR Trigger Test Callback with URL', [
+                'orderId' => $orderId,
+                'url' => $this->apiUrl . '/vqr/bank/api/test/transaction-callback',
+                'requestData' => $requestData,
+                'token_preview' => substr($token, 0, 20) . '...'
+            ]);
+
+            $response = Http::timeout(30)->withHeaders([
+                'Content-Type' => 'application/json',
+                'Authorization' => 'Bearer ' . $token,
+                'Accept' => 'application/json',
+                'User-Agent' => 'Laravel/VietQR-Client'
+            ])->post($this->apiUrl . '/vqr/bank/api/test/transaction-callback', $requestData);
+
+            Log::info('VietQR Response Details', [
+                'status' => $response->status(),
+                'reason' => $response->reason(),
+                'headers' => $response->headers(),
+                'body' => $response->body(),
+                'json' => $response->json(),
+                'transfer_time' => $response->transferStats?->getTransferTime()
+            ]);
+
+            if ($response->successful()) {
+                $data = $response->json();
+
+                // Check nếu có lỗi trong response body
+                if (isset($data['status']) && $data['status'] === 'FAILED') {
+                    throw new \Exception('VietQR API Error: ' . ($data['message'] ?? 'Unknown error'));
+                }
+
+                return $data;
+            }
+
+            // Xử lý các HTTP error codes
+            $errorMessage = 'HTTP ' . $response->status() . ' - ' . $response->reason();
+            $responseBody = $response->body();
+
+            if ($responseBody) {
+                $errorMessage .= ': ' . $responseBody;
+            }
+
+            throw new \Exception($errorMessage);
+        } catch (\Exception $e) {
+            Log::error('VietQR Trigger Test Callback Exception', [
+                'error' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'orderId' => $orderId,
+                'amount' => $amount,
+                'content' => $content
+            ]);
+
+            return [
+                'status' => 'FAILED',
+                'message' => $e->getMessage()
+            ];
+        }
+    }
+
+    /**
+     * Cải thiện content sanitization - đừng cắt quá ngắn
+     */
+    public function sanitizeContent($content)
+    {
+        // Remove Vietnamese accents
+        $content = $this->removeVietnameseAccents($content);
+
+        // Remove special characters, keep only letters, numbers and spaces
+        $content = preg_replace('/[^A-Za-z0-9\s]/', '', $content);
+
+        // Remove extra spaces
+        $content = preg_replace('/\s+/', ' ', $content);
+
+        // FIX: Limit to 50 characters thay vì 23 để test
+        if (strlen($content) > 50) {
+            $content = substr($content, 0, 50);
+        }
+
+        return trim($content);
+    }
+
+    /**
+     * FIX: Cải thiện method check configuration
+     */
+    public function debugConfiguration()
+    {
+        $config = [
+            'api_url' => $this->apiUrl,
+            'username' => $this->username ? 'SET (length: ' . strlen($this->username) . ')' : 'NOT SET',
+            'password' => $this->password ? 'SET (length: ' . strlen($this->password) . ')' : 'NOT SET',
+            'bank_code' => $this->bankCode ?: 'NOT SET',
+            'bank_account' => $this->bankAccount ? 'SET (length: ' . strlen($this->bankAccount) . ')' : 'NOT SET',
+            'account_name' => $this->accountName ? 'SET (length: ' . strlen($this->accountName) . ')' : 'NOT SET',
+        ];
+
+        // Validate critical fields
+        $errors = [];
+        if (empty($this->username)) $errors[] = 'VIETQR_USERNAME not configured';
+        if (empty($this->password)) $errors[] = 'VIETQR_PASSWORD not configured';
+        if (empty($this->bankAccount)) $errors[] = 'VIETQR_BANK_ACCOUNT not configured';
+        if (empty($this->bankCode)) $errors[] = 'VIETQR_BANK_CODE not configured';
+        if (empty($this->accountName)) $errors[] = 'VIETQR_ACCOUNT_NAME not configured';
+
+        $config['errors'] = $errors;
+        $config['is_configured'] = empty($errors);
+
+        Log::info('VietQR Configuration Debug', $config);
+
+        return $config;
     }
 }

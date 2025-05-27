@@ -283,28 +283,33 @@ class ExaminationController extends Controller
                 throw new \Exception('VietQR chưa được cấu hình. Vui lòng kiểm tra file .env');
             }
 
+            // FIX: Tạo content cố định và sạch cho VietQR
+            $originalContent = 'TT ' . $examination->examination_code;
+
             // Gọi VietQR Service để tạo QR code
             $qrData = $this->vietQRService->generateQRCode(
                 $examination->examination_code,
                 $examination->total_fee,
-                'TT ' . $examination->examination_code
+                $originalContent
             );
 
             if (!$qrData) {
                 throw new \Exception('Không thể tạo mã QR thanh toán từ VietQR');
             }
 
-            // Lưu thông tin QR vào database
+            // FIX: Lưu thông tin QR vào database với content thực tế từ VietQR
             $examination->update([
                 'qr_code' => $qrData['qrCode'] ?? null,
+                'qr_content' => $qrData['content'] ?? $originalContent, // Lưu content thực tế
                 'payment_method' => 'vietqr',
-                'transaction_ref_id' => $qrData['transactionRefId'] ?? null,
-                'examination_code' => $qrData['content']
+                'transaction_ref_id' => $qrData['transactionRefId'] ?? null
             ]);
 
             Log::info('QR Payment Generated', [
                 'examination_code' => $examination->examination_code,
                 'amount' => $examination->total_fee,
+                'original_content' => $originalContent,
+                'actual_content' => $qrData['content'] ?? null,
                 'transaction_ref_id' => $qrData['transactionRefId'] ?? null
             ]);
 
@@ -317,7 +322,7 @@ class ExaminationController extends Controller
                     'qr_code' => $qrData['qrLink'] ?? null, // Link để hiển thị QR
                     'qr_string' => $qrData['qrCode'], // String để tạo QR image
                     'amount' => $examination->formatted_total_fee,
-                    'content' => $qrData['content'],
+                    'content' => $qrData['content'] ?? $originalContent, // Content thực tế từ VietQR
                     'bank_name' => $qrData['bankName'] ?? env('VIETQR_BANK_NAME', 'VietQR'),
                     'account_no' => $qrData['bankAccount'] ?? env('VIETQR_BANK_ACCOUNT'),
                     'account_name' => $qrData['userBankName'] ?? env('VIETQR_ACCOUNT_NAME'),
@@ -341,6 +346,7 @@ class ExaminationController extends Controller
 
     /**
      * Check payment status via VietQR API
+     * FIX: Cải thiện logic check payment với content chính xác
      */
     public function checkPaymentStatus($id)
     {
@@ -361,47 +367,70 @@ class ExaminationController extends Controller
                 ]);
             }
 
-            // Gọi API VietQR để check transaction status
+            // FIX: Gọi API VietQR để check transaction status với content chính xác
             $transactionData = $this->vietQRService->checkTransactionStatus($examination->examination_code);
+            // dd($transactionData); // Debugging line, remove in production
+            if ($transactionData && is_array($transactionData) && count($transactionData) > 0) {
+                // Lấy giao dịch đầu tiên trong mảng
+                $transaction = $transactionData[count($transactionData) - 1];
 
-            if ($transactionData && isset($transactionData['status']) && $transactionData['status'] === 'SUCCESS') {
-                // Có giao dịch thành công, kiểm tra data
-                if (isset($transactionData['data']) && is_array($transactionData['data']) && count($transactionData['data']) > 0) {
-                    foreach ($transactionData['data'] as $transaction) {
-                        // Kiểm tra amount và content
-                        $amount = (int) ($transaction['amount'] ?? 0);
-                        $content = $transaction['content'] ?? '';
+                // Kiểm tra xem giao dịch đã được thanh toán chưa
+                if (isset($transaction['timePaid']) && !empty($transaction['timePaid'])) {
+                    // Kiểm tra amount và content
+                    $amount = (int) ($transaction['amount'] ?? 0);
+                    $content = $transaction['content'] ?? '';
 
-                        if (
-                            $amount >= $examination->total_fee &&
-                            strpos($content, $examination->examination_code) !== false
-                        ) {
+                    // So sánh với examination_code
+                    if (
+                        $amount >= $examination->total_fee &&
+                        strpos($content, $examination->examination_code) !== false
+                    ) {
+                        // Cập nhật trạng thái thanh toán
+                        $examination->update([
+                            'payment_status' => 'paid',
+                            'payment_date' => now(),
+                            'status' => 'completed',
+                            'transaction_id' => $transaction['referenceNumber'] ?? ('CHK_' . time())
+                        ]);
 
-                            // Cập nhật trạng thái thanh toán
-                            $examination->update([
+                        Log::info('Payment Status Updated via API Check', [
+                            'examination_code' => $examination->examination_code,
+                            'actual_content' => $content,
+                            'amount_received' => $amount,
+                            'amount_required' => $examination->total_fee,
+                            'time_paid' => $transaction['timePaid'],
+                            'time_paid_formatted' => date('Y-m-d H:i:s', $transaction['timePaid']),
+                            'transaction_data' => $transaction
+                        ]);
+
+                        return response()->json([
+                            'type' => 'success',
+                            'data' => [
                                 'payment_status' => 'paid',
-                                'payment_date' => now(),
-                                'status' => 'completed',
-                                'transaction_id' => $transaction['referenceNumber'] ?? ('CHK_' . time())
-                            ]);
-
-                            Log::info('Payment Status Updated via API Check', [
-                                'examination_code' => $examination->examination_code,
-                                'transaction_data' => $transaction
-                            ]);
-
-                            return response()->json([
-                                'type' => 'success',
-                                'data' => [
-                                    'payment_status' => 'paid',
-                                    'payment_status_name' => 'Đã thanh toán',
-                                    'payment_date' => $examination->payment_date,
-                                    'transaction_id' => $examination->transaction_id,
-                                    'is_paid' => true
-                                ]
-                            ]);
-                        }
+                                'payment_status_name' => 'Đã thanh toán',
+                                'payment_date' => $examination->payment_date,
+                                'transaction_id' => $examination->transaction_id,
+                                'is_paid' => true,
+                                'paid_time' => $transaction['timePaid'],
+                                'paid_amount' => $amount
+                            ]
+                        ]);
+                    } else {
+                        Log::info('Payment check failed - conditions not met', [
+                            'examination_code' => $examination->examination_code,
+                            'content_check' => strpos($content, $examination->examination_code) !== false ? 'PASS' : 'FAIL',
+                            'amount_check' => $amount >= $examination->total_fee ? 'PASS' : 'FAIL',
+                            'actual_content' => $content,
+                            'amount_received' => $amount,
+                            'amount_required' => $examination->total_fee
+                        ]);
                     }
+                } else {
+                    Log::info('Transaction not paid yet', [
+                        'examination_code' => $examination->examination_code,
+                        'timePaid' => $transaction['timePaid'] ?? 'null',
+                        'transaction_status' => $transaction['status'] ?? 'unknown'
+                    ]);
                 }
             }
 
@@ -688,6 +717,319 @@ class ExaminationController extends Controller
                 'title' => 'Lỗi',
                 'content' => 'Có lỗi xảy ra: ' . $e->getMessage()
             ], 500);
+        }
+    }
+    public function testCallbackSimulation($id)
+    {
+        try {
+            $examination = Examination::findOrFail($id);
+
+            if ($examination->payment_status === 'paid') {
+                return response()->json([
+                    'type' => 'error',
+                    'message' => 'Examination already paid'
+                ]);
+            }
+
+            // STEP 1: Lấy token từ API Generate Token trước
+            $tokenResponse = $this->getVietQRToken();
+
+            if (!$tokenResponse || !isset($tokenResponse['access_token'])) {
+                throw new \Exception('Không thể lấy token từ VietQR API');
+            }
+
+            $token = $tokenResponse['access_token'];
+
+            // STEP 2: Tạo callback data theo đúng format VietQR
+            $callbackData = [
+                'bankaccount' => env('VIETQR_BANK_ACCOUNT'),
+                'amount' => (string) $examination->total_fee, // String theo doc
+                'transType' => 'C', // Credit transaction
+                'content' => $examination->qr_content ?: ('TT ' . $examination->examination_code)
+            ];
+
+            Log::info('Simulating VietQR Callback', [
+                'examination_code' => $examination->examination_code,
+                'callback_data' => $callbackData,
+                'token_length' => strlen($token)
+            ]);
+            // STEP 3: Gửi POST request với Bearer Token đến transaction-sync endpoint
+            $response = \Illuminate\Support\Facades\Http::withHeaders([
+                'Authorization' => 'Bearer ' . $token,
+                'Content-Type' => 'application/json'
+            ])->post(
+                url('/api/bank/api/transaction-sync'), // Sử dụng endpoint đúng
+                $callbackData
+            );
+            // dd($response->body());
+
+            Log::info('Callback Simulation Response', [
+                'status' => $response->status(),
+                'body' => $response->body(),
+                'headers' => $response->headers()
+            ]);
+
+            if ($response->successful()) {
+                $responseData = $response->json();
+
+                return response()->json([
+                    'type' => 'success',
+                    'title' => 'Thành công',
+                    'content' => 'Test callback thành công!',
+                    'response' => $responseData
+                ]);
+            }
+
+            return response()->json([
+                'type' => 'error',
+                'title' => 'Lỗi',
+                'content' => 'Test callback thất bại: ' . $response->body(),
+                'status_code' => $response->status()
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Test Callback Simulation Error', [
+                'examination_id' => $id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'type' => 'error',
+                'title' => 'Lỗi',
+                'content' => 'Có lỗi xảy ra: ' . $e->getMessage()
+            ]);
+        }
+    }
+
+    /**
+     * Lấy token từ VietQR Generate Token API
+     */
+    private function getVietQRToken()
+    {
+        try {
+            $username = env('VIETQR_USERNAME');
+            $password = env('VIETQR_PASSWORD');
+
+            if (!$username || !$password) {
+                throw new \Exception('VietQR credentials not configured');
+            }
+
+            // Tạo Basic Auth header
+            $credentials = base64_encode($username . ':' . $password);
+
+            Log::info('Getting VietQR Token', [
+                'username' => $username,
+                'credentials_length' => strlen($credentials)
+            ]);
+
+            // Gọi API Generate Token của VietQR (endpoint của chúng ta)
+            $response = \Illuminate\Support\Facades\Http::withHeaders([
+                'Authorization' => 'Basic ' . $credentials,
+                'Content-Type' => 'application/json'
+            ])->post(url('api/token_generate')); // Endpoint generate token của chúng ta
+
+            Log::info('VietQR Token Response', [
+                'status' => $response->status(),
+                'body' => $response->body()
+            ]);
+
+            if ($response->successful()) {
+                return $response->json();
+            }
+
+            throw new \Exception('Token generation failed: ' . $response->body());
+        } catch (\Exception $e) {
+            Log::error('Get VietQR Token Error', [
+                'error' => $e->getMessage()
+            ]);
+            return null;
+        }
+    }
+
+    /**
+     * Test VietQR API Test Callback - gọi API của VietQR để trigger callback
+     */
+    public function triggerVietQRTestCallback($id)
+    {
+        try {
+            $examination = Examination::findOrFail($id);
+
+            if ($examination->payment_status === 'paid') {
+                return response()->json([
+                    'type' => 'error',
+                    'message' => 'Examination already paid'
+                ]);
+            }
+
+            // Gọi VietQR API Test Callback
+            $result = $this->vietQRService->triggerTestCallback(
+                $examination->examination_code,
+                $examination->total_fee,
+                $examination->qr_content
+            );
+
+            if ($result && isset($result['status']) && $result['status'] === 'SUCCESS') {
+                return response()->json([
+                    'type' => 'success',
+                    'title' => 'Thành công',
+                    'content' => 'VietQR Test Callback đã được trigger!',
+                    'message' => 'Hệ thống sẽ nhận callback trong vài giây...'
+                ]);
+            }
+
+            return response()->json([
+                'type' => 'error',
+                'title' => 'Lỗi',
+                'content' => 'Không thể trigger test callback: ' . ($result['message'] ?? 'Unknown error')
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Trigger VietQR Test Callback Error', [
+                'examination_id' => $id,
+                'error' => $e->getMessage()
+            ]);
+
+            return response()->json([
+                'type' => 'error',
+                'title' => 'Lỗi',
+                'content' => 'Có lỗi xảy ra: ' . $e->getMessage()
+            ]);
+        }
+    }
+    public function testVietQRWithRealData($id)
+    {
+        try {
+            $examination = Examination::findOrFail($id);
+
+            if ($examination->payment_status === 'paid') {
+                return response()->json([
+                    'type' => 'error',
+                    'message' => 'Examination already paid'
+                ]);
+            }
+
+            // Debug configuration trước
+            $config = $this->vietQRService->debugConfiguration();
+
+            if (!$config['is_configured']) {
+                return response()->json([
+                    'type' => 'error',
+                    'title' => 'Cấu hình lỗi',
+                    'content' => 'VietQR chưa được cấu hình đầy đủ: ' . implode(', ', $config['errors']),
+                    'config' => $config
+                ]);
+            }
+
+            Log::info('Testing VietQR with Real Data', [
+                'examination_code' => $examination->examination_code,
+                'total_fee' => $examination->total_fee,
+                'qr_content' => $examination->qr_content,
+                'config' => $config
+            ]);
+
+            // Gọi VietQR Test Callback API
+            $result = $this->vietQRService->triggerTestCallback(
+                $examination->examination_code,
+                $examination->total_fee,
+                $examination->qr_content
+            );
+
+            if ($result && isset($result['status'])) {
+                if ($result['status'] === 'SUCCESS') {
+                    return response()->json([
+                        'type' => 'success',
+                        'title' => 'Thành công',
+                        'content' => 'VietQR Test API đã được gọi thành công! Callback sẽ được gửi về trong vài giây...',
+                        'result' => $result
+                    ]);
+                } else {
+                    return response()->json([
+                        'type' => 'error',
+                        'title' => 'API Lỗi',
+                        'content' => 'VietQR API trả về lỗi: ' . ($result['message'] ?? 'Unknown error'),
+                        'result' => $result
+                    ]);
+                }
+            }
+
+            return response()->json([
+                'type' => 'error',
+                'title' => 'Lỗi',
+                'content' => 'Không thể gọi VietQR Test API',
+                'result' => $result
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Test VietQR with Real Data Error', [
+                'examination_id' => $id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'type' => 'error',
+                'title' => 'Exception',
+                'content' => 'Có lỗi xảy ra: ' . $e->getMessage()
+            ]);
+        }
+    }
+
+    /**
+     * Debug VietQR với curl command
+     */
+    public function generateVietQRCurlCommand($id)
+    {
+        try {
+            $examination = Examination::findOrFail($id);
+
+            // Get token
+            $token = $this->vietQRService->getToken();
+
+            if (!$token) {
+                return response()->json([
+                    'type' => 'error',
+                    'message' => 'Cannot get VietQR token'
+                ]);
+            }
+
+            $content = $examination->qr_content ?: ('TT ' . $examination->examination_code);
+            $sanitizedContent = $this->vietQRService->sanitizeContent($content);
+
+            // Tạo data request thật
+            $requestData = [
+                'bankAccount' => env('VIETQR_BANK_ACCOUNT'),
+                'content' => $sanitizedContent,
+                'amount' => $examination->total_fee,
+                'bankCode' => env('VIETQR_BANK_CODE'),
+                'transType' => 'C'
+            ];
+
+            // Generate curl command
+            $curlCommand = "curl -X POST \\\n";
+            $curlCommand .= "  'https://dev.vietqr.org/vqr/bank/api/test/transaction-callback' \\\n";
+            $curlCommand .= "  -H 'Content-Type: application/json' \\\n";
+            $curlCommand .= "  -H 'Authorization: Bearer {$token}' \\\n";
+            $curlCommand .= "  -H 'Accept: application/json' \\\n";
+            $curlCommand .= "  -d '" . json_encode($requestData) . "'";
+
+            return response()->json([
+                'type' => 'success',
+                'examination' => [
+                    'code' => $examination->examination_code,
+                    'total_fee' => $examination->total_fee,
+                    'qr_content' => $examination->qr_content,
+                    'sanitized_content' => $sanitizedContent
+                ],
+                'request_data' => $requestData,
+                'curl_command' => $curlCommand,
+                'token_info' => [
+                    'token_length' => strlen($token),
+                    'token_preview' => substr($token, 0, 50) . '...'
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'type' => 'error',
+                'message' => $e->getMessage()
+            ]);
         }
     }
 }

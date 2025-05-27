@@ -24,6 +24,7 @@ class Examination extends Model
         'payment_status',
         'payment_method',
         'qr_code',
+        'qr_content', // FIX: Thêm field để lưu nội dung QR thực tế
         'transaction_id',
         'payment_date',
         'examination_date',

@@ -731,26 +731,39 @@
 
         // Thêm nút test payment trong môi trường development
         if (isDevelopmentEnvironment()) {
-            if (!$('#test-payment-btn').length) {
+            if (!$('#test-buttons-container').length) {
                 $('#qr-code-section').append(`
-                <div class="mt-3">
-                    <button type="button" class="btn btn-warning btn-sm" id="test-payment-btn">
-                        <span class="indicator-label">
-                            <i class="fas fa-flask"></i> Test Payment (Dev Mode)
-                        </span>
-                        <span class="indicator-progress">
-                            Đang xử lý...
-                            <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
-                        </span>
-                    </button>
+                <div id="test-buttons-container" class="mt-4 p-3 bg-warning bg-opacity-10 rounded">
+                    <h6 class="text-warning mb-3">
+                        <i class="fas fa-flask"></i> Development Test Tools
+                    </h6>
+                    <div class="d-flex gap-2 flex-wrap">
+                        <button type="button" class="btn btn-warning btn-sm" id="test-callback-simulation">
+                            <span class="indicator-label">
+                                <i class="fas fa-play"></i> Test Callback Simulation
+                            </span>
+                            <span class="indicator-progress">
+                                <span class="spinner-border spinner-border-sm"></span> Testing...
+                            </span>
+                        </button>
+                        <button type="button" class="btn btn-info btn-sm" id="trigger-vietqr-callback">
+                            <span class="indicator-label">
+                                <i class="fas fa-satellite-dish"></i> Trigger VietQR Callback
+                            </span>
+                            <span class="indicator-progress">
+                                <span class="spinner-border spinner-border-sm"></span> Triggering...
+                            </span>
+                        </button>
+                    </div>
                     <div class="text-muted fs-8 mt-2">
-                        <i class="fas fa-info-circle"></i> Nút này chỉ xuất hiện trong môi trường development
+                        <i class="fas fa-info-circle"></i> 
+                        Test Simulation: Gửi fake callback đến endpoint của chúng ta<br>
+                        Trigger VietQR: Gọi API VietQR để họ gửi callback thật
                     </div>
                 </div>
             `);
             }
         }
-
         // Bắt đầu auto-check payment status
         startPaymentStatusCheck();
     }
@@ -798,7 +811,8 @@
         if (!currentExaminationId) return;
 
         $.ajax({
-            url: "{{ route('examination.checkPaymentStatus', ':id') }}".replace(':id', currentExaminationId),
+            url: "{{ route('examination.checkPaymentStatus', ':id') }}".replace(':id',
+                currentExaminationId),
             type: 'GET',
             success: function(response) {
                 if (response.type === 'success' && response.data) {
@@ -856,24 +870,35 @@
 
         $(this).html('<i class="fas fa-spinner fa-spin"></i> Đang tạo...');
         if (isDevelopmentEnvironment()) {
-            console.log('Development environment detected, adding test payment button');
-            
             $('#qr-code-display').append(`
-                <div class="mt-3">
-                    <button type="button" class="btn btn-warning btn-sm" id="test-payment-btn">
-                        <span class="indicator-label">
-                            <i class="fas fa-flask"></i> Test Payment (Dev Mode)
-                        </span>
-                        <span class="indicator-progress">
-                            Đang xử lý...
-                            <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
-                        </span>
-                    </button>
-                    <div class="text-muted fs-8 mt-2">
-                        <i class="fas fa-info-circle"></i> Nút này chỉ xuất hiện trong môi trường development
+                <div id="test-buttons-container" class="mt-4 p-3 bg-warning bg-opacity-10 rounded">
+                    <h6 class="text-warning mb-3">
+                        <i class="fas fa-flask"></i> Development Test Tools
+                    </h6>
+                    <div class="d-flex gap-2 flex-wrap">
+                        <button type="button" class="btn btn-warning btn-sm" id="test-callback-simulation">
+                            <span class="indicator-label">
+                                <i class="fas fa-play"></i> Test Callback Simulation
+                            </span>
+                            <span class="indicator-progress">
+                                <span class="spinner-border spinner-border-sm"></span> Testing...
+                            </span>
+                        </button>
+                        <button type="button" class="btn btn-info btn-sm" id="trigger-vietqr-callback">
+                            <span class="indicator-label">
+                                <i class="fas fa-satellite-dish"></i> Trigger VietQR Callback
+                            </span>
+                            <span class="indicator-progress">
+                                <span class="spinner-border spinner-border-sm"></span> Triggering...
+                            </span>
+                        </button>
                     </div>
-                </div>
-            `);
+                    <div class="text-muted fs-8 mt-2">
+                        <i class="fas fa-info-circle"></i> 
+                        Test Simulation: Gửi fake callback đến endpoint của chúng ta<br>
+                        Trigger VietQR: Gọi API VietQR để họ gửi callback thật
+                    </div>
+                </div>`);
 
         }
         $.ajax({
@@ -905,7 +930,8 @@
         $(this).prop('disabled', true);
 
         $.ajax({
-            url: "{{ route('examination.testPayment', ':id') }}".replace(':id', currentExaminationId),
+            url: "{{ route('examination.testPayment', ':id') }}".replace(':id',
+                currentExaminationId),
             type: 'POST',
             headers: {
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
@@ -972,7 +998,8 @@
         $(this).prop('disabled', true);
 
         $.ajax({
-            url: "{{ route('examination.testPayment', ':id') }}".replace(':id', currentExaminationId),
+            url: "{{ route('examination.testPayment', ':id') }}".replace(':id',
+                currentExaminationId),
             type: 'POST',
             headers: {
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
@@ -985,7 +1012,8 @@
 
                     setTimeout(function() {
                         $('#kt_modal_payment_qr').modal('hide');
-                        $('#success-examination-code').text($('#payment-examination-code')
+                        $('#success-examination-code').text($(
+                                '#payment-examination-code')
                             .text());
                         $('#kt_modal_payment_success').modal('show');
                         dt.ajax.reload(null, false);
@@ -1031,7 +1059,8 @@
         $('#check-payment-status').attr('data-kt-indicator', 'on');
 
         $.ajax({
-            url: "{{ route('examination.checkPaymentStatus', ':id') }}".replace(':id', currentExaminationId),
+            url: "{{ route('examination.checkPaymentStatus', ':id') }}".replace(':id',
+                currentExaminationId),
             type: 'GET',
             success: function(response) {
                 if (response.data.payment_status === 'paid') {
@@ -1041,7 +1070,8 @@
 
                     setTimeout(function() {
                         $('#kt_modal_payment_qr').modal('hide');
-                        $('#success-examination-code').text($('#payment-examination-code').text());
+                        $('#success-examination-code').text($('#payment-examination-code')
+                            .text());
                         $('#kt_modal_payment_success').modal('show');
                         dt.ajax.reload(null, false);
                         loadStatistics();
@@ -1122,7 +1152,72 @@
             }
         });
     });
+    $(document).on('click', '#test-callback-simulation', function() {
+        if (!currentExaminationId) return;
 
+        $(this).attr('data-kt-indicator', 'on');
+        $(this).prop('disabled', true);
+
+        $.ajax({
+            url: "{{ route('examination.testCallbackSimulation', ':id') }}".replace(':id',
+                currentExaminationId),
+            type: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            },
+            success: function(response) {
+                notification(response.type, response.title || 'Thông báo', response.content ||
+                    response.message);
+                if (response.type === 'success') {
+                    // Refresh status
+                    setTimeout(function() {
+                        checkPaymentStatus();
+                    }, 2000);
+                }
+            },
+            error: function() {
+                notification('error', 'Lỗi', 'Không thể test callback simulation');
+            },
+            complete: function() {
+                $('#test-callback-simulation').removeAttr('data-kt-indicator');
+                $('#test-callback-simulation').prop('disabled', false);
+            }
+        });
+    });
+
+    // Trigger VietQR Callback Button  
+    $(document).on('click', '#trigger-vietqr-callback', function() {
+        if (!currentExaminationId) return;
+
+        $(this).attr('data-kt-indicator', 'on');
+        $(this).prop('disabled', true);
+
+        $.ajax({
+            url: "{{ route('examination.triggerVietQRCallback', ':id') }}".replace(':id',
+                currentExaminationId),
+            type: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            },
+            success: function(response) {
+                notification(response.type, response.title || 'Thông báo', response.content ||
+                    response.message);
+                if (response.type === 'success') {
+                    // Auto check payment sau vài giây
+                    setTimeout(function() {
+                        startPaymentStatusCheck();
+                    }, 3000);
+                }
+            },
+            error: function() {
+                notification('error', 'Lỗi', 'Không thể trigger VietQR callback');
+            },
+            complete: function() {
+                $('#trigger-vietqr-callback').removeAttr('data-kt-indicator');
+                $('#trigger-vietqr-callback').prop('disabled', false);
+            }
+        });
+    });
     // Search filters
     $(".search_table").on('change keyup', function() {
         let data = $(this).val();

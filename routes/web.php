@@ -14,6 +14,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Artisan;
 use App\Http\Controllers\Api\VietQRWebhookController;
+use App\Http\Controllers\Api\VietQRCallbackController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -91,3 +92,23 @@ Route::get('/storage-link', function () {
 });
 Route::post('/token_generate', [VietQRWebhookController::class, 'generateToken']);
 Route::post('/bank/api/transaction-sync', [VietQRWebhookController::class, 'transactionSync']);
+Route::post('/vietqr/transaction-sync', [VietQRCallbackController::class, 'transactionSync'])
+    ->name('vietqr.callback');
+
+// Hoặc nếu VietQR yêu cầu path cụ thể:
+Route::post('/bank/api/transaction-sync', [VietQRCallbackController::class, 'transactionSync'])
+    ->name('vietqr.callback.bank');
+Route::post('examination/{id}/test-callback-simulation', [ExaminationController::class, 'testCallbackSimulation'])
+    ->name('examination.testCallbackSimulation');
+
+// Test VietQR API với data thật
+Route::post('examination/{id}/test-vietqr-real-data', [ExaminationController::class, 'testVietQRWithRealData'])
+    ->name('examination.triggerVietQRCallback');
+
+// Generate curl command để test manual
+Route::get('examination/{id}/generate-curl-command', [ExaminationController::class, 'generateVietQRCurlCommand'])
+    ->name('examination.generateCurlCommand');
+
+// Trigger VietQR test callback  
+// Route::post('examination/{id}/trigger-vietqr-callback', [ExaminationController::class, 'triggerVietQRTestCallback'])
+//     ->name('examination.triggerVietQRCallback');
