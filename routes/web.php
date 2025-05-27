@@ -89,11 +89,3 @@ Route::get('/storage-link', function () {
     Artisan::call('storage:link');
     return 'Storage link created!';
 });
-Route::prefix('api')->group(function () {
-    // API Get Token - VietQR dùng để lấy token xác thực
-    Route::post('/token_generate', [VietQRController::class, 'generateToken']);
-    
-    // API Transaction Sync - VietQR dùng để đồng bộ giao dịch
-    Route::post('/bank/api/transaction-sync', [VietQRController::class, 'transactionSync'])
-         ->middleware('vietqr.auth'); // Middleware để xác thực token
-});

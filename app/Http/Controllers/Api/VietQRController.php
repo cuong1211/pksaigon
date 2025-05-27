@@ -33,7 +33,6 @@ class VietQRController extends Controller
             // Decode Basic Auth
             $encodedCredentials = substr($authHeader, 6); // Remove "Basic "
             $decodedCredentials = base64_decode($encodedCredentials);
-            
             if (!$decodedCredentials || !str_contains($decodedCredentials, ':')) {
                 return response()->json([
                     'error' => true,
@@ -43,7 +42,7 @@ class VietQRController extends Controller
             }
 
             [$username, $password] = explode(':', $decodedCredentials, 2);
-
+            dd($username, $password);
             // Kiểm tra thông tin đăng nhập (cấu hình trong .env)
             $validUsername = env('VIETQR_USERNAME', 'vietqr_user');
             $validPassword = env('VIETQR_PASSWORD', 'vietqr_password');
