@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\PostController;
 use App\Http\Controllers\Admin\ServiceController;
 use App\Http\Controllers\Admin\MedicineController;
+use App\Http\Controllers\Admin\MedicineImportController; // Thêm dòng này
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -38,11 +39,14 @@ Route::middleware(['auth'])->group(function () {
         Route::resource('posts', PostController::class);
         Route::patch('posts/{id}/toggle-featured', [PostController::class, 'toggleFeatured'])->name('posts.toggle-featured');
 
-        // Services Management (Updated)
+        // Services Management
         Route::resource('service', ServiceController::class);
 
         // Medicine Management
         Route::resource('medicine', MedicineController::class);
+
+        // Medicine Import Management - Thêm routes này
+        Route::resource('medicine-import', MedicineImportController::class);
 
         // Route tạo slug cho service
         Route::get('create-slug', function (Request $request) {
