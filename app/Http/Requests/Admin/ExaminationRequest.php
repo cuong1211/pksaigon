@@ -23,16 +23,8 @@ class ExaminationRequest extends FormRequest
     {
         $rules = [
             'examination_date' => 'required|date',
-            'services' => 'nullable',
-            'services.*.service_id' => 'required|exists:services,id',
-            'services.*.quantity' => 'required|integer|min:1',
-            'services.*.price' => 'required|integer|min:0',
-            'medicines' => 'nullable',
-            'medicines.*.medicine_id' => 'required|exists:medicines,id',
-            'medicines.*.quantity' => 'required|integer|min:1',
-            'medicines.*.dosage' => 'nullable|string|max:255',
-            'medicines.*.note' => 'nullable|string|max:255',
-            'medicines.*.price' => 'required|integer|min:0',
+            'services' => 'nullable', // Cho phép cả string JSON và array
+            'medicines' => 'nullable', // Cho phép cả string JSON và array
             'diagnosis' => 'nullable|string|max:1000',
             'symptoms' => 'nullable|string|max:1000',
             'treatment_plan' => 'nullable|string|max:2000',
@@ -74,26 +66,6 @@ class ExaminationRequest extends FormRequest
             'patient_gender.in' => 'Giới tính không hợp lệ.',
             'examination_date.required' => 'Ngày khám là bắt buộc.',
             'examination_date.date' => 'Ngày khám phải là ngày hợp lệ.',
-            'services.array' => 'Dịch vụ phải là mảng.',
-            'services.*.service_id.required' => 'ID dịch vụ là bắt buộc.',
-            'services.*.service_id.exists' => 'Dịch vụ không tồn tại.',
-            'services.*.quantity.required' => 'Số lượng dịch vụ là bắt buộc.',
-            'services.*.quantity.integer' => 'Số lượng dịch vụ phải là số nguyên.',
-            'services.*.quantity.min' => 'Số lượng dịch vụ phải lớn hơn 0.',
-            'services.*.price.required' => 'Giá dịch vụ là bắt buộc.',
-            'services.*.price.integer' => 'Giá dịch vụ phải là số nguyên.',
-            'services.*.price.min' => 'Giá dịch vụ không được âm.',
-            'medicines.array' => 'Thuốc phải là mảng.',
-            'medicines.*.medicine_id.required' => 'ID thuốc là bắt buộc.',
-            'medicines.*.medicine_id.exists' => 'Thuốc không tồn tại.',
-            'medicines.*.quantity.required' => 'Số lượng thuốc là bắt buộc.',
-            'medicines.*.quantity.integer' => 'Số lượng thuốc phải là số nguyên.',
-            'medicines.*.quantity.min' => 'Số lượng thuốc phải lớn hơn 0.',
-            'medicines.*.dosage.max' => 'Liều dùng không được vượt quá 255 ký tự.',
-            'medicines.*.note.max' => 'Ghi chú thuốc không được vượt quá 255 ký tự.',
-            'medicines.*.price.required' => 'Giá thuốc là bắt buộc.',
-            'medicines.*.price.integer' => 'Giá thuốc phải là số nguyên.',
-            'medicines.*.price.min' => 'Giá thuốc không được âm.',
             'diagnosis.max' => 'Chuẩn đoán không được vượt quá 1000 ký tự.',
             'symptoms.max' => 'Triệu chứng không được vượt quá 1000 ký tự.',
             'treatment_plan.max' => 'Kế hoạch điều trị không được vượt quá 2000 ký tự.',
@@ -115,30 +87,92 @@ class ExaminationRequest extends FormRequest
             $this->merge(['patient_phone' => $phone]);
         }
 
-        // Process services array
-        if ($this->has('services') && is_array($this->services)) {
-            $services = array_map(function ($service) {
-                return [
-                    'service_id' => (int) $service['service_id'],
-                    'quantity' => (int) ($service['quantity'] ?? 1),
-                    'price' => (int) ($service['price'] ?? 0)
-                ];
-            }, $this->services);
-            $this->merge(['services' => $services]);
+        // Process services - handle both array and JSON string
+        if ($this->has('services')) {
+            $services = $this->input('services');
+
+            if (is_string($services)) {
+                // Parse JSON string
+                try {
+                    $servicesArray = json_decode($services, true);
+                    if (json_last_error() === JSON_ERROR_NONE && is_array($servicesArray)) {
+                        $validatedServices = [];
+                        foreach ($servicesArray as $service) {
+                            if (isset($service['service_id']) && isset($service['quantity']) && isset($service['price'])) {
+                                $validatedServices[] = [
+                                    'service_id' => (int) $service['service_id'],
+                                    'quantity' => (int) $service['quantity'],
+                                    'price' => (float) $service['price']
+                                ];
+                            }
+                        }
+                        $this->merge(['services' => $validatedServices]);
+                    } else {
+                        $this->merge(['services' => []]);
+                    }
+                } catch (\Exception $e) {
+                    $this->merge(['services' => []]);
+                }
+            } elseif (is_array($services)) {
+                // Already an array, just validate structure
+                $validatedServices = [];
+                foreach ($services as $service) {
+                    if (isset($service['service_id']) && isset($service['quantity']) && isset($service['price'])) {
+                        $validatedServices[] = [
+                            'service_id' => (int) $service['service_id'],
+                            'quantity' => (int) $service['quantity'],
+                            'price' => (float) $service['price']
+                        ];
+                    }
+                }
+                $this->merge(['services' => $validatedServices]);
+            }
         }
 
-        // Process medicines array
-        if ($this->has('medicines') && is_array($this->medicines)) {
-            $medicines = array_map(function ($medicine) {
-                return [
-                    'medicine_id' => (int) $medicine['medicine_id'],
-                    'quantity' => (int) ($medicine['quantity'] ?? 1),
-                    'dosage' => $medicine['dosage'] ?? '',
-                    'note' => $medicine['note'] ?? '',
-                    'price' => (int) ($medicine['price'] ?? 0)
-                ];
-            }, $this->medicines);
-            $this->merge(['medicines' => $medicines]);
+        // Process medicines - handle both array and JSON string
+        if ($this->has('medicines')) {
+            $medicines = $this->input('medicines');
+
+            if (is_string($medicines)) {
+                // Parse JSON string
+                try {
+                    $medicinesArray = json_decode($medicines, true);
+                    if (json_last_error() === JSON_ERROR_NONE && is_array($medicinesArray)) {
+                        $validatedMedicines = [];
+                        foreach ($medicinesArray as $medicine) {
+                            if (isset($medicine['medicine_id']) && isset($medicine['quantity']) && isset($medicine['price'])) {
+                                $validatedMedicines[] = [
+                                    'medicine_id' => (int) $medicine['medicine_id'],
+                                    'quantity' => (int) $medicine['quantity'],
+                                    'dosage' => $medicine['dosage'] ?? '',
+                                    'note' => $medicine['note'] ?? '',
+                                    'price' => (float) $medicine['price']
+                                ];
+                            }
+                        }
+                        $this->merge(['medicines' => $validatedMedicines]);
+                    } else {
+                        $this->merge(['medicines' => []]);
+                    }
+                } catch (\Exception $e) {
+                    $this->merge(['medicines' => []]);
+                }
+            } elseif (is_array($medicines)) {
+                // Already an array, just validate structure
+                $validatedMedicines = [];
+                foreach ($medicines as $medicine) {
+                    if (isset($medicine['medicine_id']) && isset($medicine['quantity']) && isset($medicine['price'])) {
+                        $validatedMedicines[] = [
+                            'medicine_id' => (int) $medicine['medicine_id'],
+                            'quantity' => (int) $medicine['quantity'],
+                            'dosage' => $medicine['dosage'] ?? '',
+                            'note' => $medicine['note'] ?? '',
+                            'price' => (float) $medicine['price']
+                        ];
+                    }
+                }
+                $this->merge(['medicines' => $validatedMedicines]);
+            }
         }
     }
 }

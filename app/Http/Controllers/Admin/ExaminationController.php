@@ -37,7 +37,7 @@ class ExaminationController extends Controller
     {
         try {
             $data = $request->validated();
-            
+
             // Tạo hoặc tìm bệnh nhân
             if (!empty($data['patient_id'])) {
                 $patient = Patient::findOrFail($data['patient_id']);
@@ -95,7 +95,6 @@ class ExaminationController extends Controller
                     'total_fee' => $examination->total_fee
                 ]
             ]);
-
         } catch (\Exception $e) {
             return response()->json([
                 'type' => 'error',
@@ -153,22 +152,22 @@ class ExaminationController extends Controller
 
             // Tính lại phí
             $serviceFee = 0;
-            if (!empty($data['services'])) {
+            if (!empty($data['services']) && is_array($data['services'])) {
                 foreach ($data['services'] as $serviceItem) {
                     $serviceFee += ($serviceItem['quantity'] ?? 1) * ($serviceItem['price'] ?? 0);
                 }
             }
 
             $medicineFee = 0;
-            if (!empty($data['medicines'])) {
+            if (!empty($data['medicines']) && is_array($data['medicines'])) {
                 foreach ($data['medicines'] as $medicineItem) {
                     $medicineFee += ($medicineItem['quantity'] ?? 1) * ($medicineItem['price'] ?? 0);
                 }
             }
 
             $examination->update([
-                'services' => $data['services'] ?? null,
-                'medicines' => $data['medicines'] ?? null,
+                'services' => !empty($data['services']) ? $data['services'] : null,
+                'medicines' => !empty($data['medicines']) ? $data['medicines'] : null,
                 'diagnosis' => $data['diagnosis'] ?? null,
                 'symptoms' => $data['symptoms'] ?? null,
                 'treatment_plan' => $data['treatment_plan'] ?? null,
@@ -185,7 +184,6 @@ class ExaminationController extends Controller
                 'title' => 'Thành công',
                 'content' => 'Cập nhật phiếu khám thành công!'
             ]);
-
         } catch (\Exception $e) {
             return response()->json([
                 'type' => 'error',
@@ -223,7 +221,6 @@ class ExaminationController extends Controller
                 'title' => 'Thành công',
                 'content' => 'Xóa phiếu khám thành công!'
             ]);
-
         } catch (\Exception $e) {
             return response()->json([
                 'type' => 'error',
@@ -253,7 +250,7 @@ class ExaminationController extends Controller
             $bankId = env('BANK_ID', '970422'); // VietinBank
             $accountNo = env('BANK_ACCOUNT', '113366668888');
             $accountName = env('BANK_ACCOUNT_NAME', 'PHONG KHAM ABC');
-            
+
             // Tạo nội dung chuyển khoản
             $transferContent = "TT {$examination->examination_code}";
             $amount = $examination->total_fee;
@@ -264,10 +261,10 @@ class ExaminationController extends Controller
             $qrData .= "6304"; // Transaction currency
             $qrData .= sprintf("%04d", strlen($amount)) . $amount;
             $qrData .= "62" . sprintf("%02d", strlen($transferContent) + 4) . "05" . sprintf("%02d", strlen($transferContent)) . $transferContent;
-            
+
             // Tạo QR code bằng API miễn phí
             $qrUrl = "https://api.vietqr.io/v2/generate";
-            
+
             $response = Http::post($qrUrl, [
                 'accountNo' => $accountNo,
                 'accountName' => $accountName,
@@ -280,7 +277,7 @@ class ExaminationController extends Controller
 
             if ($response->successful()) {
                 $qrCode = $response->json()['data']['qrDataURL'] ?? null;
-                
+
                 // Lưu QR code vào database
                 $examination->update([
                     'qr_code' => $qrCode,
@@ -303,7 +300,6 @@ class ExaminationController extends Controller
             } else {
                 throw new \Exception('Không thể tạo mã QR');
             }
-
         } catch (\Exception $e) {
             return response()->json([
                 'type' => 'error',
@@ -323,29 +319,29 @@ class ExaminationController extends Controller
             $transactionId = $request->input('transaction_id');
             $amount = $request->input('amount');
             $content = $request->input('content');
-            
+
             // Tìm examination code từ nội dung chuyển khoản
             preg_match('/TT ([A-Z0-9]+)/', $content, $matches);
             if (empty($matches[1])) {
                 return response()->json(['status' => 'error', 'message' => 'Invalid content']);
             }
-            
+
             $examinationCode = $matches[1];
             $examination = Examination::where('examination_code', $examinationCode)->first();
-            
+
             if (!$examination) {
                 return response()->json(['status' => 'error', 'message' => 'Examination not found']);
             }
-            
+
             if ($examination->payment_status === 'paid') {
                 return response()->json(['status' => 'success', 'message' => 'Already paid']);
             }
-            
+
             // Kiểm tra số tiền
             if ($amount < $examination->total_fee) {
                 return response()->json(['status' => 'error', 'message' => 'Insufficient amount']);
             }
-            
+
             // Cập nhật trạng thái thanh toán
             $examination->update([
                 'payment_status' => 'paid',
@@ -355,7 +351,6 @@ class ExaminationController extends Controller
             ]);
 
             return response()->json(['status' => 'success']);
-
         } catch (\Exception $e) {
             return response()->json(['status' => 'error', 'message' => $e->getMessage()]);
         }
@@ -368,7 +363,7 @@ class ExaminationController extends Controller
     {
         try {
             $examination = Examination::findOrFail($id);
-            
+
             return response()->json([
                 'type' => 'success',
                 'data' => [
@@ -378,7 +373,6 @@ class ExaminationController extends Controller
                     'transaction_id' => $examination->transaction_id
                 ]
             ]);
-
         } catch (\Exception $e) {
             return response()->json([
                 'type' => 'error',
@@ -394,9 +388,18 @@ class ExaminationController extends Controller
     private function getList()
     {
         $query = Examination::with('patient')
-                           ->select(['id', 'examination_code', 'patient_id', 'diagnosis', 
-                                   'total_fee', 'payment_status', 'status', 'examination_date', 
-                                   'next_appointment', 'created_at']);
+            ->select([
+                'id',
+                'examination_code',
+                'patient_id',
+                'diagnosis',
+                'total_fee',
+                'payment_status',
+                'status',
+                'examination_date',
+                'next_appointment',
+                'created_at'
+            ]);
 
         // Apply search filter
         if (request()->has('search_table') && !empty(request()->search_table)) {
@@ -406,8 +409,8 @@ class ExaminationController extends Controller
                     ->orWhere('diagnosis', 'like', "%{$search}%")
                     ->orWhereHas('patient', function ($pq) use ($search) {
                         $pq->where('full_name', 'like', "%{$search}%")
-                          ->orWhere('phone', 'like', "%{$search}%")
-                          ->orWhere('patient_code', 'like', "%{$search}%");
+                            ->orWhere('phone', 'like', "%{$search}%")
+                            ->orWhere('patient_code', 'like', "%{$search}%");
                     });
             });
         }
@@ -434,13 +437,13 @@ class ExaminationController extends Controller
                     break;
                 case 'month':
                     $query->whereMonth('examination_date', now()->month)
-                          ->whereYear('examination_date', now()->year);
+                        ->whereYear('examination_date', now()->year);
                     break;
             }
         }
 
         $examinations = $query->orderBy('created_at', 'desc')->get();
-        
+
         return DataTables::of($examinations)
             ->addColumn('patient_info', function ($examination) {
                 return [
@@ -488,15 +491,15 @@ class ExaminationController extends Controller
             $today = Examination::whereDate('examination_date', today())->count();
             $pending = Examination::where('payment_status', 'pending')->count();
             $completed = Examination::where('status', 'completed')->count();
-            
+
             $todayRevenue = Examination::whereDate('examination_date', today())
-                                     ->where('payment_status', 'paid')
-                                     ->sum('total_fee');
-            
+                ->where('payment_status', 'paid')
+                ->sum('total_fee');
+
             $monthRevenue = Examination::whereMonth('examination_date', now()->month)
-                                     ->whereYear('examination_date', now()->year)
-                                     ->where('payment_status', 'paid')
-                                     ->sum('total_fee');
+                ->whereYear('examination_date', now()->year)
+                ->where('payment_status', 'paid')
+                ->sum('total_fee');
 
             return response()->json([
                 'total' => $total,
@@ -536,8 +539,8 @@ class ExaminationController extends Controller
 
             // Kiểm tra phiếu đã thanh toán
             $paidCount = Examination::whereIn('id', $ids)
-                                   ->where('payment_status', 'paid')
-                                   ->count();
+                ->where('payment_status', 'paid')
+                ->count();
 
             if ($paidCount > 0) {
                 return response()->json([

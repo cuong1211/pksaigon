@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\VietQRController;
 use App\Http\Controllers\Admin\AuthController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\PostController;
@@ -87,4 +88,12 @@ Route::post('/webhook/payment', [ExaminationController::class, 'handlePaymentWeb
 Route::get('/storage-link', function () {
     Artisan::call('storage:link');
     return 'Storage link created!';
+});
+Route::prefix('api')->group(function () {
+    // API Get Token - VietQR dùng để lấy token xác thực
+    Route::post('/token_generate', [VietQRController::class, 'generateToken']);
+    
+    // API Transaction Sync - VietQR dùng để đồng bộ giao dịch
+    Route::post('/bank/api/transaction-sync', [VietQRController::class, 'transactionSync'])
+         ->middleware('vietqr.auth'); // Middleware để xác thực token
 });

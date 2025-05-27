@@ -14,6 +14,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // Đăng ký middleware alias
         $middleware->alias([
             'check.auth' => \App\Http\Middleware\CheckAuth::class,
+            'vietqr.auth' => \App\Http\Middleware\VietQRAuth::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
