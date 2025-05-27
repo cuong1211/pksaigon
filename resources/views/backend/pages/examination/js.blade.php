@@ -625,19 +625,30 @@
             processData: false,
             contentType: false,
             success: function(response) {
+                console.log('Form submission response:', response); // Debug log
+
                 notification(response.type, response.title, response.content);
-                if (response.type === 'success') {
+                if (response.type === 'success' && response.data) {
+                    // ← ĐÂY LÀ CHỖ QUAN TRỌNG: Set currentExaminationId
                     currentExaminationId = response.data.examination_id;
+
+                    console.log('Set currentExaminationId to:', currentExaminationId); // Debug log
+
                     $('#examination-code-display').text(response.data.examination_code);
 
                     dt.ajax.reload(null, false);
                     loadStatistics();
 
-                    // Show QR generation option
+                    // Show step 4 (payment step)
                     showStep(4);
+
+                    // Enable generate QR button
+                    $('#generate-qr').prop('disabled', false).show();
                 }
             },
             error: function(xhr) {
+                console.error('Form submission error:', xhr); // Debug log
+
                 if (xhr.status === 422) {
                     let errors = xhr.responseJSON.errors;
                     let errorHtml = '';
@@ -659,9 +670,13 @@
 
     // Generate QR Code
     $('#generate-qr').on('click', function() {
-        console.log('Current Examination ID:', currentExaminationId);
-        
-        if (!currentExaminationId) return;
+        console.log('Generate QR clicked, currentExaminationId:', currentExaminationId);
+
+        if (!currentExaminationId) {
+            console.error('currentExaminationId is null!');
+            notification('error', 'Lỗi', 'Không tìm thấy ID phiếu khám. Vui lòng thử lại.');
+            return;
+        }
 
         $(this).attr('data-kt-indicator', 'on');
         $(this).prop('disabled', true);
@@ -675,14 +690,15 @@
             },
             success: function(response) {
                 console.log('QR response:', response);
-                
+
                 if (response.type === 'success') {
                     showQRCode(response.data);
                 } else {
                     notification(response.type, response.title, response.content);
                 }
             },
-            error: function() {
+            error: function(xhr) {
+                console.error('QR generation error:', xhr);
                 notification('error', 'Lỗi', 'Không thể tạo mã QR thanh toán');
             },
             complete: function() {
@@ -692,31 +708,85 @@
         });
     });
 
+    // Show QR Code function
     function showQRCode(data) {
-        $('#qr-code-section').show();
-        $('#qr-code-image').attr('src', data.qr_code);
-        $('#bank-name').text(data.bank_name);
-        $('#account-number').text(data.account_no);
-        $('#account-name').text(data.account_name);
-        $('#transfer-content').text(data.content);
-        $('#transfer-amount').text(data.amount);
+        console.log('showQRCode called with data:', data);
 
-        // Start checking payment status
+        $('#qr-code-section').show();
+
+        // Xử lý QR code image
+        let qrCodeSrc = data.qr_code;
+        if (data.qr_string && !data.qr_code.startsWith('http') && !data.qr_code.startsWith('data:image')) {
+            // Tạo QR code từ string
+            qrCodeSrc =
+                `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(data.qr_string)}`;
+        }
+
+        $('#qr-code-image').attr('src', qrCodeSrc);
+        $('#bank-name').text(data.bank_name || 'VietQR');
+        $('#account-number').text(data.account_no || '');
+        $('#account-name').text(data.account_name || '');
+        $('#transfer-content').text(data.content || '');
+        $('#transfer-amount').text(data.amount || '');
+
+        // Thêm nút test payment trong môi trường development
+        if (isDevelopmentEnvironment()) {
+            if (!$('#test-payment-btn').length) {
+                $('#qr-code-section').append(`
+                <div class="mt-3">
+                    <button type="button" class="btn btn-warning btn-sm" id="test-payment-btn">
+                        <span class="indicator-label">
+                            <i class="fas fa-flask"></i> Test Payment (Dev Mode)
+                        </span>
+                        <span class="indicator-progress">
+                            Đang xử lý...
+                            <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
+                        </span>
+                    </button>
+                    <div class="text-muted fs-8 mt-2">
+                        <i class="fas fa-info-circle"></i> Nút này chỉ xuất hiện trong môi trường development
+                    </div>
+                </div>
+            `);
+            }
+        }
+
+        // Bắt đầu auto-check payment status
         startPaymentStatusCheck();
     }
 
+
     // Check payment status
     let paymentCheckInterval;
+    let paymentCheckCount = 0;
+    const MAX_PAYMENT_CHECK = 60; // Check tối đa 60 lần (5 phút)
 
     function startPaymentStatusCheck() {
+        if (!currentExaminationId) return;
+
+        paymentCheckCount = 0;
+
+        // Check ngay lập tức
+        checkPaymentStatus();
+
+        // Set interval check mỗi 5 giây
         paymentCheckInterval = setInterval(function() {
+            paymentCheckCount++;
+
+            if (paymentCheckCount >= MAX_PAYMENT_CHECK) {
+                stopPaymentStatusCheck();
+                showPaymentTimeout();
+                return;
+            }
+
             checkPaymentStatus();
-        }, 5000); // Check every 5 seconds
+        }, 5000);
     }
 
     function stopPaymentStatusCheck() {
         if (paymentCheckInterval) {
             clearInterval(paymentCheckInterval);
+            paymentCheckInterval = null;
         }
     }
 
@@ -731,15 +801,47 @@
             url: "{{ route('examination.checkPaymentStatus', ':id') }}".replace(':id', currentExaminationId),
             type: 'GET',
             success: function(response) {
-                if (response.data.payment_status === 'paid') {
-                    $('#payment-success').show();
-                    stopPaymentStatusCheck();
-                    notification('success', 'Thành công', 'Thanh toán đã được xác nhận!');
-                    dt.ajax.reload(null, false);
-                    loadStatistics();
+                if (response.type === 'success' && response.data) {
+                    if (response.data.is_paid) {
+                        // Thanh toán thành công
+                        $('#payment-success').show();
+                        stopPaymentStatusCheck();
+
+                        // Cập nhật UI
+                        notification('success', 'Thành công', 'Thanh toán đã được xác nhận!');
+                        dt.ajax.reload(null, false);
+                        loadStatistics();
+
+                        // Auto close modal sau 3 giây
+                        setTimeout(function() {
+                            $('#kt_modal_add_examination').modal('hide');
+                            resetExaminationForm();
+                        }, 3000);
+                    }
                 }
+            },
+            error: function() {
+                console.log('Error checking payment status');
             }
         });
+    }
+
+    function showPaymentTimeout() {
+        $('#qr-code-section').append(`
+        <div class="alert alert-warning mt-3">
+            <i class="fas fa-clock text-warning me-2"></i>
+            <strong>Hết thời gian kiểm tra tự động</strong><br>
+            Vui lòng click "Kiểm tra thanh toán" để kiểm tra thủ công hoặc liên hệ hỗ trợ.
+        </div>
+    `);
+    }
+
+    function isDevelopmentEnvironment() {
+        return window.location.hostname === 'pksaigon.test' ||
+            window.location.hostname === '127.0.0.1' ||
+            window.location.hostname.includes('dev') ||
+            window.location.hostname.includes('test') ||
+            window.location.port !== '';
     }
 
     // Generate QR from table
@@ -751,9 +853,29 @@
             notification('error', 'Lỗi', 'Không tìm thấy ID phiếu khám');
             return;
         }
-        
-        $(this).html('<i class="fas fa-spinner fa-spin"></i> Đang tạo...');
 
+        $(this).html('<i class="fas fa-spinner fa-spin"></i> Đang tạo...');
+        if (isDevelopmentEnvironment()) {
+            console.log('Development environment detected, adding test payment button');
+            
+            $('#qr-code-display').append(`
+                <div class="mt-3">
+                    <button type="button" class="btn btn-warning btn-sm" id="test-payment-btn">
+                        <span class="indicator-label">
+                            <i class="fas fa-flask"></i> Test Payment (Dev Mode)
+                        </span>
+                        <span class="indicator-progress">
+                            Đang xử lý...
+                            <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
+                        </span>
+                    </button>
+                    <div class="text-muted fs-8 mt-2">
+                        <i class="fas fa-info-circle"></i> Nút này chỉ xuất hiện trong môi trường development
+                    </div>
+                </div>
+            `);
+
+        }
         $.ajax({
             url: "{{ route('examination.generatePaymentQR', ':id') }}".replace(':id', id),
             type: 'POST',
@@ -774,6 +896,35 @@
                 dt.ajax.reload(null, false);
             }
         });
+
+    });
+    $(document).on('click', '#test-payment-btn', function() {
+        if (!currentExaminationId) return;
+
+        $(this).attr('data-kt-indicator', 'on');
+        $(this).prop('disabled', true);
+
+        $.ajax({
+            url: "{{ route('examination.testPayment', ':id') }}".replace(':id', currentExaminationId),
+            type: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            },
+            success: function(response) {
+                notification(response.type, response.title, response.content);
+                if (response.type === 'success') {
+                    // Test thành công, sẽ được auto-check bắt lên
+                    checkPaymentStatus();
+                }
+            },
+            error: function() {
+                notification('error', 'Lỗi', 'Không thể thực hiện test payment');
+            },
+            complete: function() {
+                $('#test-payment-btn').removeAttr('data-kt-indicator');
+                $('#test-payment-btn').prop('disabled', false);
+            }
+        });
     });
 
     function showPaymentModal(examinationId, data) {
@@ -781,18 +932,78 @@
 
         $('#payment-examination-code').text(data.examination_code || '');
         $('#payment-total-amount').text(data.amount);
-        $('#payment-qr-image').attr('src', data.qr_code);
+
+        // Xử lý QR code tương tự như trên
+        let qrCodeSrc = data.qr_code;
+        if (data.qr_code.startsWith('http')) {
+            if (data.qr_string) {
+                qrCodeSrc =
+                    `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(data.qr_string)}`;
+            }
+        } else if (!data.qr_code.startsWith('data:image') && !data.qr_code.startsWith('http')) {
+            qrCodeSrc =
+                `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(data.qr_code)}`;
+        }
+
+        $('#payment-qr-image').attr('src', qrCodeSrc);
         $('#payment-bank-name').text(data.bank_name);
         $('#payment-account-number').text(data.account_no);
         $('#payment-account-name').text(data.account_name);
         $('#payment-transfer-content').text(data.content);
 
-        $('#kt_modal_payment_qr').modal('show');
+        // Thêm nút test payment trong modal
+        if (window.location.hostname === 'localhost' || window.location.hostname.includes('dev')) {
+            if (!$('#modal-test-payment-btn').length) {
+                $('.modal-footer').prepend(`
+                <button type="button" class="btn btn-warning me-3" id="modal-test-payment-btn">
+                    <i class="fas fa-test-tube"></i> Test Payment
+                </button>
+            `);
+            }
+        }
 
-        // Start checking payment
+        $('#kt_modal_payment_qr').modal('show');
         startModalPaymentCheck();
     }
+    $(document).on('click', '#modal-test-payment-btn', function() {
+        if (!currentExaminationId) return;
 
+        $(this).attr('data-kt-indicator', 'on');
+        $(this).prop('disabled', true);
+
+        $.ajax({
+            url: "{{ route('examination.testPayment', ':id') }}".replace(':id', currentExaminationId),
+            type: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            },
+            success: function(response) {
+                if (response.type === 'success') {
+                    $('#payment-status').hide();
+                    $('#payment-success-status').show();
+                    stopModalPaymentCheck();
+
+                    setTimeout(function() {
+                        $('#kt_modal_payment_qr').modal('hide');
+                        $('#success-examination-code').text($('#payment-examination-code')
+                            .text());
+                        $('#kt_modal_payment_success').modal('show');
+                        dt.ajax.reload(null, false);
+                        loadStatistics();
+                    }, 2000);
+                } else {
+                    notification(response.type, response.title, response.content);
+                }
+            },
+            error: function() {
+                notification('error', 'Lỗi', 'Không thể thực hiện test payment');
+            },
+            complete: function() {
+                $(this).removeAttr('data-kt-indicator');
+                $(this).prop('disabled', false);
+            }
+        });
+    });
     let modalPaymentCheckInterval;
 
     function startModalPaymentCheck() {
@@ -809,6 +1020,9 @@
 
     $('#check-payment-status').on('click', function() {
         checkModalPaymentStatus();
+    });
+    $('#kt_modal_add_examination').on('hidden.bs.modal', function() {
+        stopPaymentStatusCheck();
     });
 
     function checkModalPaymentStatus() {

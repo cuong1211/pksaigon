@@ -6,14 +6,20 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\ExaminationRequest;
 use App\Models\Examination;
 use App\Models\Patient;
-use App\Models\Service;
-use App\Models\Medicine;
+use App\Services\VietQRService;
 use Illuminate\Http\Request;
 use Yajra\DataTables\Facades\DataTables;
-use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class ExaminationController extends Controller
 {
+    protected $vietQRService;
+
+    public function __construct(VietQRService $vietQRService)
+    {
+        $this->vietQRService = $vietQRService;
+    }
+
     /**
      * Display a listing of the resource.
      */
@@ -69,7 +75,7 @@ class ExaminationController extends Controller
                 }
             }
 
-            // Tạo phiếu khám
+            // Tạo phiếu khám với trạng thái chờ thanh toán
             $examination = Examination::create([
                 'patient_id' => $patient->id,
                 'services' => $data['services'] ?? null,
@@ -82,7 +88,15 @@ class ExaminationController extends Controller
                 'medicine_fee' => $medicineFee,
                 'examination_date' => $data['examination_date'] ?? today(),
                 'notes' => $data['notes'] ?? null,
-                'status' => 'waiting'
+                'status' => 'waiting',
+                'payment_status' => 'pending' // Trạng thái chờ thanh toán
+            ]);
+
+            Log::info('Examination created', [
+                'examination_id' => $examination->id,
+                'examination_code' => $examination->examination_code,
+                'patient_id' => $patient->id,
+                'total_fee' => $examination->total_fee
             ]);
 
             return response()->json([
@@ -92,10 +106,13 @@ class ExaminationController extends Controller
                 'data' => [
                     'examination_id' => $examination->id,
                     'examination_code' => $examination->examination_code,
-                    'total_fee' => $examination->total_fee
+                    'total_fee' => $examination->total_fee,
+                    'payment_status' => $examination->payment_status
                 ]
             ]);
         } catch (\Exception $e) {
+            Log::error('Examination creation error: ' . $e->getMessage());
+
             return response()->json([
                 'type' => 'error',
                 'title' => 'Lỗi',
@@ -150,7 +167,7 @@ class ExaminationController extends Controller
                 ], 400);
             }
 
-            // Tính lại phí
+            // Tính lại phí dịch vụ
             $serviceFee = 0;
             if (!empty($data['services']) && is_array($data['services'])) {
                 foreach ($data['services'] as $serviceItem) {
@@ -158,6 +175,7 @@ class ExaminationController extends Controller
                 }
             }
 
+            // Tính lại phí thuốc
             $medicineFee = 0;
             if (!empty($data['medicines']) && is_array($data['medicines'])) {
                 foreach ($data['medicines'] as $medicineItem) {
@@ -179,12 +197,19 @@ class ExaminationController extends Controller
                 'status' => $data['status'] ?? $examination->status
             ]);
 
+            Log::info('Examination updated', [
+                'examination_id' => $examination->id,
+                'examination_code' => $examination->examination_code
+            ]);
+
             return response()->json([
                 'type' => 'success',
                 'title' => 'Thành công',
                 'content' => 'Cập nhật phiếu khám thành công!'
             ]);
         } catch (\Exception $e) {
+            Log::error('Examination update error: ' . $e->getMessage());
+
             return response()->json([
                 'type' => 'error',
                 'title' => 'Lỗi',
@@ -214,6 +239,11 @@ class ExaminationController extends Controller
                 ], 400);
             }
 
+            Log::info('Examination deleted', [
+                'examination_id' => $examination->id,
+                'examination_code' => $examination->examination_code
+            ]);
+
             $examination->delete();
 
             return response()->json([
@@ -222,6 +252,8 @@ class ExaminationController extends Controller
                 'content' => 'Xóa phiếu khám thành công!'
             ]);
         } catch (\Exception $e) {
+            Log::error('Examination deletion error: ' . $e->getMessage());
+
             return response()->json([
                 'type' => 'error',
                 'title' => 'Lỗi',
@@ -231,7 +263,7 @@ class ExaminationController extends Controller
     }
 
     /**
-     * Generate QR code for payment
+     * Generate QR code for payment using VietQR API
      */
     public function generatePaymentQR($id)
     {
@@ -246,61 +278,59 @@ class ExaminationController extends Controller
                 ], 400);
             }
 
-            // Thông tin ngân hàng (cấu hình trong env)
-            $bankId = env('BANK_ID', '970422'); // VietinBank
-            $accountNo = env('BANK_ACCOUNT', '113366668888');
-            $accountName = env('BANK_ACCOUNT_NAME', 'PHONG KHAM ABC');
+            // Kiểm tra cấu hình VietQR
+            if (!$this->vietQRService->isConfigured()) {
+                throw new \Exception('VietQR chưa được cấu hình. Vui lòng kiểm tra file .env');
+            }
 
-            // Tạo nội dung chuyển khoản
-            $transferContent = "TT {$examination->examination_code}";
-            $amount = $examination->total_fee;
+            // Gọi VietQR Service để tạo QR code
+            $qrData = $this->vietQRService->generateQRCode(
+                $examination->examination_code,
+                $examination->total_fee,
+                'TT ' . $examination->examination_code
+            );
 
-            // Tạo QR VietQR
-            $qrData = "00020101021238540010A00000072701270006{$bankId}0114{$accountNo}0208QRIBFTTA53037045802VN6304";
-            $qrData .= sprintf("%04d", strlen($accountName)) . $accountName;
-            $qrData .= "6304"; // Transaction currency
-            $qrData .= sprintf("%04d", strlen($amount)) . $amount;
-            $qrData .= "62" . sprintf("%02d", strlen($transferContent) + 4) . "05" . sprintf("%02d", strlen($transferContent)) . $transferContent;
+            if (!$qrData) {
+                throw new \Exception('Không thể tạo mã QR thanh toán từ VietQR');
+            }
 
-            // Tạo QR code bằng API miễn phí
-            $qrUrl = "https://api.vietqr.io/v2/generate";
-
-            $response = Http::post($qrUrl, [
-                'accountNo' => $accountNo,
-                'accountName' => $accountName,
-                'acqId' => $bankId,
-                'amount' => $amount,
-                'addInfo' => $transferContent,
-                'format' => 'text',
-                'template' => 'compact'
+            // Lưu thông tin QR vào database
+            $examination->update([
+                'qr_code' => $qrData['qrCode'] ?? null,
+                'payment_method' => 'vietqr',
+                'transaction_ref_id' => $qrData['transactionRefId'] ?? null,
+                'examination_code' => $qrData['content']
             ]);
 
-            if ($response->successful()) {
-                $qrCode = $response->json()['data']['qrDataURL'] ?? null;
+            Log::info('QR Payment Generated', [
+                'examination_code' => $examination->examination_code,
+                'amount' => $examination->total_fee,
+                'transaction_ref_id' => $qrData['transactionRefId'] ?? null
+            ]);
 
-                // Lưu QR code vào database
-                $examination->update([
-                    'qr_code' => $qrCode,
-                    'payment_method' => 'bank_transfer'
-                ]);
-
-                return response()->json([
-                    'type' => 'success',
-                    'title' => 'Thành công',
-                    'content' => 'Tạo mã QR thanh toán thành công!',
-                    'data' => [
-                        'qr_code' => $qrCode,
-                        'amount' => $examination->formatted_total_fee,
-                        'content' => $transferContent,
-                        'bank_name' => 'VietinBank',
-                        'account_no' => $accountNo,
-                        'account_name' => $accountName
-                    ]
-                ]);
-            } else {
-                throw new \Exception('Không thể tạo mã QR');
-            }
+            return response()->json([
+                'type' => 'success',
+                'title' => 'Thành công',
+                'content' => 'Tạo mã QR thanh toán thành công!',
+                'data' => [
+                    'examination_code' => $examination->examination_code,
+                    'qr_code' => $qrData['qrLink'] ?? null, // Link để hiển thị QR
+                    'qr_string' => $qrData['qrCode'], // String để tạo QR image
+                    'amount' => $examination->formatted_total_fee,
+                    'content' => $qrData['content'],
+                    'bank_name' => $qrData['bankName'] ?? env('VIETQR_BANK_NAME', 'VietQR'),
+                    'account_no' => $qrData['bankAccount'] ?? env('VIETQR_BANK_ACCOUNT'),
+                    'account_name' => $qrData['userBankName'] ?? env('VIETQR_ACCOUNT_NAME'),
+                    'transaction_ref_id' => $qrData['transactionRefId'] ?? null,
+                    'order_id' => $qrData['orderId'] ?? $examination->examination_code
+                ]
+            ]);
         } catch (\Exception $e) {
+            Log::error('VietQR Generate Error', [
+                'examination_id' => $id,
+                'error' => $e->getMessage()
+            ]);
+
             return response()->json([
                 'type' => 'error',
                 'title' => 'Lỗi',
@@ -310,70 +340,156 @@ class ExaminationController extends Controller
     }
 
     /**
-     * Handle payment webhook
-     */
-    public function handlePaymentWebhook(Request $request)
-    {
-        try {
-            // Xác thực webhook (tùy theo ngân hàng)
-            $transactionId = $request->input('transaction_id');
-            $amount = $request->input('amount');
-            $content = $request->input('content');
-
-            // Tìm examination code từ nội dung chuyển khoản
-            preg_match('/TT ([A-Z0-9]+)/', $content, $matches);
-            if (empty($matches[1])) {
-                return response()->json(['status' => 'error', 'message' => 'Invalid content']);
-            }
-
-            $examinationCode = $matches[1];
-            $examination = Examination::where('examination_code', $examinationCode)->first();
-
-            if (!$examination) {
-                return response()->json(['status' => 'error', 'message' => 'Examination not found']);
-            }
-
-            if ($examination->payment_status === 'paid') {
-                return response()->json(['status' => 'success', 'message' => 'Already paid']);
-            }
-
-            // Kiểm tra số tiền
-            if ($amount < $examination->total_fee) {
-                return response()->json(['status' => 'error', 'message' => 'Insufficient amount']);
-            }
-
-            // Cập nhật trạng thái thanh toán
-            $examination->update([
-                'payment_status' => 'paid',
-                'transaction_id' => $transactionId,
-                'payment_date' => now(),
-                'status' => 'completed'
-            ]);
-
-            return response()->json(['status' => 'success']);
-        } catch (\Exception $e) {
-            return response()->json(['status' => 'error', 'message' => $e->getMessage()]);
-        }
-    }
-
-    /**
-     * Check payment status
+     * Check payment status via VietQR API
      */
     public function checkPaymentStatus($id)
     {
         try {
             $examination = Examination::findOrFail($id);
 
+            // Kiểm tra trong database trước
+            if ($examination->payment_status === 'paid') {
+                return response()->json([
+                    'type' => 'success',
+                    'data' => [
+                        'payment_status' => 'paid',
+                        'payment_status_name' => 'Đã thanh toán',
+                        'payment_date' => $examination->payment_date,
+                        'transaction_id' => $examination->transaction_id,
+                        'is_paid' => true
+                    ]
+                ]);
+            }
+
+            // Gọi API VietQR để check transaction status
+            $transactionData = $this->vietQRService->checkTransactionStatus($examination->examination_code);
+
+            if ($transactionData && isset($transactionData['status']) && $transactionData['status'] === 'SUCCESS') {
+                // Có giao dịch thành công, kiểm tra data
+                if (isset($transactionData['data']) && is_array($transactionData['data']) && count($transactionData['data']) > 0) {
+                    foreach ($transactionData['data'] as $transaction) {
+                        // Kiểm tra amount và content
+                        $amount = (int) ($transaction['amount'] ?? 0);
+                        $content = $transaction['content'] ?? '';
+
+                        if (
+                            $amount >= $examination->total_fee &&
+                            strpos($content, $examination->examination_code) !== false
+                        ) {
+
+                            // Cập nhật trạng thái thanh toán
+                            $examination->update([
+                                'payment_status' => 'paid',
+                                'payment_date' => now(),
+                                'status' => 'completed',
+                                'transaction_id' => $transaction['referenceNumber'] ?? ('CHK_' . time())
+                            ]);
+
+                            Log::info('Payment Status Updated via API Check', [
+                                'examination_code' => $examination->examination_code,
+                                'transaction_data' => $transaction
+                            ]);
+
+                            return response()->json([
+                                'type' => 'success',
+                                'data' => [
+                                    'payment_status' => 'paid',
+                                    'payment_status_name' => 'Đã thanh toán',
+                                    'payment_date' => $examination->payment_date,
+                                    'transaction_id' => $examination->transaction_id,
+                                    'is_paid' => true
+                                ]
+                            ]);
+                        }
+                    }
+                }
+            }
+
+            // Chưa có giao dịch thành công
             return response()->json([
                 'type' => 'success',
                 'data' => [
-                    'payment_status' => $examination->payment_status,
-                    'payment_status_name' => $examination->payment_status_name,
-                    'payment_date' => $examination->payment_date,
-                    'transaction_id' => $examination->transaction_id
+                    'payment_status' => 'pending',
+                    'payment_status_name' => 'Chờ thanh toán',
+                    'payment_date' => null,
+                    'transaction_id' => null,
+                    'is_paid' => false
                 ]
             ]);
         } catch (\Exception $e) {
+            Log::error('Check Payment Status Error', [
+                'examination_id' => $id,
+                'error' => $e->getMessage()
+            ]);
+
+            return response()->json([
+                'type' => 'error',
+                'title' => 'Lỗi',
+                'content' => 'Có lỗi xảy ra khi kiểm tra trạng thái thanh toán: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Test payment callback (Development/Testing only)
+     */
+    public function testPaymentCallback($id)
+    {
+        try {
+            // Chỉ cho phép trong môi trường development
+            if (!app()->environment(['local', 'testing'])) {
+                return response()->json([
+                    'type' => 'error',
+                    'title' => 'Lỗi',
+                    'content' => 'Chức năng test payment chỉ khả dụng trong môi trường development!'
+                ], 403);
+            }
+
+            $examination = Examination::findOrFail($id);
+
+            if ($examination->payment_status === 'paid') {
+                return response()->json([
+                    'type' => 'error',
+                    'title' => 'Lỗi',
+                    'content' => 'Phiếu khám đã được thanh toán!'
+                ], 400);
+            }
+
+            // Gọi VietQR Service test payment
+            $result = $this->vietQRService->testPayment(
+                $examination->examination_code,
+                $examination->total_fee,
+                $examination->examination_code
+            );
+
+            if ($result && isset($result['status']) && $result['status'] === 'SUCCESS') {
+                // Cập nhật trạng thái thanh toán
+                $examination->update([
+                    'payment_status' => 'paid',
+                    'payment_date' => now(),
+                    'status' => 'completed',
+                    'transaction_id' => $result['message'] ?? 'TEST_' . time()
+                ]);
+
+                Log::info('Test Payment Success', [
+                    'examination_code' => $examination->examination_code,
+                    'result' => $result
+                ]);
+
+                return response()->json([
+                    'type' => 'success',
+                    'title' => 'Thành công',
+                    'content' => 'Test thanh toán thành công!'
+                ]);
+            }
+
+            throw new \Exception('Test payment không thành công: ' . ($result['message'] ?? 'Unknown error'));
+        } catch (\Exception $e) {
+            Log::error('Test Payment Error', [
+                'examination_id' => $id,
+                'error' => $e->getMessage()
+            ]);
+
             return response()->json([
                 'type' => 'error',
                 'title' => 'Lỗi',
@@ -510,6 +626,8 @@ class ExaminationController extends Controller
                 'month_revenue' => number_format($monthRevenue, 0, '.', '.') . ' VNĐ'
             ]);
         } catch (\Exception $e) {
+            Log::error('Statistics error: ' . $e->getMessage());
+
             return response()->json([
                 'total' => 0,
                 'today' => 0,
@@ -552,12 +670,19 @@ class ExaminationController extends Controller
 
             $deletedCount = Examination::whereIn('id', $ids)->delete();
 
+            Log::info('Bulk examinations deleted', [
+                'deleted_count' => $deletedCount,
+                'ids' => $ids
+            ]);
+
             return response()->json([
                 'type' => 'success',
                 'title' => 'Thành công',
                 'content' => "Đã xóa {$deletedCount} phiếu khám thành công!"
             ]);
         } catch (\Exception $e) {
+            Log::error('Bulk deletion error: ' . $e->getMessage());
+
             return response()->json([
                 'type' => 'error',
                 'title' => 'Lỗi',

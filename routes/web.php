@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Artisan;
-
+use App\Http\Controllers\Api\VietQRWebhookController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -59,7 +59,7 @@ Route::middleware(['auth'])->group(function () {
         Route::resource('examination', ExaminationController::class);
         Route::post('examination/{id}/generate-qr', [ExaminationController::class, 'generatePaymentQR'])->name('examination.generatePaymentQR');
         Route::get('examination/{id}/check-payment', [ExaminationController::class, 'checkPaymentStatus'])->name('examination.checkPaymentStatus');
-        Route::post('examination/payment-webhook', [ExaminationController::class, 'handlePaymentWebhook'])->name('examination.paymentWebhook');
+        Route::post('examination/{id}/test-payment', [ExaminationController::class, 'testPaymentCallback'])->name('examination.testPayment');
 
         // Route tạo slug cho service
         Route::get('create-slug', function (Request $request) {
@@ -81,7 +81,7 @@ Route::middleware(['auth'])->group(function () {
     });
 });
 
-// Public webhook route (không cần auth)
+// Public webhook route (không cần auth) 
 Route::post('/webhook/payment', [ExaminationController::class, 'handlePaymentWebhook'])->name('public.paymentWebhook');
 
 // Route storage link (cho development)
@@ -89,3 +89,5 @@ Route::get('/storage-link', function () {
     Artisan::call('storage:link');
     return 'Storage link created!';
 });
+Route::post('/token_generate', [VietQRWebhookController::class, 'generateToken']);
+Route::post('/bank/api/transaction-sync', [VietQRWebhookController::class, 'transactionSync']);
