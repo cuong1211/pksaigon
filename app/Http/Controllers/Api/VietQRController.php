@@ -43,8 +43,8 @@ class VietQRController extends Controller
 
             [$username, $password] = explode(':', $decodedCredentials, 2);
             // Kiểm tra thông tin đăng nhập (cấu hình trong .env)
-            $validUsername = env('VIETQR_USERNAME', 'vietqr_user');
-            $validPassword = env('VIETQR_PASSWORD', 'vietqr_password');
+            $validUsername = env('VIETQR_WEBHOOK_USERNAME', 'vietqr_user');
+            $validPassword = env('VIETQR_WEBHOOK_PASSWORD', 'vietqr_password');
 
             if ($username !== $validUsername || $password !== $validPassword) {
                 return response()->json([

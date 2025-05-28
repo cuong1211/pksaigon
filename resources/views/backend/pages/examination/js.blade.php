@@ -851,11 +851,16 @@
     }
 
     function isDevelopmentEnvironment() {
-        return window.location.hostname === 'pksaigon.test' ||
-            window.location.hostname === '127.0.0.1' ||
-            window.location.hostname.includes('dev') ||
-            window.location.hostname.includes('test') ||
-            window.location.port !== '';
+        // Fallback nếu chưa có Laravel config
+        if (typeof window.Laravel === 'undefined') {
+            return window.location.hostname === 'localhost' ||
+                window.location.hostname === '127.0.0.1' ||
+                window.location.hostname.includes('dev') ||
+                window.location.hostname.includes('test') ||
+                window.location.port !== '';
+        }
+
+        return window.Laravel.isDevelopment === true;
     }
 
     // Generate QR from table

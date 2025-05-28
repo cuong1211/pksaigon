@@ -42,6 +42,13 @@
 @section('js')
     <script src="assets/plugins/global/plugins.bundle.js"></script>
     <script src="assets/js/scripts.bundle.js"></script>
+    <script>
+        window.Laravel = {
+            env: '{{ app()->environment() }}',
+            debug: {{ config('app.debug') ? 'true' : 'false' }},
+            isDevelopment: {{ app()->environment(['local', 'testing', 'development']) ? 'true' : 'false' }}
+        };
+    </script>
     <!--end::Global Javascript Bundle-->
     @include('backend.layout.js')
 @endsection
