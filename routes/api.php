@@ -19,5 +19,3 @@ use Illuminate\Support\Facades\Route;
 // VietQR API Routes - Không có CSRF protection
 Route::post('/token_generate', [VietQRController::class, 'generateToken']);
 
-Route::post('/bank/api/transaction-sync', [VietQRController::class, 'transactionSync'])
-     ->middleware('vietqr.auth');

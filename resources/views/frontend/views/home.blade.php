@@ -9,14 +9,17 @@
                     <div class="hero-content">
                         <!-- Section Title Start -->
                         <div class="section-title">
-                            <h1 class="text-anime-style-2" data-cursor="-opaque">Chăm sóc <span>Sức khỏe Phụ nữ</span> với Tâm huyết và Chuyên nghiệp</h1>
-                            <p class="wow fadeInUp" data-wow-delay="0.25s">Phòng khám Sản phụ khoa Sài Gòn tự hào mang đến dịch vụ chăm sóc sức khỏe toàn diện cho phụ nữ với đội ngũ bác sĩ giàu kinh nghiệm, trang thiết bị hiện đại và không gian thân thiện.</p>
+                            <h1 class="text-anime-style-2" data-cursor="-opaque">Chăm sóc <span>Sức khỏe Phụ nữ</span> với Tâm
+                                huyết và Chuyên nghiệp</h1>
+                            <p class="wow fadeInUp" data-wow-delay="0.25s">Phòng khám Sản phụ khoa Sài Gòn tự hào mang đến
+                                dịch vụ chăm sóc sức khỏe toàn diện cho phụ nữ với đội ngũ bác sĩ giàu kinh nghiệm, trang
+                                thiết bị hiện đại và không gian thân thiện.</p>
                         </div>
                         <!-- Section Title End -->
 
                         <!-- Hero Content Body Start -->
                         <div class="hero-content-body wow fadeInUp" data-wow-delay="0.5s">
-                            <a href="#" class="btn-default">đặt lịch khám</a>
+                            <a href="{{ route('frontend.appointment') }}" class="btn-default">đặt lịch khám</a>
                         </div>
                         <!-- Hero Content Body End -->
 
@@ -49,7 +52,7 @@
                         </div>
                         <!-- Hero Image Tag End -->
 
-                      
+
                         <!-- Hero Icon List End -->
 
                         <!-- Icon Start Image Start -->
@@ -143,8 +146,11 @@
                         <!-- Section Title Start -->
                         <div class="section-title">
                             <h3 class="wow fadeInUp">về chúng tôi</h3>
-                            <h2 class="text-anime-style-2" data-cursor="-opaque"><span>Hành trình</span> chăm sóc sức khỏe phụ nữ bắt đầu từ đây</h2>
-                            <p class="wow fadeInUp" data-wow-delay="0.25s">Phòng khám Sản phụ khoa Sài Gòn cam kết mang đến dịch vụ chăm sóc sức khỏe chuyên nghiệp, tận tâm với các dịch vụ khám thai, điều trị phụ khoa và chăm sóc sức khỏe sinh sản toàn diện cho phụ nữ.</p>
+                            <h2 class="text-anime-style-2" data-cursor="-opaque"><span>Hành trình</span> chăm sóc sức khỏe
+                                phụ nữ bắt đầu từ đây</h2>
+                            <p class="wow fadeInUp" data-wow-delay="0.25s">Phòng khám Sản phụ khoa Sài Gòn cam kết mang đến
+                                dịch vụ chăm sóc sức khỏe chuyên nghiệp, tận tâm với các dịch vụ khám thai, điều trị phụ
+                                khoa và chăm sóc sức khỏe sinh sản toàn diện cho phụ nữ.</p>
                         </div>
                         <!-- Section Title End -->
 
@@ -180,8 +186,10 @@
                     <!-- Section Title Start -->
                     <div class="section-title">
                         <h3 class="wow fadeInUp">dịch vụ của chúng tôi</h3>
-                        <h2 class="text-anime-style-2" data-cursor="-opaque"><span>Dịch vụ</span> chất lượng cao dành cho bạn</h2>
-                        <p class="wow fadeInUp" data-wow-delay="0.25s">Chúng tôi cam kết mang đến những dịch vụ chăm sóc sức khỏe tốt nhất.</p>
+                        <h2 class="text-anime-style-2" data-cursor="-opaque"><span>Dịch vụ</span> chất lượng cao dành cho
+                            bạn</h2>
+                        <p class="wow fadeInUp" data-wow-delay="0.25s">Chúng tôi cam kết mang đến những dịch vụ chăm sóc sức
+                            khỏe tốt nhất.</p>
                     </div>
                     <!-- Section Title End -->
                 </div>
@@ -217,7 +225,8 @@
                         </div>
                         <div class="service-body">
                             <h3>theo dõi thai kỳ</h3>
-                            <p>Dịch vụ theo dõi thai kỳ toàn diện từ giai đoạn đầu đến khi sinh với trang thiết bị hiện đại.</p>
+                            <p>Dịch vụ theo dõi thai kỳ toàn diện từ giai đoạn đầu đến khi sinh với trang thiết bị hiện đại.
+                            </p>
                         </div>
                         <div class="read-more-btn">
                             <a href="#">xem thêm</a>
@@ -267,92 +276,11 @@
                 <div class="col-lg-12">
                     <!-- Service Box Footer Start -->
                     <div class="services-box-footer wow fadeInUp" data-wow-delay="1s">
-                        <p>Chúng tôi tin tưởng vào việc sử dụng công nghệ và kỹ thuật tiên tiến nhất để đảm bảo kết quả tốt nhất cho bệnh nhân.</p>
-                        <a href="#" class="btn-default">xem tất cả dịch vụ</a>
+                        <p>Chúng tôi tin tưởng vào việc sử dụng công nghệ và kỹ thuật tiên tiến nhất để đảm bảo kết quả tốt
+                            nhất cho bệnh nhân.</p>
+                        <a href="{{ route('frontend.services') }}" class="btn-default">xem tất cả dịch vụ</a>
                     </div>
                     <!-- Service Box Footer End -->
-                </div>
-            </div>
-        </div>
-        <!-- Our Counter Section Start -->
-        <div class="our-counter">
-            <div class="container">
-                <div class="row">
-                    <div class="col-lg-3 col-md-6">
-                        <!-- Counter Item Start -->
-                        <div class="counter-item">
-                            <!-- Counter Title Start -->
-                            <div class="counter-title">
-                                <h2><span class="counter">50</span>+</h2>
-                                <h3>bảo hiểm được chấp nhận</h3>
-                            </div>
-                            <!-- Counter Title End -->
-
-                            <!-- Counter Content Start -->
-                            <div class="counter-content">
-                                <p>Chúng tôi chấp nhận hầu hết các loại bảo hiểm y tế để thuận tiện cho bệnh nhân.</p>
-                            </div>
-                            <!-- Counter Content End -->
-                        </div>
-                        <!-- Counter Item End -->
-                    </div>
-
-                    <div class="col-lg-3 col-md-6">
-                        <!-- Counter Item Start -->
-                        <div class="counter-item">
-                            <!-- Counter Title Start -->
-                            <div class="counter-title">
-                                <h2><span class="counter">15</span>K</h2>
-                                <h3>ca khám thành công</h3>
-                            </div>
-                            <!-- Counter Title End -->
-
-                            <!-- Counter Content Start -->
-                            <div class="counter-content">
-                                <p>Hơn 15.000 ca khám và điều trị thành công với tỷ lệ hài lòng cao.</p>
-                            </div>
-                            <!-- Counter Content End -->
-                        </div>
-                        <!-- Counter Item End -->
-                    </div>
-
-                    <div class="col-lg-3 col-md-6">
-                        <!-- Counter Item Start -->
-                        <div class="counter-item">
-                            <!-- Counter Title Start -->
-                            <div class="counter-title">
-                                <h2><span class="counter">12</span>K</h2>
-                                <h3>bệnh nhân hài lòng</h3>
-                            </div>
-                            <!-- Counter Title End -->
-
-                            <!-- Counter Content Start -->
-                            <div class="counter-content">
-                                <p>Hơn 12.000 bệnh nhân tin tưởng và hài lòng với dịch vụ chăm sóc của chúng tôi.</p>
-                            </div>
-                            <!-- Counter Content End -->
-                        </div>
-                        <!-- Counter Item End -->
-                    </div>
-
-                    <div class="col-lg-3 col-md-6">
-                        <!-- Counter Item Start -->
-                        <div class="counter-item">
-                            <!-- Counter Title Start -->
-                            <div class="counter-title">
-                                <h2><span class="counter">20</span>+</h2>
-                                <h3>bác sĩ giàu kinh nghiệm</h3>
-                            </div>
-                            <!-- Counter Title End -->
-
-                            <!-- Counter Content Start -->
-                            <div class="counter-content">
-                                <p>Đội ngũ hơn 20 bác sĩ chuyên khoa với nhiều năm kinh nghiệm trong lĩnh vực sản phụ khoa.</p>
-                            </div>
-                            <!-- Counter Content End -->
-                        </div>
-                        <!-- Counter Item End -->
-                    </div>
                 </div>
             </div>
         </div>
@@ -368,8 +296,10 @@
                     <!-- Section Title Start -->
                     <div class="section-title">
                         <h3 class="wow fadeInUp">tại sao chọn chúng tôi</h3>
-                        <h2 class="text-anime-style-2" data-cursor="-opaque"><span>Chẩn đoán và điều trị</span> các bệnh phụ khoa</h2>
-                        <p class="wow fadeInUp" data-wow-delay="0.25s">Chúng tôi cam kết mang đến dịch vụ chăm sóc sức khỏe tốt nhất.</p>
+                        <h2 class="text-anime-style-2" data-cursor="-opaque"><span>Chẩn đoán và điều trị</span> các bệnh
+                            phụ khoa</h2>
+                        <p class="wow fadeInUp" data-wow-delay="0.25s">Chúng tôi cam kết mang đến dịch vụ chăm sóc sức
+                            khỏe tốt nhất.</p>
                     </div>
                     <!-- Section Title End -->
                 </div>
@@ -407,7 +337,8 @@
                             <!-- Why Choose Content Start -->
                             <div class="why-choose-content">
                                 <h3>chăm sóc cá nhân hóa</h3>
-                                <p>Mỗi bệnh nhân được chăm sóc theo phương án điều trị riêng biệt phù hợp với tình trạng sức khỏe.</p>
+                                <p>Mỗi bệnh nhân được chăm sóc theo phương án điều trị riêng biệt phù hợp với tình trạng sức
+                                    khỏe.</p>
                             </div>
                             <!-- Why Choose Content End -->
                         </div>
@@ -424,7 +355,8 @@
                             <!-- Why Choose Content Start -->
                             <div class="why-choose-content">
                                 <h3>hình thức thanh toán linh hoạt</h3>
-                                <p>Chấp nhận nhiều hình thức thanh toán và hỗ trợ bảo hiểm y tế để thuận tiện cho bệnh nhân.</p>
+                                <p>Chấp nhận nhiều hình thức thanh toán và hỗ trợ bảo hiểm y tế để thuận tiện cho bệnh nhân.
+                                </p>
                             </div>
                             <!-- Why Choose Content End -->
                         </div>
@@ -491,7 +423,8 @@
                             <!-- Why Choose Content Start -->
                             <div class="why-choose-content">
                                 <h3>công nghệ tiên tiến</h3>
-                                <p>Trang bị máy móc y tế hiện đại nhất để đảm bảo chẩn đoán chính xác và điều trị hiệu quả.</p>
+                                <p>Trang bị máy móc y tế hiện đại nhất để đảm bảo chẩn đoán chính xác và điều trị hiệu quả.
+                                </p>
                             </div>
                             <!-- Why Choose Content End -->
                         </div>
@@ -525,8 +458,11 @@
                         <!-- Section Title Start -->
                         <div class="section-title">
                             <h3 class="wow fadeInUp">quy trình làm việc</h3>
-                            <h2 class="text-anime-style-2" data-cursor="-opaque"><span>Chúng tôi làm gì</span> cho sức khỏe của bạn</h2>
-                            <p class="wow fadeInUp" data-wow-delay="0.25s">Chúng tôi cam kết về sự bền vững. Phòng khám thực hiện các sáng kiến thân thiện với môi trường như hồ sơ điện tử để giảm lãng phí giấy và thiết bị tiết kiệm năng lượng.</p>
+                            <h2 class="text-anime-style-2" data-cursor="-opaque"><span>Chúng tôi làm gì</span> cho sức
+                                khỏe của bạn</h2>
+                            <p class="wow fadeInUp" data-wow-delay="0.25s">Chúng tôi cam kết về sự bền vững. Phòng khám
+                                thực hiện các sáng kiến thân thiện với môi trường như hồ sơ điện tử để giảm lãng phí giấy và
+                                thiết bị tiết kiệm năng lượng.</p>
                         </div>
                         <!-- Section Title End -->
 
@@ -548,7 +484,8 @@
                                 <div id="collapse1" class="accordion-collapse collapse show" aria-labelledby="heading1"
                                     data-bs-parent="#accordion">
                                     <div class="accordion-body">
-                                        <p>Mục tiêu của phòng khám là cung cấp dịch vụ chăm sóc sức khỏe thân thiện và mức độ cao nhất trong các dịch vụ sản khoa, phụ khoa tổng quát và chuyên khoa.</p>
+                                        <p>Mục tiêu của phòng khám là cung cấp dịch vụ chăm sóc sức khỏe thân thiện và mức
+                                            độ cao nhất trong các dịch vụ sản khoa, phụ khoa tổng quát và chuyên khoa.</p>
                                     </div>
                                 </div>
                             </div>
@@ -568,7 +505,8 @@
                                 <div id="collapse2" class="accordion-collapse collapse" aria-labelledby="heading2"
                                     data-bs-parent="#accordion">
                                     <div class="accordion-body">
-                                        <p>Bác sĩ sẽ thực hiện khám lâm sàng và các xét nghiệm cần thiết để đưa ra chẩn đoán chính xác nhất.</p>
+                                        <p>Bác sĩ sẽ thực hiện khám lâm sàng và các xét nghiệm cần thiết để đưa ra chẩn đoán
+                                            chính xác nhất.</p>
                                     </div>
                                 </div>
                             </div>
@@ -588,7 +526,8 @@
                                 <div id="collapse3" class="accordion-collapse collapse" aria-labelledby="heading3"
                                     data-bs-parent="#accordion">
                                     <div class="accordion-body">
-                                        <p>Thực hiện phương án điều trị phù hợp với tình trạng bệnh và theo dõi sát sao quá trình hồi phục.</p>
+                                        <p>Thực hiện phương án điều trị phù hợp với tình trạng bệnh và theo dõi sát sao quá
+                                            trình hồi phục.</p>
                                     </div>
                                 </div>
                             </div>
@@ -611,8 +550,10 @@
                     <!-- Section Title Start -->
                     <div class="section-title">
                         <h3 class="wow fadeInUp">đội ngũ của chúng tôi</h3>
-                        <h2 class="text-anime-style-2" data-cursor="-opaque"><span>Đội ngũ bác sĩ</span> chuyên khoa uy tín</h2>
-                        <p class="wow fadeInUp" data-wow-delay="0.25s">Đội ngũ bác sĩ giàu kinh nghiệm và tận tâm trong lĩnh vực sản phụ khoa.</p>
+                        <h2 class="text-anime-style-2" data-cursor="-opaque"><span>Đội ngũ bác sĩ</span> chuyên khoa uy
+                            tín</h2>
+                        <p class="wow fadeInUp" data-wow-delay="0.25s">Đội ngũ bác sĩ giàu kinh nghiệm và tận tâm trong
+                            lĩnh vực sản phụ khoa.</p>
                     </div>
                     <!-- Section Title End -->
                 </div>
@@ -932,9 +873,12 @@
                 <div class="col-lg-12">
                     <!-- Section Title Start -->
                     <div class="section-title">
-                        <h3 class="wow fadeInUp">tin tức</h3>
+                        <a href="{{ route('frontend.posts') }}">
+                            <h3 class="wow fadeInUp">tin tức</h3>
+                        </a>
                         <h2 class="text-anime-style-2" data-cursor="-opaque"><span>Các bài viết</span> mới nhất</h2>
-                        <p class="wow fadeInUp" data-wow-delay="0.25s">Cập nhật những thông tin y khoa và sức khỏe mới nhất.</p>
+                        <p class="wow fadeInUp" data-wow-delay="0.25s">Cập nhật những thông tin y khoa và sức khỏe mới
+                            nhất.</p>
                     </div>
                     <!-- Section Title End -->
                 </div>
@@ -1060,7 +1004,8 @@
                         <!-- Section Title Start -->
                         <div class="section-title">
                             <h3 class="wow fadeInUp">liên hệ ngay</h3>
-                            <h2 class="text-anime-style-2" data-cursor="-opaque"><span>Nhận tư vấn</span> chuyên nghiệp miễn phí</h2>
+                            <h2 class="text-anime-style-2" data-cursor="-opaque"><span>Nhận tư vấn</span> chuyên nghiệp
+                                miễn phí</h2>
                         </div>
                         <!-- Section Title End -->
 
@@ -1133,7 +1078,7 @@
 
                         <!-- Footer Appointment Button Start  -->
                         <div class="contact-appointment-btn wow fadeInUp" data-wow-delay="1s">
-                            <a href="#" class="btn-default">đặt lịch khám</a>
+                            <a href="{{ route('frontend.appointment') }}" class="btn-default">đặt lịch khám</a>
                         </div>
                         <!-- Footer Appointment Button End  -->
                     </div>

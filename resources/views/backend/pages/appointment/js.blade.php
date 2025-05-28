@@ -1,12 +1,13 @@
 <script>
     // Private functions
     let search_table = '';
-    let status_filter = '';
-    let type_filter = '';
+    let date_filter = '';
+    let service_filter = '';
 
-    // Load statistics on page load
+    // Load statistics and services on page load
     $(document).ready(function() {
         loadStatistics();
+        loadServices();
     });
 
     var dt = $("#kt_customers_table").DataTable({
@@ -17,12 +18,12 @@
             className: 'row-selected'
         },
         ajax: {
-            url: "{{ route('service.show', 'get-list') }}",
+            url: "{{ route('appointment.show', 'get-list') }}",
             type: 'GET',
             data: function(d) {
                 d.search_table = search_table;
-                d.status_filter = status_filter;
-                d.type_filter = type_filter;
+                d.date_filter = date_filter;
+                d.service_filter = service_filter;
             }
         },
         columns: [{
@@ -36,53 +37,33 @@
                 },
             },
             {
-                data: 'image_display',
-                orderable: false,
-                searchable: false,
+                data: 'patient_name',
                 render: function(data, type, row, meta) {
-                    return '<img src="' + data + '" class="service-thumbnail" alt="' + row.name + '">';
+                    return '<div class="d-flex flex-column">' +
+                        '<span class="text-dark fw-bolder">' + data + '</span>' +
+                        '</div>';
                 }
             },
             {
-                data: 'name',
+                data: 'patient_phone',
                 render: function(data, type, row, meta) {
-                    let html = '<div class="service-info">';
-                    html += '<div class="service-name">' + data + '</div>';
-                    if (row.short_description && row.short_description !== '-') {
-                        html += '<div class="service-description">' + row.short_description + '</div>';
+                    return '<span class="text-muted">' + data + '</span>';
+                }
+            },
+            {
+                data: 'service_name',
+                render: function(data, type, row, meta) {
+                    if (data && data !== 'Không có') {
+                        return '<span class="badge badge-light-info">' + data + '</span>';
+                    } else {
+                        return '<span class="text-muted">Không có</span>';
                     }
-                    html += '</div>';
-                    return html;
                 }
             },
             {
-                data: 'slug',
+                data: 'formatted_appointment_date',
                 render: function(data, type, row, meta) {
-                    return '<span class="service-slug">' + data + '</span>';
-                }
-            },
-            {
-                data: 'type',
-                render: function(data, type, row, meta) {
-                    return row.type_badge;
-                }
-            },
-            {
-                data: 'formatted_price',
-                render: function(data, type, row, meta) {
-                    return '<span class="price-display">' + data + '</span>';
-                }
-            },
-            {
-                data: 'description',
-                render: function(data, type, row, meta) {
-                    return row.short_description || '<span class="text-muted">-</span>';
-                }
-            },
-            {
-                data: 'is_active',
-                render: function(data, type, row, meta) {
-                    return row.status_badge;
+                    return '<span class="text-dark fw-bold">' + data + '</span>';
                 }
             },
             {
@@ -98,8 +79,8 @@
                         '</a> \n' +
                         '<div class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-bold fs-7 w-125px py-4" data-kt-menu="true"> \n' +
                         '<div class="menu-item px-3"> \n' +
-                        '<a href="#" data-id="' + row.id +
-                        '" class="menu-link px-3 btn-edit" data-bs-toggle="modal" data-bs-target="#kt_modal_add_customer">Sửa</a> \n' +
+                        '<a href="" data-data=\'' + JSON.stringify(row) +
+                        '\' class="menu-link px-3 btn-edit" data-bs-toggle="modal" data-bs-target="#kt_modal_add_customer">Sửa</a> \n' +
                         '</div> \n' +
                         '<div class="menu-item px-3"> \n' +
                         '<a href="#" data-id="' + row.id +
@@ -131,119 +112,85 @@
         var checkedCount = $('#kt_customers_table tbody input[type="checkbox"]:checked').length;
 
         if (checkedCount > 0) {
-            $('[data-kt-services-table-toolbar="base"]').addClass('d-none');
-            $('[data-kt-services-table-toolbar="selected"]').removeClass('d-none');
-            $('[data-kt-services-table-select="selected_count"]').text(checkedCount);
+            $('[data-kt-appointments-table-toolbar="base"]').addClass('d-none');
+            $('[data-kt-appointments-table-toolbar="selected"]').removeClass('d-none');
+            $('[data-kt-appointments-table-select="selected_count"]').text(checkedCount);
         } else {
-            $('[data-kt-services-table-toolbar="base"]').removeClass('d-none');
-            $('[data-kt-services-table-toolbar="selected"]').addClass('d-none');
+            $('[data-kt-appointments-table-toolbar="base"]').removeClass('d-none');
+            $('[data-kt-appointments-table-toolbar="selected"]').addClass('d-none');
         }
     }
 
     // Load statistics
     function loadStatistics() {
         $.ajax({
-            url: "{{ route('service.show', 'get-statistics') }}",
+            url: "{{ route('appointment.show', 'get-statistics') }}",
             type: 'GET',
             success: function(data) {
                 $('#statsContainer').html(`
-                    <div class="col-xl-2">
+                    <div class="col-xl-3">
                         <div class="card stats-card card-xl-stretch mb-xl-8">
                             <div class="card-body">
                                 <div class="d-flex align-items-center">
                                     <div class="symbol symbol-50px me-5">
                                         <span class="symbol-label bg-light-primary">
-                                            <i class="fas fa-cog text-primary fs-2x"></i>
+                                            <i class="fas fa-calendar-check text-primary fs-2x"></i>
                                         </span>
                                     </div>
                                     <div class="d-flex flex-column">
                                         <span class="text-dark fw-bolder fs-2">${data.total || 0}</span>
-                                        <span class="text-muted fw-bold fs-7">Tổng dịch vụ</span>
+                                        <span class="text-muted fw-bold fs-7">Tổng lịch hẹn</span>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <div class="col-xl-2">
+                    <div class="col-xl-3">
                         <div class="card stats-card card-xl-stretch mb-xl-8">
                             <div class="card-body">
                                 <div class="d-flex align-items-center">
                                     <div class="symbol symbol-50px me-5">
                                         <span class="symbol-label bg-light-success">
-                                            <i class="fas fa-check-circle text-success fs-2x"></i>
+                                            <i class="fas fa-calendar-day text-success fs-2x"></i>
                                         </span>
                                     </div>
                                     <div class="d-flex flex-column">
-                                        <span class="text-dark fw-bolder fs-2">${data.active || 0}</span>
-                                        <span class="text-muted fw-bold fs-7">Hoạt động</span>
+                                        <span class="text-dark fw-bolder fs-2">${data.today || 0}</span>
+                                        <span class="text-muted fw-bold fs-7">Hôm nay</span>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <div class="col-xl-2">
-                        <div class="card stats-card card-xl-stretch mb-xl-8">
-                            <div class="card-body">
-                                <div class="d-flex align-items-center">
-                                    <div class="symbol symbol-50px me-5">
-                                        <span class="symbol-label bg-light-primary">
-                                            <i class="fas fa-hand-holding-medical text-primary fs-2x"></i>
-                                        </span>
-                                    </div>
-                                    <div class="d-flex flex-column">
-                                        <span class="text-dark fw-bolder fs-2">${data.procedure || 0}</span>
-                                        <span class="text-muted fw-bold fs-7">Thủ thuật</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-xl-2">
-                        <div class="card stats-card card-xl-stretch mb-xl-8">
-                            <div class="card-body">
-                                <div class="d-flex align-items-center">
-                                    <div class="symbol symbol-50px me-5">
-                                        <span class="symbol-label bg-light-success">
-                                            <i class="fas fa-vial text-success fs-2x"></i>
-                                        </span>
-                                    </div>
-                                    <div class="d-flex flex-column">
-                                        <span class="text-dark fw-bolder fs-2">${data.laboratory || 0}</span>
-                                        <span class="text-muted fw-bold fs-7">Xét nghiệm</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-xl-2">
+                    <div class="col-xl-3">
                         <div class="card stats-card card-xl-stretch mb-xl-8">
                             <div class="card-body">
                                 <div class="d-flex align-items-center">
                                     <div class="symbol symbol-50px me-5">
                                         <span class="symbol-label bg-light-info">
-                                            <i class="fas fa-plus-circle text-info fs-2x"></i>
+                                            <i class="fas fa-calendar-week text-info fs-2x"></i>
                                         </span>
                                     </div>
                                     <div class="d-flex flex-column">
-                                        <span class="text-dark fw-bolder fs-2">${data.other || 0}</span>
-                                        <span class="text-muted fw-bold fs-7">Khác</span>
+                                        <span class="text-dark fw-bolder fs-2">${data.week || 0}</span>
+                                        <span class="text-muted fw-bold fs-7">Tuần này</span>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <div class="col-xl-2">
+                    <div class="col-xl-3">
                         <div class="card stats-card card-xl-stretch mb-xl-8">
                             <div class="card-body">
                                 <div class="d-flex align-items-center">
                                     <div class="symbol symbol-50px me-5">
-                                        <span class="symbol-label bg-light-success">
-                                            <i class="fas fa-dollar-sign text-success fs-2x"></i>
+                                        <span class="symbol-label bg-light-warning">
+                                            <i class="fas fa-calendar-alt text-warning fs-2x"></i>
                                         </span>
                                     </div>
                                     <div class="d-flex flex-column">
-                                        <span class="text-dark fw-bolder fs-2">${data.avg_price || '0 VNĐ'}</span>
-                                        <span class="text-muted fw-bold fs-7">Giá TB</span>
+                                        <span class="text-dark fw-bolder fs-2">${data.month || 0}</span>
+                                        <span class="text-muted fw-bold fs-7">Tháng này</span>
                                     </div>
                                 </div>
                             </div>
@@ -257,6 +204,42 @@
         });
     }
 
+    // Load services for filter and modal
+    function loadServices() {
+        $.ajax({
+            url: "{{ route('appointment.show', 'get-services') }}",
+            type: 'GET',
+            success: function(data) {
+                let options = '<option value="">-- Chọn dịch vụ --</option>';
+                let filterOptions = '<option value="">Tất cả dịch vụ</option>';
+
+                data.forEach(function(service) {
+                    options += `<option value="${service.id}">${service.name}</option>`;
+                    filterOptions += `<option value="${service.id}">${service.name}</option>`;
+                });
+
+                $('#service_select').html(options);
+                $('#service-filter').html(filterOptions);
+            },
+            error: function() {
+                console.log('Error loading services');
+            }
+        });
+    }
+
+    // Form reset
+    function form_reset() {
+        $("#kt_modal_add_customer").modal({
+            'backdrop': 'static',
+            'keyboard': false
+        });
+        $("#kt_modal_add_customer_form").trigger("reset");
+        $('.print-error-msg').hide();
+        // Set default date to today
+        $('input[name="appointment_date"]').val(new Date().toISOString().split('T')[0]);
+        $('input[name="appointment_time"]').val('09:00');
+    }
+
     $('.btn-close').on('click', function() {
         form_reset();
         $('#kt_modal_add_customer').modal('hide');
@@ -266,124 +249,42 @@
         form_reset();
     });
 
-    function form_reset() {
-        $("#kt_modal_add_customer").modal({
-            'backdrop': 'static',
-            'keyboard': false
-        });
-        $("#kt_modal_add_customer_form").trigger("reset");
-        $('input[name="is_active"]').prop('checked', true);
-        $('#image-preview-container').hide();
-        $('.print-error-msg').hide();
-
-        // Reset TinyMCE
-        if (typeof tinymce !== 'undefined') {
-            tinymce.get('service_description')?.setContent('');
-        }
-
-        // Clear slug field
-        $('#service_slug').val('');
-    }
-
-    // Function to load service data for edit - SỬ DỤNG ROUTE MỚI
-    function loadServiceData(id) {
-        // Show loading state
-        const submitBtn = $('#kt_modal_add_customer_submit');
-        submitBtn.attr('data-kt-indicator', 'on');
-        submitBtn.prop('disabled', true);
-
-        $.ajax({
-            url: "{{ route('service.getData', ':id') }}".replace(':id', id),
-            type: 'GET',
-            success: function(response) {
-                if (response.type === 'success') {
-                    let data = response.data;
-                    let modal = $('#kt_modal_add_customer_form');
-
-                    // Set form values
-                    modal.find('.modal-title').text('Sửa thông tin dịch vụ');
-                    modal.find('input[name=id]').val(data.id);
-                    modal.find('input[name=name]').val(data.name);
-                    modal.find('input[name=slug]').val(data.slug);
-                    modal.find('select[name=type]').val(data.type);
-                    modal.find('input[name=price]').val(data.price);
-                    modal.find('input[name=is_active]').prop('checked', data.is_active);
-
-                    // Set TinyMCE content
-                    setTimeout(function() {
-                        if (typeof tinymce !== 'undefined' && tinymce.get('service_description')) {
-                            tinymce.get('service_description').setContent(data.description || '');
-                        }
-                    }, 500);
-
-                    // Show current image if exists
-                    if (data.has_image && data.image_url) {
-                        $('#image-preview').attr('src', data.image_url);
-                        $('#image-preview-container').show();
-                    }
-
-                    console.log('Service data loaded successfully:', data);
-                } else {
-                    notification('error', 'Lỗi', response.message || 'Không thể tải dữ liệu');
-                }
-            },
-            error: function(xhr) {
-                let message = 'Có lỗi xảy ra khi tải dữ liệu';
-                if (xhr.responseJSON && xhr.responseJSON.message) {
-                    message = xhr.responseJSON.message;
-                }
-                notification('error', 'Lỗi', message);
-                console.error('Error loading service data:', xhr);
-            },
-            complete: function() {
-                // Hide loading state
-                submitBtn.removeAttr('data-kt-indicator');
-                submitBtn.prop('disabled', false);
-            }
-        });
-    }
-
+    // Edit appointment
     $(document).on('click', '.btn-edit', function(e) {
         e.preventDefault();
         form_reset();
-
-        let id = $(this).data('id');
-        if (id) {
-            console.log('Loading service data for ID:', id);
-            loadServiceData(id);
-        } else {
-            notification('error', 'Lỗi', 'Không tìm thấy ID dịch vụ');
-        }
+        let data = $(this).data('data');
+        let modal = $('#kt_modal_add_customer_form');
+        modal.find('.modal-title').text('Sửa lịch hẹn');
+        modal.find('input[name=id]').val(data.id);
+        modal.find('input[name=patient_name]').val(data.patient_name);
+        modal.find('input[name=patient_phone]').val(data.patient_phone);
+        modal.find('select[name=service_id]').val(data.service_id || '');
+        modal.find('input[name=appointment_date]').val(data.appointment_date_value);
+        modal.find('input[name=appointment_time]').val(data.appointment_time_value);
     });
 
+    // Add appointment
     $(document).on('click', '.btn-add', function(e) {
         e.preventDefault();
         form_reset();
         let modal = $('#kt_modal_add_customer_form');
-        modal.find('.modal-title').text('Thêm dịch vụ mới');
+        modal.find('.modal-title').text('Thêm lịch hẹn mới');
         modal.find('input[name=id]').val('');
     });
 
+    // Form submission
     $('#kt_modal_add_customer_form').on('submit', function(e) {
         e.preventDefault();
-
-        // Sync TinyMCE content before submit
-        if (typeof tinymce !== 'undefined' && tinymce.get('service_description')) {
-            tinymce.get('service_description').save();
-        }
-
         let formData = new FormData(this);
         let type = 'POST',
-            url = "{{ route('service.store') }}",
+            url = "{{ route('appointment.store') }}",
             id = $('form#kt_modal_add_customer_form input[name=id]').val();
 
         if (parseInt(id)) {
-            console.log('Updating service with ID:', id);
             type = 'POST';
             formData.append('_method', 'PUT');
-            url = "{{ route('service.update', ':id') }}".replace(':id', id);
-        } else {
-            console.log('Creating new service');
+            url = "{{ route('appointment.update', ':id') }}".replace(':id', id);
         }
 
         // Show loading
@@ -418,13 +319,12 @@
                     $('.print-error-msg ul').html(errorHtml);
                     $('.print-error-msg').show();
                 } else {
-                    let message = 'Có lỗi xảy ra';
-                    if (xhr.responseJSON && xhr.responseJSON.message) {
-                        message = xhr.responseJSON.message;
-                    }
-                    notification('error', 'Lỗi', message);
+                    let errors = xhr.responseJSON?.errors || {};
+                    console.log(errors);
+                    $.each(errors, function(key, value) {
+                        notification('error', 'Lỗi', value);
+                    });
                 }
-                console.error('Error saving service:', xhr);
             },
             complete: function() {
                 $('#kt_modal_add_customer_submit').removeAttr('data-kt-indicator');
@@ -433,11 +333,12 @@
         });
     });
 
+    // Delete appointment
     $(document).on('click', '.btn-delete', function(e) {
         e.preventDefault();
         let id = $(this).data('id');
         Swal.fire({
-            text: "Bạn có muốn xóa dịch vụ này không?",
+            text: "Bạn có muốn xóa lịch hẹn này không?",
             icon: "warning",
             showCancelButton: true,
             buttonsStyling: false,
@@ -450,7 +351,7 @@
         }).then(function(result) {
             if (result.value) {
                 $.ajax({
-                    url: "{{ route('service.destroy', ':id') }}".replace(':id', id),
+                    url: "{{ route('appointment.destroy', ':id') }}".replace(':id', id),
                     headers: {
                         'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
                     },
@@ -462,13 +363,12 @@
                             loadStatistics();
                         }
                     },
-                    error: function(xhr) {
-                        let message = 'Có lỗi xảy ra khi xóa dịch vụ';
-                        if (xhr.responseJSON && xhr.responseJSON.message) {
-                            message = xhr.responseJSON.message;
-                        }
-                        notification('error', 'Lỗi', message);
-                        console.error('Error deleting service:', xhr);
+                    error: function(data) {
+                        let errors = data.responseJSON.errors;
+                        console.log(errors);
+                        $.each(errors, function(key, value) {
+                            notification('error', 'Lỗi', value);
+                        });
                     }
                 });
             }
@@ -476,7 +376,7 @@
     });
 
     // Handle bulk delete
-    $(document).on('click', '[data-kt-services-table-select="delete_selected"]', function(e) {
+    $(document).on('click', '[data-kt-appointments-table-select="delete_selected"]', function(e) {
         e.preventDefault();
         let selectedIds = [];
         $('#kt_customers_table tbody input[type="checkbox"]:checked').each(function() {
@@ -486,7 +386,7 @@
         if (selectedIds.length === 0) return;
 
         Swal.fire({
-            text: "Bạn có muốn xóa " + selectedIds.length + " dịch vụ đã chọn không?",
+            text: "Bạn có muốn xóa " + selectedIds.length + " lịch hẹn đã chọn không?",
             icon: "warning",
             showCancelButton: true,
             buttonsStyling: false,
@@ -499,7 +399,7 @@
         }).then(function(result) {
             if (result.value) {
                 $.ajax({
-                    url: "{{ route('service.destroy', 'bulk') }}",
+                    url: "{{ route('appointment.destroy', 'bulk') }}",
                     headers: {
                         'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
                     },
@@ -516,32 +416,32 @@
                             updateBulkActions();
                         }
                     },
-                    error: function(xhr) {
-                        let message = 'Có lỗi xảy ra khi xóa các dịch vụ';
-                        if (xhr.responseJSON && xhr.responseJSON.message) {
-                            message = xhr.responseJSON.message;
-                        }
-                        notification('error', 'Lỗi', message);
-                        console.error('Error bulk deleting services:', xhr);
+                    error: function(data) {
+                        let errors = data.responseJSON.errors;
+                        console.log(errors);
+                        $.each(errors, function(key, value) {
+                            notification('error', 'Lỗi', value);
+                        });
                     }
                 });
             }
         });
     });
 
+    // Search filters
     $(".search_table").on('change keyup', function() {
         let data = $(this).val();
         let filter = $(this).data('filter');
 
-        if (filter === 'status') {
-            status_filter = data;
-        } else if (filter === 'type') {
-            type_filter = data;
+        if (filter === 'date') {
+            date_filter = data;
+        } else if (filter === 'service') {
+            service_filter = data;
         } else {
             search_table = data;
         }
 
-        console.log('Search:', search_table, 'Status:', status_filter, 'Type:', type_filter);
+        console.log('Search:', search_table, 'Date:', date_filter, 'Service:', service_filter);
         dt.ajax.reload();
     });
 </script>

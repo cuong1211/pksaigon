@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Admin;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class ServiceRequest extends FormRequest
 {
@@ -11,7 +12,7 @@ class ServiceRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return true;
+        return true; // Đã thay đổi từ false thành true
     }
 
     /**
@@ -21,34 +22,40 @@ class ServiceRequest extends FormRequest
      */
     public function rules(): array
     {
-        $serviceId = $this->route('service');
-        
+        $serviceId = $this->route('service'); // Lấy ID từ route parameter
+
         return [
             'name' => 'required|string|max:255',
+            'slug' => [
+                'nullable',
+                'string',
+                'max:255',
+                'regex:/^[a-z0-9\-]+$/',
+                Rule::unique('services', 'slug')->ignore($serviceId)
+            ],
             'description' => 'nullable|string',
-            'type' => 'required|string|in:consultation,treatment,examination,surgery',
+            'type' => 'required|in:procedure,laboratory,other',
             'price' => 'required|numeric|min:0',
-            'duration' => 'nullable|integer|min:1',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'is_active' => 'boolean'
         ];
     }
 
     /**
-     * Get custom messages for validator errors.
+     * Get custom error messages
      */
     public function messages(): array
     {
         return [
             'name.required' => 'Tên dịch vụ là bắt buộc.',
             'name.max' => 'Tên dịch vụ không được vượt quá 255 ký tự.',
+            'slug.unique' => 'Slug này đã được sử dụng.',
+            'slug.regex' => 'Slug chỉ được chứa chữ cái thường, số và dấu gạch ngang.',
             'type.required' => 'Loại dịch vụ là bắt buộc.',
-            'type.in' => 'Loại dịch vụ không hợp lệ.',
+            'type.in' => 'Loại dịch vụ phải là: Thủ thuật, Xét nghiệm hoặc Khác.',
             'price.required' => 'Giá dịch vụ là bắt buộc.',
             'price.numeric' => 'Giá dịch vụ phải là số.',
-            'price.min' => 'Giá dịch vụ không được âm.',
-            'duration.integer' => 'Thời gian phải là số nguyên.',
-            'duration.min' => 'Thời gian phải lớn hơn 0.',
+            'price.min' => 'Giá dịch vụ phải lớn hơn hoặc bằng 0.',
             'image.image' => 'File phải là hình ảnh.',
             'image.mimes' => 'Hình ảnh phải có định dạng: jpeg, png, jpg, gif.',
             'image.max' => 'Kích thước hình ảnh không được vượt quá 2MB.'
@@ -58,34 +65,17 @@ class ServiceRequest extends FormRequest
     /**
      * Prepare the data for validation.
      */
-    protected function prepareForValidation(): void
+    protected function prepareForValidation()
     {
-        // Convert checkbox value to boolean
-        if ($this->has('is_active')) {
-            $this->merge([
-                'is_active' => $this->boolean('is_active')
-            ]);
-        } else {
-            $this->merge([
-                'is_active' => false
-            ]);
-        }
+        // Chuyển đổi is_active từ checkbox
+        $this->merge([
+            'is_active' => $this->has('is_active') ? true : false,
+        ]);
 
-        // FIX: Parse price properly to handle decimal values
-        if ($this->has('price') && $this->price !== null) {
-            // Convert string price to float, handling both "599000" and "599000.00" formats
-            $price = str_replace([',', ' '], '', $this->price); // Remove commas and spaces
-            $price = (float) $price; // Convert to float (599000.00 becomes 599000.0)
-            
+        // Làm sạch slug nếu có
+        if ($this->has('slug') && !empty($this->input('slug'))) {
             $this->merge([
-                'price' => $price
-            ]);
-        }
-
-        // Convert duration to integer
-        if ($this->has('duration') && $this->duration) {
-            $this->merge([
-                'duration' => (int) $this->duration
+                'slug' => \Illuminate\Support\Str::slug($this->input('slug'))
             ]);
         }
     }

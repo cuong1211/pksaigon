@@ -9,12 +9,22 @@ use App\Http\Controllers\Admin\MedicineController;
 use App\Http\Controllers\Admin\MedicineImportController;
 use App\Http\Controllers\Admin\PatientController;
 use App\Http\Controllers\Admin\ExaminationController;
+use App\Http\Controllers\Admin\AppointmentController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Artisan;
 use App\Http\Controllers\Api\VietQRWebhookController;
 use App\Http\Controllers\Api\VietQRCallbackController;
+
+use App\Http\Controllers\Frontend\HomeController;
+use App\Http\Controllers\Frontend\AboutController;
+use App\Http\Controllers\Frontend\ServiceController as FrontendServiceController;
+use App\Http\Controllers\Frontend\ContactController as FrontendContactController;
+use App\Http\Controllers\Frontend\PostController as FrontendPostController;
+use App\Http\Controllers\Frontend\MedicineController as FrontendMedicineController;
+use App\Http\Controllers\Frontend\AppointmentController as FrontendAppointmentController;
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -22,9 +32,29 @@ use App\Http\Controllers\Api\VietQRCallbackController;
 */
 
 // Route cho trang chủ frontend
-Route::get('/', function () {
-    return view('frontend.views.home');
-});
+Route::get('/', [HomeController::class, 'index'])->name('home');
+Route::get('/about', [AboutController::class, 'index'])->name('about');
+
+// Services Routes
+Route::get('/services', [FrontendServiceController::class, 'index'])->name('frontend.services');
+Route::get('/services/{slug}', [FrontendServiceController::class, 'show'])->name('frontend.services.show');
+
+// Contact Routes
+Route::get('/contact', [FrontendContactController::class, 'index'])->name('contact');
+Route::post('/contact', [FrontendContactController::class, 'store'])->name('contact.store');
+
+// Posts/Blog Routes
+Route::get('/posts', [FrontendPostController::class, 'index'])->name('frontend.posts');
+Route::get('/posts/{slug}', [FrontendPostController::class, 'show'])->name('frontend.posts.show');
+
+// Medicines Routes
+Route::get('/medicines', [FrontendMedicineController::class, 'index'])->name('frontend.medicines');
+Route::get('/medicines/{slug}', [FrontendMedicineController::class, 'show'])->name('frontend.medicines.show');
+
+// Appointment Routes
+Route::get('/appointment', [FrontendAppointmentController::class, 'index'])->name('frontend.appointment');
+Route::post('/appointment', [FrontendAppointmentController::class, 'store'])->name('frontend.appointment.store');
+
 
 // Routes cho authentication
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
@@ -45,7 +75,7 @@ Route::middleware(['auth'])->group(function () {
 
         // Services Management
         Route::resource('service', ServiceController::class);
-
+        Route::get('service/get-data/{id}', [ServiceController::class, 'getData'])->name('service.getData');
         // Medicine Management
         Route::resource('medicine', MedicineController::class);
 
@@ -60,8 +90,9 @@ Route::middleware(['auth'])->group(function () {
         Route::resource('examination', ExaminationController::class);
         Route::post('examination/{id}/generate-qr', [ExaminationController::class, 'generatePaymentQR'])->name('examination.generatePaymentQR');
         Route::get('examination/{id}/check-payment', [ExaminationController::class, 'checkPaymentStatus'])->name('examination.checkPaymentStatus');
-        Route::post('examination/{id}/test-payment', [ExaminationController::class, 'testPaymentCallback'])->name('examination.testPayment');
 
+
+        Route::resource('appointment', AppointmentController::class);
         // Route tạo slug cho service
         Route::get('create-slug', function (Request $request) {
             $name = $request->get('name');
@@ -82,33 +113,23 @@ Route::middleware(['auth'])->group(function () {
     });
 });
 
-// Public webhook route (không cần auth) 
-Route::post('/webhook/payment', [ExaminationController::class, 'handlePaymentWebhook'])->name('public.paymentWebhook');
 
 // Route storage link (cho development)
 Route::get('/storage-link', function () {
     Artisan::call('storage:link');
     return 'Storage link created!';
 });
-Route::post('/token_generate', [VietQRWebhookController::class, 'generateToken']);
-Route::post('/bank/api/transaction-sync', [VietQRWebhookController::class, 'transactionSync']);
-Route::post('/vietqr/transaction-sync', [VietQRCallbackController::class, 'transactionSync'])
-    ->name('vietqr.callback');
 
 // Hoặc nếu VietQR yêu cầu path cụ thể:
-Route::post('/bank/api/transaction-sync', [VietQRCallbackController::class, 'transactionSync'])
-    ->name('vietqr.callback.bank');
 Route::post('examination/{id}/test-callback-simulation', [ExaminationController::class, 'testCallbackSimulation'])
     ->name('examination.testCallbackSimulation');
 
 // Test VietQR API với data thật
-Route::post('examination/{id}/test-vietqr-real-data', [ExaminationController::class, 'testVietQRWithRealData'])
-    ->name('examination.triggerVietQRCallback');
 
-// Generate curl command để test manual
-Route::get('examination/{id}/generate-curl-command', [ExaminationController::class, 'generateVietQRCurlCommand'])
-    ->name('examination.generateCurlCommand');
 
-// Trigger VietQR test callback  
-// Route::post('examination/{id}/trigger-vietqr-callback', [ExaminationController::class, 'triggerVietQRTestCallback'])
-//     ->name('examination.triggerVietQRCallback');
+Route::withoutMiddleware(['web'])->group(function () {
+    Route::post('/bank/api/transaction-sync', [VietQRController::class, 'transactionSync'])
+        ->middleware('vietqr.auth');
+    Route::post('examination/{id}/test-vietqr-real-data', [ExaminationController::class, 'testVietQRWithRealData'])
+        ->name('examination.triggerVietQRCallback');
+});

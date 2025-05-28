@@ -12,10 +12,17 @@
         <nav class="navbar navbar-expand-lg">
             <div class="container">
                 <!-- Logo Start -->
-                <a class="navbar-brand" href="./"
-                    style="display: flex; align-items: center; text-decoration: none;">
-                    <img src="images/logo.png" alt="Logo" style="width: 60px; height: auto; margin-right: 15px;">
-                    <span class="brand-text">SAIGON</span>
+                <a class="navbar-brand" href="{{ route('home') }}">
+                    <div class="brand-container">
+                        <div class="logo-wrapper">
+                            <img src="{{ asset('frontend/images/logo.png') }}" alt="PKSG Logo" class="brand-logo">
+                            <div class="logo-glow"></div>
+                        </div>
+                        <div class="brand-content">
+                            <div class="brand-main">PKSG</div>
+                            <div class="brand-subtitle">Phòng Khám Sài Gòn</div>
+                        </div>
+                    </div>
                 </a>
                 <!-- Logo End -->
 
@@ -23,23 +30,39 @@
                 <div class="collapse navbar-collapse main-menu">
                     <div class="nav-menu-wrapper">
                         <ul class="navbar-nav mr-auto" id="menu">
-                            <li class="nav-item"><a class="nav-link" href="./">Trang chủ</a>
+                            <li class="nav-item"><a class="nav-link" href="{{ route('home') }}">Trang chủ</a>
                             </li>
-                            <li class="nav-item"><a class="nav-link" href="about.html">Về chúng tôi</a></li>
-                            <li class="nav-item submenu"><a class="nav-link" href="#">Dịch vụ</a>
+                            <li class="nav-item"><a class="nav-link" href="{{ route('about') }}">Về chúng tôi</a></li>
+                            <li class="nav-item submenu"><a class="nav-link"
+                                    href="{{ route('frontend.services') }}">Dịch
+                                    vụ</a>
                                 <ul>
-                                    <li class="nav-item"><a class="nav-link" href="service-single.html">Dịch vụ khám bệnh</a></li>
-                                    <li class="nav-item"><a class="nav-link" href="blog.html">Thuốc điều trị</a></li>
-                                    <li class="nav-item"><a class="nav-link" href="blog.html">Thực phẩm bổ sung</a></li>
+                                    <li class="nav-item"><a class="nav-link"
+                                            href="{{ route('frontend.services') }}">Dịch vụ khám
+                                            bệnh</a></li>
+                                    <li class="nav-item"><a class="nav-link"
+                                            href="{{ route('frontend.services') }}">Dịch vụ xét nghiệm</a></li>
                                 </ul>
                             </li>
-                            <li class="nav-item"><a class="nav-link" href="contact.html">Liên hệ</a></li>
-                            <li class="nav-item highlighted-menu"><a class="nav-link" href="appointment.html">Đặt lịch khám</a></li>
+                            <li class="nav-item submenu"><a class="nav-link"
+                                    href="{{ route('frontend.medicines') }}">Sản phẩm</a>
+                                <ul>
+                                    <li class="nav-item"><a class="nav-link"
+                                            href="{{ route('frontend.medicines') }}">Thuốc điều trị</a></li>
+                                    <li class="nav-item"><a class="nav-link"
+                                            href="{{ route('frontend.medicines') }}">Thực phẩm bổ sung</a></li>
+                                </ul>
+                            </li>
+                            <li class="nav-item"><a class="nav-link" href="{{ route('contact') }}">Liên hệ</a>
+                            </li>
+                            <li class="nav-item highlighted-menu"><a class="nav-link"
+                                    href="{{ route('frontend.appointment') }}">Đặt lịch
+                                    khám</a></li>
                         </ul>
                     </div>
                     <!-- Let's Start Button Start -->
                     <div class="header-btn d-inline-flex">
-                        <a href="appointment.html" class="btn-default">Đặt lịch khám</a>
+                        <a href="{{ route('frontend.appointment') }}" class="btn-default">Đặt lịch khám</a>
                     </div>
                     <!-- Let's Start Button End -->
                 </div>

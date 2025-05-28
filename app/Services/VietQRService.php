@@ -494,7 +494,7 @@ class VietQRService
                 'bankCode' => $this->bankCode,
                 'transType' => 'C',
                 // Thêm callback URL - VietQR cần biết gửi callback về đâu
-                'callbackUrl' => url('http://pksaigon.test/'),
+                'callbackUrl' => url('http://pksaigon.test/bank/api/transaction-sync'),
                 // Thêm các field khác có thể cần
                 'orderId' => $orderId,
                 'description' => 'Test callback for examination ' . $orderId
@@ -513,13 +513,17 @@ class VietQRService
                 'token_preview' => substr($token, 0, 20) . '...'
             ]);
 
-            $response = Http::timeout(30)->withHeaders([
-
+            $response = Http::withHeaders([
+                'Content-Type' => 'application/json',
                 'Authorization' => 'Bearer ' . $token,
+                'User-Agent' => 'Laravel/VietQR-Test',
+                'Accept' => 'application/json'
+            ])
+                ->timeout(30)
+                ->withoutVerifying() // Disable SSL verification for test
+                ->post($this->apiUrl . '/vqr/bank/api/test/transaction-callback', $requestData);
 
-
-            ])->post($this->apiUrl . '/vqr/bank/api/test/transaction-callback', $requestData);
-            dd($response->body(),$requestData); // FIX: Kiểm tra response body
+            dd($response->body(), $requestData); // FIX: Kiểm tra response body
             Log::info('VietQR Response Details', [
                 'status' => $response->status(),
                 'reason' => $response->reason(),

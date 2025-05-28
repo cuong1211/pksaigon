@@ -11,21 +11,20 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Nếu bảng services đã tồn tại, drop và tạo lại với structure mới
-        Schema::dropIfExists('services');
         
         Schema::create('services', function (Blueprint $table) {
             $table->id();
             $table->string('name'); // Tên dịch vụ
+            $table->string('slug')->unique(); // Slug để SEO
             $table->text('description')->nullable(); // Mô tả dịch vụ
-            $table->enum('type', ['consultation', 'treatment', 'examination', 'surgery']); // Loại dịch vụ
+            $table->enum('type', ['procedure', 'laboratory', 'other']); // Loại dịch vụ: thủ thuật, xét nghiệm, khác
             $table->decimal('price', 15, 2)->default(0); // Giá dịch vụ
-            $table->integer('duration')->nullable(); // Thời gian thực hiện (phút)
             $table->string('image')->nullable(); // Đường dẫn ảnh
             $table->boolean('is_active')->default(true); // Trạng thái hoạt động
             $table->timestamps();
             
             // Indexes
+            $table->index('slug');
             $table->index('type');
             $table->index('is_active');
             $table->index(['is_active', 'type']);

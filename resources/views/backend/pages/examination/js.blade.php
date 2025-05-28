@@ -928,35 +928,8 @@
         });
 
     });
-    $(document).on('click', '#test-payment-btn', function() {
-        if (!currentExaminationId) return;
 
-        $(this).attr('data-kt-indicator', 'on');
-        $(this).prop('disabled', true);
 
-        $.ajax({
-            url: "{{ route('examination.testPayment', ':id') }}".replace(':id',
-                currentExaminationId),
-            type: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-            },
-            success: function(response) {
-                notification(response.type, response.title, response.content);
-                if (response.type === 'success') {
-                    // Test thành công, sẽ được auto-check bắt lên
-                    // checkPaymentStatus();
-                }
-            },
-            error: function() {
-                notification('error', 'Lỗi', 'Không thể thực hiện test payment');
-            },
-            complete: function() {
-                $('#test-payment-btn').removeAttr('data-kt-indicator');
-                $('#test-payment-btn').prop('disabled', false);
-            }
-        });
-    });
 
     function showPaymentModal(examinationId, data) {
         currentExaminationId = examinationId;
@@ -996,47 +969,6 @@
         $('#kt_modal_payment_qr').modal('show');
         startModalPaymentCheck();
     }
-    $(document).on('click', '#modal-test-payment-btn', function() {
-        if (!currentExaminationId) return;
-
-        $(this).attr('data-kt-indicator', 'on');
-        $(this).prop('disabled', true);
-
-        $.ajax({
-            url: "{{ route('examination.testPayment', ':id') }}".replace(':id',
-                currentExaminationId),
-            type: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-            },
-            success: function(response) {
-                if (response.type === 'success') {
-                    $('#payment-status').hide();
-                    $('#payment-success-status').show();
-                    stopModalPaymentCheck();
-
-                    setTimeout(function() {
-                        $('#kt_modal_payment_qr').modal('hide');
-                        $('#success-examination-code').text($(
-                                '#payment-examination-code')
-                            .text());
-                        $('#kt_modal_payment_success').modal('show');
-                        dt.ajax.reload(null, false);
-                        loadStatistics();
-                    }, 2000);
-                } else {
-                    notification(response.type, response.title, response.content);
-                }
-            },
-            error: function() {
-                notification('error', 'Lỗi', 'Không thể thực hiện test payment');
-            },
-            complete: function() {
-                $(this).removeAttr('data-kt-indicator');
-                $(this).prop('disabled', false);
-            }
-        });
-    });
     let modalPaymentCheckInterval;
 
     function startModalPaymentCheck() {

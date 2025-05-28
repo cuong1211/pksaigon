@@ -758,7 +758,7 @@ class ExaminationController extends Controller
                 'Authorization' => 'Bearer ' . $token,
                 'Content-Type' => 'application/json'
             ])->post(
-                url('/api/bank/api/transaction-sync'), // Sử dụng endpoint đúng
+                url('/bank/api/transaction-sync'), // Sử dụng endpoint đúng
                 $callbackData
             );
             // dd($response->body());

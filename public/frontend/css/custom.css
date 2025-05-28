@@ -1249,7 +1249,7 @@ header.main-header .header-sticky.active{
 
 .our-services{
 	position: relative;
-	background-image: url('../images/our-service-bg.svg'), linear-gradient(180deg, var(--secondary-color) 65%, var(--white-color) 35%);
+	background-image: url('../images/our-service-bg.svg'), linear-gradient(180deg, var(--secondary-color) 80%, var(--white-color) 20%);
 	background-repeat: no-repeat;
 	background-position: top center;
 	background-size: contain;

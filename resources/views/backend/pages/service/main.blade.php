@@ -22,8 +22,8 @@
         <div class="post d-flex flex-column-fluid" id="kt_post">
             <div id="kt_content_container" class="container">
                 <!-- Statistics Cards -->
-               <div class="row g-5 g-xl-8 mb-8" id="statsContainer">
-                    <div class="col-xl-3">
+                <div class="row g-5 g-xl-8 mb-8" id="statsContainer">
+                    <div class="col-xl-2">
                         <div class="card card-xl-stretch mb-xl-8">
                             <div class="card-body">
                                 <div class="d-flex align-items-center">
@@ -40,7 +40,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-xl-3">
+                    <div class="col-xl-2">
                         <div class="card card-xl-stretch mb-xl-8">
                             <div class="card-body">
                                 <div class="d-flex align-items-center">
@@ -57,35 +57,69 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-xl-3">
+                    <div class="col-xl-2">
                         <div class="card card-xl-stretch mb-xl-8">
                             <div class="card-body">
                                 <div class="d-flex align-items-center">
                                     <div class="symbol symbol-50px me-5">
-                                        <span class="symbol-label bg-light-warning">
-                                            <i class="fas fa-pause-circle text-warning fs-2x"></i>
+                                        <span class="symbol-label bg-light-primary">
+                                            <i class="fas fa-hand-holding-medical text-primary fs-2x"></i>
                                         </span>
                                     </div>
                                     <div class="d-flex flex-column">
-                                        <span class="text-dark fw-bolder fs-2" id="inactive-services">0</span>
-                                        <span class="text-muted fw-bold fs-7">Tạm dừng</span>
+                                        <span class="text-dark fw-bolder fs-2" id="procedure-services">0</span>
+                                        <span class="text-muted fw-bold fs-7">Thủ thuật</span>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <div class="col-xl-3">
+                    <div class="col-xl-2">
+                        <div class="card card-xl-stretch mb-xl-8">
+                            <div class="card-body">
+                                <div class="d-flex align-items-center">
+                                    <div class="symbol symbol-50px me-5">
+                                        <span class="symbol-label bg-light-success">
+                                            <i class="fas fa-vial text-success fs-2x"></i>
+                                        </span>
+                                    </div>
+                                    <div class="d-flex flex-column">
+                                        <span class="text-dark fw-bolder fs-2" id="laboratory-services">0</span>
+                                        <span class="text-muted fw-bold fs-7">Xét nghiệm</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-2">
                         <div class="card card-xl-stretch mb-xl-8">
                             <div class="card-body">
                                 <div class="d-flex align-items-center">
                                     <div class="symbol symbol-50px me-5">
                                         <span class="symbol-label bg-light-info">
-                                            <i class="fas fa-dollar-sign text-info fs-2x"></i>
+                                            <i class="fas fa-plus-circle text-info fs-2x"></i>
+                                        </span>
+                                    </div>
+                                    <div class="d-flex flex-column">
+                                        <span class="text-dark fw-bolder fs-2" id="other-services">0</span>
+                                        <span class="text-muted fw-bold fs-7">Khác</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-2">
+                        <div class="card card-xl-stretch mb-xl-8">
+                            <div class="card-body">
+                                <div class="d-flex align-items-center">
+                                    <div class="symbol symbol-50px me-5">
+                                        <span class="symbol-label bg-light-success">
+                                            <i class="fas fa-dollar-sign text-success fs-2x"></i>
                                         </span>
                                     </div>
                                     <div class="d-flex flex-column">
                                         <span class="text-dark fw-bolder fs-2" id="average-price">0 VNĐ</span>
-                                        <span class="text-muted fw-bold fs-7">Giá trung bình</span>
+                                        <span class="text-muted fw-bold fs-7">Giá TB</span>
                                     </div>
                                 </div>
                             </div>
@@ -126,12 +160,12 @@
                                 </select>
 
                                 <!-- Type Filter -->
-                                <select class="form-select form-select-solid w-150px me-3 search_table" data-filter="type">
+                                <select class="form-select form-select-solid w-150px me-3 search_table"
+                                    data-filter="type">
                                     <option value="">Tất cả loại</option>
-                                    <option value="consultation">Tư vấn</option>
-                                    <option value="treatment">Điều trị</option>
-                                    <option value="examination">Khám bệnh</option>
-                                    <option value="surgery">Phẫu thuật</option>
+                                    <option value="procedure">Thủ thuật</option>
+                                    <option value="laboratory">Xét nghiệm</option>
+                                    <option value="other">Khác</option>
                                 </select>
 
                                 <!-- Export Button -->
@@ -196,9 +230,9 @@
                                     </th>
                                     <th class="min-w-125px">Ảnh</th>
                                     <th class="min-w-200px">Thông tin dịch vụ</th>
+                                    <th class="min-w-100px">Slug</th>
                                     <th class="min-w-100px">Loại</th>
                                     <th class="min-w-100px">Giá</th>
-                                    <th class="min-w-100px">Thời gian</th>
                                     <th class="min-w-125px">Mô tả</th>
                                     <th class="min-w-100px">Trạng thái</th>
                                     <th class="text-end min-w-100px">Thao tác</th>
@@ -256,6 +290,16 @@
             margin-top: 2px;
         }
 
+        .service-slug {
+            color: #A1A5B7;
+            font-size: 12px;
+            font-family: 'Courier New', monospace;
+            background: #F5F8FA;
+            padding: 2px 6px;
+            border-radius: 3px;
+            margin-top: 2px;
+        }
+
         .status-badge {
             font-size: 11px;
             font-weight: 600;
@@ -277,11 +321,6 @@
             font-weight: 600;
             color: #50CD89;
             font-size: 14px;
-        }
-
-        .duration-display {
-            font-weight: 500;
-            color: #3F4254;
         }
 
         /* Responsive adjustments */
