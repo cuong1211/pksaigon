@@ -108,10 +108,12 @@ class VietQRService
                 'Content-Type' => 'application/json',
                 'Authorization' => 'Bearer ' . $token
             ])->post($this->apiUrl . '/vqr/api/qr/generate-customer', $requestData);
-
             if ($response->successful()) {
                 $data = $response->json();
-
+                Log::info('VietQR QR Code generated successfully', [
+                    'orderId' => $orderId,
+                    'response' => $data
+                ]);
                 // FIX: Lưu content thực tế được trả về từ API để dùng cho check transaction
                 if (isset($data['content'])) {
                     // Cập nhật examination với content thực tế từ VietQR
@@ -195,6 +197,7 @@ class VietQRService
                 'Content-Type' => 'application/json',
                 'Authorization' => 'Bearer ' . $token
             ])->post($this->apiUrl . '/vqr/api/transactions/check-order', $requestData);
+            dd($response->body()); // FIX: Kiểm tra response body
             if ($response->successful()) {
                 $data = $response->json(); // FIX: Kiểm tra dữ liệu trả về
                 Log::info('VietQR Check Transaction Success', [
@@ -281,7 +284,6 @@ class VietQRService
                 'transType' => 'C',
                 'bankCode' => $this->bankCode
             ];
-
             Log::info('VietQR Test Payment Request', [
                 'orderId' => $orderId,
                 'actualContent' => $actualContent,
@@ -492,12 +494,11 @@ class VietQRService
                 'bankCode' => $this->bankCode,
                 'transType' => 'C',
                 // Thêm callback URL - VietQR cần biết gửi callback về đâu
-                'callbackUrl' => url('/api/bank/api/transaction-sync'),
+                'callbackUrl' => url('http://pksaigon.test/'),
                 // Thêm các field khác có thể cần
                 'orderId' => $orderId,
                 'description' => 'Test callback for examination ' . $orderId
             ];
-
             // Validate tất cả field
             foreach (['bankAccount', 'content', 'amount', 'bankCode', 'transType'] as $field) {
                 if (empty($requestData[$field]) && $requestData[$field] !== 0) {
@@ -513,12 +514,12 @@ class VietQRService
             ]);
 
             $response = Http::timeout(30)->withHeaders([
-                'Content-Type' => 'application/json',
-                'Authorization' => 'Bearer ' . $token,
-                'Accept' => 'application/json',
-                'User-Agent' => 'Laravel/VietQR-Client'
-            ])->post($this->apiUrl . '/vqr/bank/api/test/transaction-callback', $requestData);
 
+                'Authorization' => 'Bearer ' . $token,
+
+
+            ])->post($this->apiUrl . '/vqr/bank/api/test/transaction-callback', $requestData);
+            dd($response->body(),$requestData); // FIX: Kiểm tra response body
             Log::info('VietQR Response Details', [
                 'status' => $response->status(),
                 'reason' => $response->reason(),

@@ -807,8 +807,8 @@ class ExaminationController extends Controller
     private function getVietQRToken()
     {
         try {
-            $username = env('VIETQR_USERNAME');
-            $password = env('VIETQR_PASSWORD');
+            $username = env('VIETQR_WEBHOOK_USERNAME');
+            $password = env('VIETQR_WEBHOOK_PASSWORD');
 
             if (!$username || !$password) {
                 throw new \Exception('VietQR credentials not configured');

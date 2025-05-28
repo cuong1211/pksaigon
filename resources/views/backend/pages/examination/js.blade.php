@@ -765,7 +765,7 @@
             }
         }
         // Bắt đầu auto-check payment status
-        startPaymentStatusCheck();
+        // startPaymentStatusCheck();
     }
 
 
@@ -945,7 +945,7 @@
                 notification(response.type, response.title, response.content);
                 if (response.type === 'success') {
                     // Test thành công, sẽ được auto-check bắt lên
-                    checkPaymentStatus();
+                    // checkPaymentStatus();
                 }
             },
             error: function() {
@@ -1176,7 +1176,7 @@
                 if (response.type === 'success') {
                     // Refresh status
                     setTimeout(function() {
-                        checkPaymentStatus();
+                        // checkPaymentStatus();
                     }, 2000);
                 }
             },
@@ -1210,7 +1210,7 @@
                 if (response.type === 'success') {
                     // Auto check payment sau vài giây
                     setTimeout(function() {
-                        startPaymentStatusCheck();
+                        // startPaymentStatusCheck();
                     }, 3000);
                 }
             },
