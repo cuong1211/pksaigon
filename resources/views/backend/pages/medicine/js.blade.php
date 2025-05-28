@@ -2,6 +2,7 @@
     // Private functions
     let search_table = '';
     let status_filter = '';
+    let type_filter = '';
     let alert_filter = '';
 
     // Load statistics on page load
@@ -22,6 +23,7 @@
             data: function(d) {
                 d.search_table = search_table;
                 d.status_filter = status_filter;
+                d.type_filter = type_filter;
                 d.alert_filter = alert_filter;
             }
         },
@@ -48,8 +50,10 @@
                 render: function(data, type, row, meta) {
                     let html = '<div class="medicine-info">';
                     html += '<div class="medicine-name">' + data + '</div>';
-                    html += '<code class="medicine-code">' + row.code + '</code>';
-                    html += '<div class="text-muted fs-7">' + row.unit + '</div>';
+                    html += row.type_badge;
+                    if (row.short_description && row.short_description !== '-') {
+                        html += '<div class="text-muted fs-7 mt-1">' + row.short_description + '</div>';
+                    }
                     if (row.alerts) {
                         html += '<div class="alert-badges mt-2">' + row.alerts + '</div>';
                     }
@@ -58,24 +62,15 @@
                 }
             },
             {
-                data: 'formatted_price',
+                data: 'formatted_import_price',
                 render: function(data, type, row, meta) {
                     return '<span class="price-display">' + data + '</span>';
                 }
             },
             {
-                data: 'quantity',
+                data: 'formatted_sale_price',
                 render: function(data, type, row, meta) {
-                    return '<div class="quantity-display">' +
-                        row.quantity_badge +
-                        '<div class="text-muted fs-8">Min: ' + row.min_quantity + '</div>' +
-                        '</div>';
-                }
-            },
-            {
-                data: 'manufacturer',
-                render: function(data, type, row, meta) {
-                    return data || '<span class="text-muted">-</span>';
+                    return '<span class="price-display fw-bold">' + data + '</span>';
                 }
             },
             {
@@ -118,8 +113,8 @@
                         '</a> \n' +
                         '<div class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-bold fs-7 w-125px py-4" data-kt-menu="true"> \n' +
                         '<div class="menu-item px-3"> \n' +
-                        '<a href="" data-data=\'' + JSON.stringify(row) +
-                        '\' class="menu-link px-3 btn-edit" data-bs-toggle="modal" data-bs-target="#kt_modal_add_customer">Sửa</a> \n' +
+                        '<a href="#" data-id="' + row.id +
+                        '" class="menu-link px-3 btn-edit" data-bs-toggle="modal" data-bs-target="#kt_modal_add_customer">Sửa</a> \n' +
                         '</div> \n' +
                         '<div class="menu-item px-3"> \n' +
                         '<a href="#" data-id="' + row.id +
@@ -206,13 +201,30 @@
                             <div class="card-body">
                                 <div class="d-flex align-items-center">
                                     <div class="symbol symbol-50px me-5">
-                                        <span class="symbol-label bg-light-warning">
-                                            <i class="fas fa-exclamation-triangle text-warning fs-2x"></i>
+                                        <span class="symbol-label bg-light-info">
+                                            <i class="fas fa-leaf text-info fs-2x"></i>
                                         </span>
                                     </div>
                                     <div class="d-flex flex-column">
-                                        <span class="text-dark fw-bolder fs-2">${data.low_stock || 0}</span>
-                                        <span class="text-muted fw-bold fs-7">Sắp hết</span>
+                                        <span class="text-dark fw-bolder fs-2">${data.supplement || 0}</span>
+                                        <span class="text-muted fw-bold fs-7">TPCN</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-2">
+                        <div class="card stats-card card-xl-stretch mb-xl-8">
+                            <div class="card-body">
+                                <div class="d-flex align-items-center">
+                                    <div class="symbol symbol-50px me-5">
+                                        <span class="symbol-label bg-light-primary">
+                                            <i class="fas fa-capsules text-primary fs-2x"></i>
+                                        </span>
+                                    </div>
+                                    <div class="d-flex flex-column">
+                                        <span class="text-dark fw-bolder fs-2">${data.medicine || 0}</span>
+                                        <span class="text-muted fw-bold fs-7">Thuốc điều trị</span>
                                     </div>
                                 </div>
                             </div>
@@ -252,23 +264,6 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-xl-2">
-                        <div class="card stats-card card-xl-stretch mb-xl-8">
-                            <div class="card-body">
-                                <div class="d-flex align-items-center">
-                                    <div class="symbol symbol-50px me-5">
-                                        <span class="symbol-label bg-light-info">
-                                            <i class="fas fa-dollar-sign text-info fs-2x"></i>
-                                        </span>
-                                    </div>
-                                    <div class="d-flex flex-column">
-                                        <span class="text-dark fw-bolder fs-2">${data.total_value || '0 VNĐ'}</span>
-                                        <span class="text-muted fw-bold fs-7">Giá trị tồn</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
                 `);
             },
             error: function() {
@@ -295,74 +290,116 @@
         $('input[name="is_active"]').prop('checked', true);
         $('#image-preview-container').hide();
         $('.print-error-msg').hide();
+
+        // Reset TinyMCE
+        if (typeof tinymce !== 'undefined') {
+            tinymce.get('medicine_description')?.setContent('');
+        }
+    }
+
+    // Function to load medicine data for edit
+    function loadMedicineData(id) {
+        // Show loading state
+        const submitBtn = $('#kt_modal_add_customer_submit');
+        submitBtn.attr('data-kt-indicator', 'on');
+        submitBtn.prop('disabled', true);
+
+        $.ajax({
+            url: "{{ route('medicine.show', 'get-data') }}",
+            type: 'GET',
+            data: {
+                id: id
+            },
+            success: function(response) {
+                if (response.type === 'success') {
+                    let data = response.data;
+                    let modal = $('#kt_modal_add_customer_form');
+
+                    // Set form values
+                    modal.find('.modal-title').text('Sửa thông tin thuốc');
+                    modal.find('input[name=id]').val(data.id);
+                    modal.find('input[name=name]').val(data.name);
+                    modal.find('select[name=type]').val(data.type);
+                    modal.find('input[name=import_price]').val(data.import_price);
+                    modal.find('input[name=sale_price]').val(data.sale_price);
+                    modal.find('input[name=expiry_date]').val(data.expiry_date || '');
+                    modal.find('input[name=is_active]').prop('checked', data.is_active);
+
+                    // Set TinyMCE content
+                    setTimeout(function() {
+                        if (typeof tinymce !== 'undefined' && tinymce.get('medicine_description')) {
+                            tinymce.get('medicine_description').setContent(data.description || '');
+                        }
+                    }, 500);
+
+                    // Show current image if exists
+                    if (data.has_image && data.image_url) {
+                        $('#image-preview').attr('src', data.image_url);
+                        $('#image-preview-container').show();
+                    }
+
+                    console.log('Medicine data loaded successfully:', data);
+                } else {
+                    notification('error', 'Lỗi', response.message || 'Không thể tải dữ liệu');
+                }
+            },
+            error: function(xhr) {
+                let message = 'Có lỗi xảy ra khi tải dữ liệu';
+                if (xhr.responseJSON && xhr.responseJSON.message) {
+                    message = xhr.responseJSON.message;
+                }
+                notification('error', 'Lỗi', message);
+                console.error('Error loading medicine data:', xhr);
+            },
+            complete: function() {
+                // Hide loading state
+                submitBtn.removeAttr('data-kt-indicator');
+                submitBtn.prop('disabled', false);
+            }
+        });
     }
 
     $(document).on('click', '.btn-edit', function(e) {
-        console.log('edit')
         e.preventDefault();
         form_reset();
-        let data = $(this).data('data');
-        let modal = $('#kt_modal_add_customer_form');
-        modal.find('.modal-title').text('Sửa thông tin thuốc');
-        modal.find('input[name=id]').val(data.id);
-        modal.find('input[name=name]').val(data.name);
-        modal.find('input[name=code]').val(data.code);
-        modal.find('textarea[name=description]').val(data.description);
-        modal.find('input[name=unit]').val(data.unit);
 
-        // FIX: Parse price to remove decimal places for display
-        let price = parseFloat(data.price);
-        modal.find('input[name=price]').val(Math.round(price)); // Remove .00 decimal
-
-        modal.find('input[name=quantity]').val(data.quantity);
-        modal.find('input[name=min_quantity]').val(data.min_quantity);
-        modal.find('input[name=manufacturer]').val(data.manufacturer);
-
-        // FIX: Handle expiry_date binding properly for date input
-        if (data.expiry_date) {
-            // Convert date to Y-m-d format for HTML date input
-            let expiryDate = new Date(data.expiry_date);
-            if (!isNaN(expiryDate.getTime())) {
-                let formattedDate = expiryDate.getFullYear() + '-' +
-                    String(expiryDate.getMonth() + 1).padStart(2, '0') + '-' +
-                    String(expiryDate.getDate()).padStart(2, '0');
-                modal.find('input[name=expiry_date]').val(formattedDate);
-            }
+        let id = $(this).data('id');
+        if (id) {
+            console.log('Loading medicine data for ID:', id);
+            loadMedicineData(id);
         } else {
-            modal.find('input[name=expiry_date]').val('');
-        }
-
-        modal.find('input[name=is_active]').prop('checked', data.is_active == 1);
-
-        // Show current image if exists
-        if (data.image_display && data.image_display !== '/images/default-medicine.png') {
-            $('#image-preview').attr('src', data.image_display);
-            $('#image-preview-container').show();
+            notification('error', 'Lỗi', 'Không tìm thấy ID thuốc');
         }
     });
 
     $(document).on('click', '.btn-add', function(e) {
-        console.log('add')
         e.preventDefault();
         form_reset();
         let modal = $('#kt_modal_add_customer_form');
         modal.find('.modal-title').text('Thêm thuốc mới');
         modal.find('input[name=id]').val('');
-        modal.trigger('reset');
     });
 
     $('#kt_modal_add_customer_form').on('submit', function(e) {
         e.preventDefault();
+
+        // Sync TinyMCE content before submit
+        if (typeof tinymce !== 'undefined' && tinymce.get('medicine_description')) {
+            tinymce.get('medicine_description').save();
+        }
+
         let formData = new FormData(this);
         let type = 'POST',
             url = "{{ route('medicine.store') }}",
             id = $('form#kt_modal_add_customer_form input[name=id]').val();
 
         if (parseInt(id)) {
-            console.log('edit');
+            console.log('Updating medicine with ID:', id);
             type = 'POST';
             formData.append('_method', 'PUT');
             url = "{{ route('medicine.update', ':id') }}".replace(':id', id);
+        } else {
+            console.log('Creating new medicine');
         }
 
         // Show loading
@@ -397,12 +434,13 @@
                     $('.print-error-msg ul').html(errorHtml);
                     $('.print-error-msg').show();
                 } else {
-                    let errors = xhr.responseJSON?.errors || {};
-                    console.log(errors);
-                    $.each(errors, function(key, value) {
-                        notification('error', 'Lỗi', value);
-                    });
+                    let message = 'Có lỗi xảy ra';
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        message = xhr.responseJSON.message;
+                    }
+                    notification('error', 'Lỗi', message);
                 }
+                console.error('Error saving medicine:', xhr);
             },
             complete: function() {
                 $('#kt_modal_add_customer_submit').removeAttr('data-kt-indicator');
@@ -440,12 +478,13 @@
                             loadStatistics();
                         }
                     },
-                    error: function(data) {
-                        let errors = data.responseJSON.errors;
-                        console.log(errors);
-                        $.each(errors, function(key, value) {
-                            notification('error', 'Lỗi', value);
-                        });
+                    error: function(xhr) {
+                        let message = 'Có lỗi xảy ra khi xóa thuốc';
+                        if (xhr.responseJSON && xhr.responseJSON.message) {
+                            message = xhr.responseJSON.message;
+                        }
+                        notification('error', 'Lỗi', message);
+                        console.error('Error deleting medicine:', xhr);
                     }
                 });
             }
@@ -493,12 +532,13 @@
                             updateBulkActions();
                         }
                     },
-                    error: function(data) {
-                        let errors = data.responseJSON.errors;
-                        console.log(errors);
-                        $.each(errors, function(key, value) {
-                            notification('error', 'Lỗi', value);
-                        });
+                    error: function(xhr) {
+                        let message = 'Có lỗi xảy ra khi xóa các thuốc';
+                        if (xhr.responseJSON && xhr.responseJSON.message) {
+                            message = xhr.responseJSON.message;
+                        }
+                        notification('error', 'Lỗi', message);
+                        console.error('Error bulk deleting medicines:', xhr);
                     }
                 });
             }
@@ -511,13 +551,16 @@
 
         if (filter === 'status') {
             status_filter = data;
+        } else if (filter === 'type') {
+            type_filter = data;
         } else if (filter === 'alert') {
             alert_filter = data;
         } else {
             search_table = data;
         }
 
-        console.log('Search:', search_table, 'Status:', status_filter, 'Alert:', alert_filter);
+        console.log('Search:', search_table, 'Status:', status_filter, 'Type:', type_filter, 'Alert:',
+            alert_filter);
         dt.ajax.reload();
     });
 </script>

@@ -1,6 +1,6 @@
 <div class="modal fade" id="kt_modal_add_customer" tabindex="-1" aria-hidden="true">
     <!--begin::Modal dialog-->
-    <div class="modal-dialog modal-dialog-centered mw-750px">
+    <div class="modal-dialog modal-dialog-centered mw-900px">
         <!--begin::Modal content-->
         <div class="modal-content">
             <!--begin::Form-->
@@ -43,7 +43,7 @@
                         <!--begin::Row-->
                         <div class="row">
                             <!--begin::Col-->
-                            <div class="col-md-6">
+                            <div class="col-md-8">
                                 <!--begin::Input group - Tên thuốc-->
                                 <div class="fv-row mb-7">
                                     <label class="required fs-6 fw-bold mb-2">Tên thuốc</label>
@@ -54,12 +54,16 @@
                             </div>
                             <!--end::Col-->
                             <!--begin::Col-->
-                            <div class="col-md-6">
-                                <!--begin::Input group - Mã thuốc-->
+                            <div class="col-md-4">
+                                <!--begin::Input group - Loại thuốc-->
                                 <div class="fv-row mb-7">
-                                    <label class="required fs-6 fw-bold mb-2">Mã thuốc</label>
-                                    <input type="text" class="form-control form-control-solid"
-                                        placeholder="Nhập mã thuốc" name="code" />
+                                    <label class="required fs-6 fw-bold mb-2">Loại thuốc</label>
+                                    <select class="form-select form-select-solid" name="type">
+                                        <option value="">Chọn loại thuốc</option>
+                                        <option value="supplement">Thực phẩm chức năng</option>
+                                        <option value="medicine">Thuốc điều trị</option>
+                                        <option value="other">Khác</option>
+                                    </select>
                                 </div>
                                 <!--end::Input group-->
                             </div>
@@ -67,10 +71,12 @@
                         </div>
                         <!--end::Row-->
 
-                        <!--begin::Input group - Mô tả-->
+                        <!--begin::Input group - Mô tả với TinyMCE-->
                         <div class="fv-row mb-7">
-                            <label class="fs-6 fw-bold mb-2">Mô tả</label>
-                            <textarea class="form-control form-control-solid" rows="3" placeholder="Nhập mô tả về thuốc" name="description"></textarea>
+                            <label class="fs-6 fw-bold mb-2">Mô tả thuốc</label>
+                            <textarea class="form-control" id="medicine_description" name="description" rows="8">
+                            </textarea>
+                            <div class="form-text">Mô tả chi tiết về thuốc, công dụng, cách sử dụng...</div>
                         </div>
                         <!--end::Input group-->
 
@@ -78,33 +84,32 @@
                         <div class="row">
                             <!--begin::Col-->
                             <div class="col-md-4">
-                                <!--begin::Input group - Đơn vị-->
+                                <!--begin::Input group - Giá nhập-->
                                 <div class="fv-row mb-7">
-                                    <label class="required fs-6 fw-bold mb-2">Đơn vị</label>
-                                    <input type="text" class="form-control form-control-solid"
-                                        placeholder="VD: viên, chai, hộp" name="unit" />
+                                    <label class="required fs-6 fw-bold mb-2">Giá nhập (VNĐ)</label>
+                                    <input type="number" class="form-control form-control-solid" placeholder="0"
+                                        name="import_price" min="0" step="1000" />
                                 </div>
                                 <!--end::Input group-->
                             </div>
                             <!--end::Col-->
                             <!--begin::Col-->
                             <div class="col-md-4">
-                                <!--begin::Input group - Giá-->
+                                <!--begin::Input group - Giá bán-->
                                 <div class="fv-row mb-7">
-                                    <label class="required fs-6 fw-bold mb-2">Giá (VNĐ)</label>
+                                    <label class="required fs-6 fw-bold mb-2">Giá bán (VNĐ)</label>
                                     <input type="number" class="form-control form-control-solid" placeholder="0"
-                                        name="price" min="0" step="1000" />
+                                        name="sale_price" min="0" step="1000" />
                                 </div>
                                 <!--end::Input group-->
                             </div>
                             <!--end::Col-->
                             <!--begin::Col-->
                             <div class="col-md-4">
-                                <!--begin::Input group - Số lượng-->
+                                <!--begin::Input group - Hạn sử dụng-->
                                 <div class="fv-row mb-7">
-                                    <label class="required fs-6 fw-bold mb-2">Số lượng</label>
-                                    <input type="number" class="form-control form-control-solid" placeholder="0"
-                                        name="quantity" min="0" />
+                                    <label class="fs-6 fw-bold mb-2">Hạn sử dụng</label>
+                                    <input type="date" class="form-control form-control-solid" name="expiry_date" />
                                 </div>
                                 <!--end::Input group-->
                             </div>
@@ -116,105 +121,65 @@
                         <div class="row">
                             <!--begin::Col-->
                             <div class="col-md-6">
-                                <!--begin::Input group - Số lượng tối thiểu-->
+                                <!--begin::Input group - Trạng thái-->
                                 <div class="fv-row mb-7">
-                                    <label class="required fs-6 fw-bold mb-2">Số lượng tối thiểu</label>
-                                    <input type="number" class="form-control form-control-solid" placeholder="0"
-                                        name="min_quantity" min="0" />
-                                    <div class="form-text">Cảnh báo khi số lượng <= giá trị này</div>
+                                    <label class="fs-6 fw-bold mb-2">Trạng thái</label>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" name="is_active"
+                                            id="is_active" checked>
+                                        <label class="form-check-label fs-6 fw-bold" for="is_active">
+                                            Hoạt động
+                                        </label>
                                     </div>
-                                    <!--end::Input group-->
                                 </div>
-                                <!--end::Col-->
-                                <!--begin::Col-->
-                                <div class="col-md-6">
-                                    <!--begin::Input group - Nhà sản xuất-->
-                                    <div class="fv-row mb-7">
-                                        <label class="fs-6 fw-bold mb-2">Nhà sản xuất</label>
-                                        <input type="text" class="form-control form-control-solid"
-                                            placeholder="Nhập nhà sản xuất" name="manufacturer" />
-                                    </div>
-                                    <!--end::Input group-->
-                                </div>
-                                <!--end::Col-->
+                                <!--end::Input group-->
                             </div>
-                            <!--end::Row-->
-
-                            <!--begin::Row-->
-                            <div class="row">
-                                <!--begin::Col-->
-                                <div class="col-md-6">
-                                    <!--begin::Input group - Hạn sử dụng-->
-                                    <div class="fv-row mb-7">
-                                        <label class="fs-6 fw-bold mb-2">Hạn sử dụng</label>
-                                        <input type="date" class="form-control form-control-solid"
-                                            name="expiry_date" />
-                                    </div>
-                                    <!--end::Input group-->
-                                </div>
-                                <!--end::Col-->
-                                <!--begin::Col-->
-                                <div class="col-md-6">
-                                    <!--begin::Input group - Trạng thái-->
-                                    <div class="fv-row mb-7">
-                                        <label class="fs-6 fw-bold mb-2">Trạng thái</label>
-                                        <div class="form-check form-switch">
-                                            <input class="form-check-input" type="checkbox" name="is_active"
-                                                id="is_active" checked>
-                                            <label class="form-check-label fs-6 fw-bold" for="is_active">
-                                                Hoạt động
-                                            </label>
-                                        </div>
-                                    </div>
-                                    <!--end::Input group-->
-                                </div>
-                                <!--end::Col-->
-                            </div>
-                            <!--end::Row-->
-
-                            <!--begin::Input group - Hình ảnh-->
-                            <div class="fv-row mb-7">
-                                <label class="fs-6 fw-bold mb-2">Hình ảnh thuốc</label>
-                                <input type="file" class="form-control form-control-solid" name="image"
-                                    accept="image/*" onchange="previewImage(this)" />
-                                <div class="form-text">Chấp nhận: JPEG, PNG, JPG, GIF. Tối đa 2MB</div>
-
-                                <!--begin::Image preview-->
-                                <div id="image-preview-container" class="mt-3" style="display: none;">
-                                    <label class="fs-7 fw-bold text-gray-600">Preview:</label>
-                                    <div class="mt-2">
-                                        <img id="image-preview" src="" class="img-fluid rounded"
-                                            style="max-height: 150px;">
-                                        <button type="button" class="btn btn-sm btn-light-danger mt-2"
-                                            onclick="removeImage()">
-                                            Xóa ảnh
-                                        </button>
-                                    </div>
-                                </div>
-                                <!--end::Image preview-->
-                            </div>
-                            <!--end::Input group-->
-
+                            <!--end::Col-->
                         </div>
-                        <!--end::Scroll-->
+                        <!--end::Row-->
+
+                        <!--begin::Input group - Hình ảnh-->
+                        <div class="fv-row mb-7">
+                            <label class="fs-6 fw-bold mb-2">Hình ảnh thuốc</label>
+                            <input type="file" class="form-control form-control-solid" name="image"
+                                accept="image/*" onchange="previewImage(this)" />
+                            <div class="form-text">Chấp nhận: JPEG, PNG, JPG, GIF. Tối đa 2MB</div>
+
+                            <!--begin::Image preview-->
+                            <div id="image-preview-container" class="mt-3" style="display: none;">
+                                <label class="fs-7 fw-bold text-gray-600">Preview:</label>
+                                <div class="mt-2">
+                                    <img id="image-preview" src="" class="img-fluid rounded"
+                                        style="max-height: 200px;">
+                                    <button type="button" class="btn btn-sm btn-light-danger mt-2"
+                                        onclick="removeImage()">
+                                        Xóa ảnh
+                                    </button>
+                                </div>
+                            </div>
+                            <!--end::Image preview-->
+                        </div>
+                        <!--end::Input group-->
+
                     </div>
-                    <!--end::Modal body-->
-                    <!--begin::Modal footer-->
-                    <div class="modal-footer flex-center">
-                        <!--begin::Button-->
-                        <button type="reset" id="kt_modal_add_customer_cancel"
-                            class="btn btn-light me-3">Hủy</button>
-                        <!--end::Button-->
-                        <!--begin::Button-->
-                        <button type="submit" id="kt_modal_add_customer_submit" class="btn btn-primary">
-                            <span class="indicator-label">Xác nhận</span>
-                            <span class="indicator-progress">Đang xử lý...
-                                <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
-                            </span>
-                        </button>
-                        <!--end::Button-->
-                    </div>
-                    <!--end::Modal footer-->
+                    <!--end::Scroll-->
+                </div>
+                <!--end::Modal body-->
+                <!--begin::Modal footer-->
+                <div class="modal-footer flex-center">
+                    <!--begin::Button-->
+                    <button type="reset" id="kt_modal_add_customer_cancel" class="btn btn-light me-3">Hủy</button>
+                    <!--end::Button-->
+                    <!--begin::Button-->
+                    <button type="submit" id="kt_modal_add_customer_submit" class="btn btn-primary">
+                        <span class="indicator-label">Xác nhận</span>
+                        <span class="indicator-progress">Đang xử lý...
+                            <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
+                        </span>
+                    </button>
+                    <!--end::Button-->
+                </div>
+                <!--end::Modal footer-->
             </form>
             <!--end::Form-->
         </div>
@@ -222,7 +187,38 @@
 </div>
 
 @push('jscustom')
+    <script src="https://cdn.tiny.cloud/1/q9sm369apfbukdo5v87vua3kadrt69sdc8jtdci6pu72rmbr/tinymce/7/tinymce.min.js"
+        referrerpolicy="origin"></script>
+
     <script>
+        // Khởi tạo TinyMCE khi modal mở
+        function initTinyMCE() {
+            if (typeof tinymce !== 'undefined') {
+                tinymce.remove('#medicine_description');
+                tinymce.init({
+                    selector: '#medicine_description',
+                    height: 250,
+                    menubar: false,
+                    plugins: [
+                        'advlist autolink lists link charmap print preview anchor',
+                        'searchreplace visualblocks code fullscreen',
+                        'insertdatetime media table paste code help wordcount'
+                    ],
+                    toolbar: 'undo redo | formatselect | bold italic backcolor | \
+                                 alignleft aligncenter alignright alignjustify | \
+                                 bullist numlist outdent indent | removeformat | help',
+                    content_style: 'body { font-family: "Be Vietnam Pro", sans-serif; font-size:14px }',
+                    language: 'vi',
+                    branding: false,
+                    setup: function(editor) {
+                        editor.on('change', function() {
+                            editor.save();
+                        });
+                    }
+                });
+            }
+        }
+
         // Preview image function
         function previewImage(input) {
             const container = document.getElementById('image-preview-container');
@@ -248,5 +244,49 @@
             preview.src = '';
             container.style.display = 'none';
         }
+
+        // Event listeners cho modal
+        $('#kt_modal_add_customer').on('shown.bs.modal', function() {
+            initTinyMCE();
+        });
+
+        $('#kt_modal_add_customer').on('hidden.bs.modal', function() {
+            if (typeof tinymce !== 'undefined') {
+                tinymce.remove('#medicine_description');
+            }
+        });
     </script>
+@endpush
+
+@push('csscustom')
+    <style>
+        /* Custom CSS cho modal */
+        .modal-dialog.mw-900px {
+            max-width: 900px !important;
+        }
+
+        .tox-tinymce {
+            border-radius: 0.475rem !important;
+        }
+
+        .form-control-solid {
+            border: 1px solid #e4e6ef;
+        }
+
+        .form-control-solid:focus {
+            border-color: #009ef7;
+            box-shadow: 0 0 0 0.2rem rgba(0, 158, 247, 0.25);
+        }
+
+        #image-preview {
+            border: 2px solid #e4e6ef;
+            border-radius: 0.475rem;
+            padding: 5px;
+        }
+
+        .scroll-y {
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+    </style>
 @endpush

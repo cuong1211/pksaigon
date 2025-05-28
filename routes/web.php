@@ -78,9 +78,11 @@ Route::middleware(['auth'])->group(function () {
         Route::get('service/get-data/{id}', [ServiceController::class, 'getData'])->name('service.getData');
         // Medicine Management
         Route::resource('medicine', MedicineController::class);
+        Route::get('medicine/get-data/{id}', [MedicineController::class, 'getData'])->name('medicine.getData');
 
-        // Medicine Import Management
+        // Medicine Import Management  
         Route::resource('medicine-import', MedicineImportController::class);
+        Route::get('medicine-import/get-data/{id}', [MedicineImportController::class, 'getData'])->name('medicine-import.getData');
 
         // Patient Management
         Route::resource('patient', PatientController::class);

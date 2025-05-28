@@ -126,8 +126,7 @@
                                     <th class="min-w-125px">Mã phiếu nhập</th>
                                     <th class="min-w-200px">Thông tin thuốc</th>
                                     <th class="min-w-100px">Số lượng</th>
-                                    <th class="min-w-100px">Giá nhập</th>
-                                    <th class="min-w-100px">Tổng tiền</th>
+                                    <th class="min-w-120px">Tổng tiền</th>
                                     <th class="min-w-100px">Ngày nhập</th>
                                     <th class="min-w-100px">Hóa đơn</th>
                                     <th class="text-end min-w-100px">Thao tác</th>
@@ -149,6 +148,7 @@
 
 @push('jscustom')
     <script src="assets/plugins/custom/datatables/datatables.bundle.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     @include('backend.pages.medicine-import.js')
 @endpush
 
@@ -169,16 +169,6 @@
             font-weight: 600;
             color: #181C32;
             line-height: 1.4;
-        }
-
-        .medicine-code {
-            color: #7E8299;
-            font-size: 12px;
-            background-color: #F1F1F2;
-            padding: 2px 6px;
-            border-radius: 4px;
-            display: inline-block;
-            margin-top: 2px;
         }
 
         .import-code {

@@ -1,3 +1,7 @@
+{
+data: 'quantity',
+render: function(data, type, row, meta) {
+return '
 <script>
     // Private functions
     let search_table = '';
@@ -32,8 +36,8 @@
                 searchable: false,
                 render: function(data, type, row, meta) {
                     return '<div class="form-check form-check-sm form-check-custom form-check-solid">' +
-                           '<input class="form-check-input" type="checkbox" value="' + row.id + '" />' +
-                           '</div>';
+                        '<input class="form-check-input" type="checkbox" value="' + row.id + '" />' +
+                        '</div>';
                 },
             },
             {
@@ -47,8 +51,8 @@
                 render: function(data, type, row, meta) {
                     let html = '<div class="medicine-info">';
                     html += '<div class="medicine-name">' + data.name + '</div>';
-                    html += '<code class="medicine-code">' + data.code + '</code>';
-                    html += '<div class="text-muted fs-7">Đơn vị: ' + data.unit + '</div>';
+                    html += '<span class="badge badge-light-info">' + (data.type === 'supplement' ?
+                        'TPCN' : data.type === 'medicine' ? 'Thuốc' : 'Khác') + '</span>';
                     html += '</div>';
                     return html;
                 }
@@ -56,17 +60,12 @@
             {
                 data: 'quantity',
                 render: function(data, type, row, meta) {
-                    return '<span class="quantity-display">' + new Intl.NumberFormat('vi-VN').format(data) + '</span>';
+                    return '<span class="quantity-display fw-bold">' + new Intl.NumberFormat('vi-VN')
+                        .format(data) + '</span>';
                 }
             },
             {
-                data: 'formatted_unit_price',
-                render: function(data, type, row, meta) {
-                    return '<span class="price-display">' + data + '</span>';
-                }
-            },
-            {
-                data: 'formatted_total_price',
+                data: 'formatted_total_amount',
                 render: function(data, type, row, meta) {
                     return '<span class="price-display fw-bold">' + data + '</span>';
                 }
@@ -82,8 +81,8 @@
                 render: function(data, type, row, meta) {
                     if (data && row.invoice_image_url) {
                         return '<img src="' + row.invoice_image_url + '" class="invoice-preview" ' +
-                               'onclick="showInvoicePreview(\'' + row.invoice_image_url + '\')" ' +
-                               'title="Click để xem ảnh lớn">';
+                            'onclick="showInvoicePreview(\'' + row.invoice_image_url + '\')" ' +
+                            'title="Click để xem ảnh lớn">';
                     } else {
                         return '<span class="text-muted">Không có</span>';
                     }
@@ -102,8 +101,8 @@
                         '</a> \n' +
                         '<div class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-bold fs-7 w-125px py-4" data-kt-menu="true"> \n' +
                         '<div class="menu-item px-3"> \n' +
-                        '<a href="" data-data=\'' + JSON.stringify(row) +
-                        '\' class="menu-link px-3 btn-edit" data-bs-toggle="modal" data-bs-target="#kt_modal_add_customer">Sửa</a> \n' +
+                        '<a href="#" data-id="' + row.id +
+                        '" class="menu-link px-3 btn-edit" data-bs-toggle="modal" data-bs-target="#kt_modal_add_customer">Sửa</a> \n' +
                         '</div> \n' +
                         '<div class="menu-item px-3"> \n' +
                         '<a href="#" data-id="' + row.id +
@@ -133,7 +132,7 @@
 
     function updateBulkActions() {
         var checkedCount = $('#kt_customers_table tbody input[type="checkbox"]:checked').length;
-        
+
         if (checkedCount > 0) {
             $('[data-kt-imports-table-toolbar="base"]').addClass('d-none');
             $('[data-kt-imports-table-toolbar="selected"]').removeClass('d-none');
@@ -151,109 +150,92 @@
             type: 'GET',
             success: function(data) {
                 $('#statsContainer').html(`
-                    <div class="col-xl-2">
-                        <div class="card stats-card card-xl-stretch mb-xl-8">
-                            <div class="card-body">
-                                <div class="d-flex align-items-center">
-                                    <div class="symbol symbol-50px me-5">
-                                        <span class="symbol-label bg-light-primary">
-                                            <i class="fas fa-file-import text-primary fs-2x"></i>
-                                        </span>
-                                    </div>
-                                    <div class="d-flex flex-column">
-                                        <span class="text-dark fw-bolder fs-2">${data.total_imports || 0}</span>
-                                        <span class="text-muted fw-bold fs-7">Tổng phiếu nhập</span>
-                                    </div>
-                                </div>
-                            </div>
+        <div class="col-xl-3">
+            <div class="card stats-card card-xl-stretch mb-xl-8">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="symbol symbol-50px me-5">
+                            <span class="symbol-label bg-light-primary">
+                                <i class="fas fa-file-import text-primary fs-2x"></i>
+                            </span>
+                        </div>
+                        <div class="d-flex flex-column">
+                            <span class="text-dark fw-bolder fs-2">${data.total_imports || 0}</span>
+                            <span class="text-muted fw-bold fs-7">Tổng phiếu nhập</span>
                         </div>
                     </div>
-                    <div class="col-xl-2">
-                        <div class="card stats-card card-xl-stretch mb-xl-8">
-                            <div class="card-body">
-                                <div class="d-flex align-items-center">
-                                    <div class="symbol symbol-50px me-5">
-                                        <span class="symbol-label bg-light-success">
-                                            <i class="fas fa-calendar-day text-success fs-2x"></i>
-                                        </span>
-                                    </div>
-                                    <div class="d-flex flex-column">
-                                        <span class="text-dark fw-bolder fs-2">${data.today_imports || 0}</span>
-                                        <span class="text-muted fw-bold fs-7">Nhập hôm nay</span>
-                                    </div>
-                                </div>
-                            </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3">
+            <div class="card stats-card card-xl-stretch mb-xl-8">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="symbol symbol-50px me-5">
+                            <span class="symbol-label bg-light-success">
+                                <i class="fas fa-calendar-day text-success fs-2x"></i>
+                            </span>
+                        </div>
+                        <div class="d-flex flex-column">
+                            <span class="text-dark fw-bolder fs-2">${data.today_imports || 0}</span>
+                            <span class="text-muted fw-bold fs-7">Nhập hôm nay</span>
                         </div>
                     </div>
-                    <div class="col-xl-2">
-                        <div class="card stats-card card-xl-stretch mb-xl-8">
-                            <div class="card-body">
-                                <div class="d-flex align-items-center">
-                                    <div class="symbol symbol-50px me-5">
-                                        <span class="symbol-label bg-light-info">
-                                            <i class="fas fa-calendar-alt text-info fs-2x"></i>
-                                        </span>
-                                    </div>
-                                    <div class="d-flex flex-column">
-                                        <span class="text-dark fw-bolder fs-2">${data.month_imports || 0}</span>
-                                        <span class="text-muted fw-bold fs-7">Nhập tháng này</span>
-                                    </div>
-                                </div>
-                            </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3">
+            <div class="card stats-card card-xl-stretch mb-xl-8">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="symbol symbol-50px me-5">
+                            <span class="symbol-label bg-light-info">
+                                <i class="fas fa-calendar-alt text-info fs-2x"></i>
+                            </span>
+                        </div>
+                        <div class="d-flex flex-column">
+                            <span class="text-dark fw-bolder fs-2">${data.month_imports || 0}</span>
+                            <span class="text-muted fw-bold fs-7">Nhập tháng này</span>
                         </div>
                     </div>
-                    <div class="col-xl-2">
-                        <div class="card stats-card card-xl-stretch mb-xl-8">
-                            <div class="card-body">
-                                <div class="d-flex align-items-center">
-                                    <div class="symbol symbol-50px me-5">
-                                        <span class="symbol-label bg-light-warning">
-                                            <i class="fas fa-boxes text-warning fs-2x"></i>
-                                        </span>
-                                    </div>
-                                    <div class="d-flex flex-column">
-                                        <span class="text-dark fw-bolder fs-2">${data.total_quantity || 0}</span>
-                                        <span class="text-muted fw-bold fs-7">Tổng SL nhập</span>
-                                    </div>
-                                </div>
-                            </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3">
+            <div class="card stats-card card-xl-stretch mb-xl-8">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="symbol symbol-50px me-5">
+                            <span class="symbol-label bg-light-warning">
+                                <i class="fas fa-boxes text-warning fs-2x"></i>
+                            </span>
+                        </div>
+                        <div class="d-flex flex-column">
+                            <span class="text-dark fw-bolder fs-2">${data.total_value || '0 VNĐ'}</span>
+                            <span class="text-muted fw-bold fs-7">Tổng giá trị</span>
                         </div>
                     </div>
-                    <div class="col-xl-2">
-                        <div class="card stats-card card-xl-stretch mb-xl-8">
-                            <div class="card-body">
-                                <div class="d-flex align-items-center">
-                                    <div class="symbol symbol-50px me-5">
-                                        <span class="symbol-label bg-light-success">
-                                            <i class="fas fa-dollar-sign text-success fs-2x"></i>
-                                        </span>
-                                    </div>
-                                    <div class="d-flex flex-column">
-                                        <span class="text-dark fw-bolder fs-2">${data.month_value || '0 VNĐ'}</span>
-                                        <span class="text-muted fw-bold fs-7">GT tháng này</span>
-                                    </div>
-                                </div>
-                            </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3">
+            <div class="card stats-card card-xl-stretch mb-xl-8">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="symbol symbol-50px me-5">
+                            <span class="symbol-label bg-light-success">
+                                <i class="fas fa-calendar-check text-success fs-2x"></i>
+                            </span>
+                        </div>
+                        <div class="d-flex flex-column">
+                            <span class="text-dark fw-bolder fs-2">${data.month_value || '0 VNĐ'}</span>
+                            <span class="text-muted fw-bold fs-7">GT tháng này</span>
                         </div>
                     </div>
-                    <div class="col-xl-2">
-                        <div class="card stats-card card-xl-stretch mb-xl-8">
-                            <div class="card-body">
-                                <div class="d-flex align-items-center">
-                                    <div class="symbol symbol-50px me-5">
-                                        <span class="symbol-label bg-light-primary">
-                                            <i class="fas fa-chart-line text-primary fs-2x"></i>
-                                        </span>
-                                    </div>
-                                    <div class="d-flex flex-column">
-                                        <span class="text-dark fw-bolder fs-2">${data.total_value || '0 VNĐ'}</span>
-                                        <span class="text-muted fw-bold fs-7">Tổng giá trị</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                `);
+                </div>
+            </div>
+        </div>
+    `);
             },
             error: function() {
                 console.log('Error loading statistics');
@@ -267,15 +249,13 @@
             url: "{{ route('medicine-import.show', 'get-medicines') }}",
             type: 'GET',
             success: function(data) {
-                let options = '<option value="">-- Chọn thuốc --</option>';
                 let filterOptions = '<option value="">Tất cả thuốc</option>';
-                
+
                 $.each(data, function(index, medicine) {
-                    options += '<option value="' + medicine.id + '">' + medicine.name + ' (' + medicine.code + ')</option>';
-                    filterOptions += '<option value="' + medicine.id + '">' + medicine.name + '</option>';
+                    filterOptions += '<option value="' + medicine.id + '">' + medicine.text +
+                        '</option>';
                 });
-                
-                $('#medicine_select').html(options);
+
                 $('#medicine-filter').html(filterOptions);
             },
             error: function() {
@@ -283,12 +263,12 @@
             }
         });
     }
-    
+
     $('.btn-close').on('click', function() {
         form_reset();
         $('#kt_modal_add_customer').modal('hide');
     });
-    
+
     $('#kt_modal_add_customer_cancel').on('click', function() {
         form_reset();
     });
@@ -301,69 +281,129 @@
         $("#kt_modal_add_customer_form").trigger("reset");
         $('#invoice-preview-container').hide();
         $('.print-error-msg').hide();
-        $('#total_price_display').val('0');
-        
+
+        // Reset Select2
+        if ($('#medicine_select').hasClass('select2-hidden-accessible')) {
+            $('#medicine_select').val(null).trigger('change');
+        }
+
         // Set default date to today
-        $('input[name="import_date"]').val('{{ date("Y-m-d") }}');
+        $('input[name="import_date"]').val('{{ date('Y-m-d') }}');
     }
-    
+
+    // Function to load import data for edit
+    function loadImportData(id) {
+        // Show loading state
+        const submitBtn = $('#kt_modal_add_customer_submit');
+        submitBtn.attr('data-kt-indicator', 'on');
+        submitBtn.prop('disabled', true);
+
+        $.ajax({
+            url: "{{ route('medicine-import.show', 'get-data') }}",
+            type: 'GET',
+            data: {
+                id: id
+            },
+            success: function(response) {
+                if (response.type === 'success') {
+                    let data = response.data;
+                    let modal = $('#kt_modal_add_customer_form');
+
+                    // Set form values
+                    modal.find('.modal-title').text('Sửa phiếu nhập thuốc');
+                    modal.find('input[name=id]').val(data.id);
+                    modal.find('input[name=quantity]').val(data.quantity);
+                    modal.find('input[name=total_amount]').val(data.total_amount);
+                    modal.find('input[name=import_date]').val(data.import_date);
+                    modal.find('textarea[name=notes]').val(data.notes || '');
+
+                    // Set medicine select value
+                    if (data.medicine_id) {
+                        // Create option and select it
+                        let option = new Option(data.medicine_name, data.medicine_id, true, true);
+                        $('#medicine_select').append(option).trigger('change');
+                    }
+
+                    // Show current invoice if exists
+                    if (data.has_invoice && data.invoice_image_url) {
+                        $('#invoice-preview').attr('src', data.invoice_image_url);
+                        $('#invoice-preview-container').show();
+                    }
+
+                    console.log('Import data loaded successfully:', data);
+                } else {
+                    notification('error', 'Lỗi', response.message || 'Không thể tải dữ liệu');
+                }
+            },
+            error: function(xhr) {
+                let message = 'Có lỗi xảy ra khi tải dữ liệu';
+                if (xhr.responseJSON && xhr.responseJSON.message) {
+                    message = xhr.responseJSON.message;
+                }
+                notification('error', 'Lỗi', message);
+                console.error('Error loading import data:', xhr);
+            },
+            complete: function() {
+                // Hide loading state
+                submitBtn.removeAttr('data-kt-indicator');
+                submitBtn.prop('disabled', false);
+            }
+        });
+    }
+
     $(document).on('click', '.btn-edit', function(e) {
-        console.log('edit')
         e.preventDefault();
         form_reset();
-        let data = $(this).data('data');
-        let modal = $('#kt_modal_add_customer_form');
-        modal.find('.modal-title').text('Sửa phiếu nhập thuốc');
-        modal.find('input[name=id]').val(data.id);
-        modal.find('select[name=medicine_id]').val(data.medicine_id);
-        modal.find('input[name=quantity]').val(data.quantity);
-        
-        // FIX: Parse price to remove decimal places for display
-        let price = Math.round(parseFloat(data.unit_price)); // Remove .00 decimal
-        modal.find('input[name=unit_price]').val(price);
-        
-        // FIX: Use proper date format for input date
-        modal.find('input[name=import_date]').val(data.import_date_value || data.import_date);
-        modal.find('textarea[name=notes]').val(data.notes || '');
-        
-        // Calculate total price
-        calculateTotalPrice();
-        
-        // Show current invoice if exists
-        if (data.invoice_image_url) {
-            $('#invoice-preview').attr('src', data.invoice_image_url);
-            $('#invoice-preview-container').show();
+
+        let id = $(this).data('id');
+        if (id) {
+            console.log('Loading import data for ID:', id);
+            loadImportData(id);
+        } else {
+            notification('error', 'Lỗi', 'Không tìm thấy ID phiếu nhập');
         }
     });
-    
+
     $(document).on('click', '.btn-add', function(e) {
-        console.log('add')
         e.preventDefault();
         form_reset();
         let modal = $('#kt_modal_add_customer_form');
         modal.find('.modal-title').text('Thêm phiếu nhập thuốc');
         modal.find('input[name=id]').val('');
-        modal.trigger('reset');
+
+        // Load medicines for Select2
+        $.ajax({
+            url: "{{ route('medicine-import.show', 'get-medicines') }}",
+            type: 'GET',
+            success: function(data) {
+                $('#medicine_select').empty().append('<option value="">-- Chọn thuốc --</option>');
+                $.each(data, function(index, medicine) {
+                    $('#medicine_select').append(new Option(medicine.text, medicine.id));
+                });
+            }
+        });
     });
-    
+
     $('#kt_modal_add_customer_form').on('submit', function(e) {
         e.preventDefault();
         let formData = new FormData(this);
         let type = 'POST',
             url = "{{ route('medicine-import.store') }}",
             id = $('form#kt_modal_add_customer_form input[name=id]').val();
-        
+
         if (parseInt(id)) {
-            console.log('edit');
+            console.log('Updating import with ID:', id);
             type = 'POST';
             formData.append('_method', 'PUT');
             url = "{{ route('medicine-import.update', ':id') }}".replace(':id', id);
+        } else {
+            console.log('Creating new import');
         }
-        
+
         // Show loading
         $('#kt_modal_add_customer_submit').attr('data-kt-indicator', 'on');
         $('#kt_modal_add_customer_submit').prop('disabled', true);
-        
+
         $.ajax({
             url: url,
             headers: {
@@ -392,12 +432,13 @@
                     $('.print-error-msg ul').html(errorHtml);
                     $('.print-error-msg').show();
                 } else {
-                    let errors = xhr.responseJSON?.errors || {};
-                    console.log(errors);
-                    $.each(errors, function(key, value) {
-                        notification('error', 'Lỗi', value);
-                    });
+                    let message = 'Có lỗi xảy ra';
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        message = xhr.responseJSON.message;
+                    }
+                    notification('error', 'Lỗi', message);
                 }
+                console.error('Error saving import:', xhr);
             },
             complete: function() {
                 $('#kt_modal_add_customer_submit').removeAttr('data-kt-indicator');
@@ -405,12 +446,12 @@
             }
         });
     });
-    
+
     $(document).on('click', '.btn-delete', function(e) {
         e.preventDefault();
         let id = $(this).data('id');
         Swal.fire({
-            text: "Bạn có muốn xóa phiếu nhập này không? Số lượng thuốc trong kho sẽ được trừ đi tương ứng.",
+            text: "Bạn có muốn xóa phiếu nhập này không?",
             icon: "warning",
             showCancelButton: true,
             buttonsStyling: false,
@@ -435,12 +476,13 @@
                             loadStatistics();
                         }
                     },
-                    error: function(data) {
-                        let errors = data.responseJSON.errors;
-                        console.log(errors);
-                        $.each(errors, function(key, value) {
-                            notification('error', 'Lỗi', value);
-                        });
+                    error: function(xhr) {
+                        let message = 'Có lỗi xảy ra khi xóa phiếu nhập';
+                        if (xhr.responseJSON && xhr.responseJSON.message) {
+                            message = xhr.responseJSON.message;
+                        }
+                        notification('error', 'Lỗi', message);
+                        console.error('Error deleting import:', xhr);
                     }
                 });
             }
@@ -458,7 +500,7 @@
         if (selectedIds.length === 0) return;
 
         Swal.fire({
-            text: "Bạn có muốn xóa " + selectedIds.length + " phiếu nhập đã chọn không? Số lượng thuốc trong kho sẽ được trừ đi tương ứng.",
+            text: "Bạn có muốn xóa " + selectedIds.length + " phiếu nhập đã chọn không?",
             icon: "warning",
             showCancelButton: true,
             buttonsStyling: false,
@@ -488,22 +530,23 @@
                             updateBulkActions();
                         }
                     },
-                    error: function(data) {
-                        let errors = data.responseJSON.errors;
-                        console.log(errors);
-                        $.each(errors, function(key, value) {
-                            notification('error', 'Lỗi', value);
-                        });
+                    error: function(xhr) {
+                        let message = 'Có lỗi xảy ra khi xóa các phiếu nhập';
+                        if (xhr.responseJSON && xhr.responseJSON.message) {
+                            message = xhr.responseJSON.message;
+                        }
+                        notification('error', 'Lỗi', message);
+                        console.error('Error bulk deleting imports:', xhr);
                     }
                 });
             }
         });
     });
-    
+
     $(".search_table").on('change keyup', function() {
         let data = $(this).val();
         let filter = $(this).data('filter');
-        
+
         if (filter === 'date') {
             date_filter = data;
         } else if (filter === 'medicine') {
@@ -511,7 +554,7 @@
         } else {
             search_table = data;
         }
-        
+
         console.log('Search:', search_table, 'Date:', date_filter, 'Medicine:', medicine_filter);
         dt.ajax.reload();
     });

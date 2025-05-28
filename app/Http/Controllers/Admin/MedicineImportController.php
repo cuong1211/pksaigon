@@ -23,14 +23,6 @@ class MedicineImportController extends Controller
     }
 
     /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
      * Store a newly created resource in storage.
      */
     public function store(MedicineImportRequest $request)
@@ -53,7 +45,6 @@ class MedicineImportController extends Controller
                 'title' => 'Thành công',
                 'content' => 'Thêm phiếu nhập thuốc thành công!'
             ]);
-
         } catch (\Exception $e) {
             return response()->json([
                 'type' => 'error',
@@ -80,19 +71,15 @@ class MedicineImportController extends Controller
             return $this->getMedicines();
         }
 
+        if ($id == 'get-data') {
+            return $this->getData();
+        }
+
         $import = MedicineImport::with('medicine')->findOrFail($id);
         return response()->json([
             'type' => 'success',
             'data' => $import
         ]);
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
     }
 
     /**
@@ -112,7 +99,7 @@ class MedicineImportController extends Controller
                 }
 
                 // Upload ảnh mới
-                $image = $request->file('invoice_image');
+                $image = $request->file('image');
                 $imageName = time() . '_' . Str::random(10) . '.' . $image->getClientOriginalExtension();
                 $imagePath = $image->storeAs('medicine-imports', $imageName, 'public');
                 $data['invoice_image'] = $imagePath;
@@ -125,7 +112,6 @@ class MedicineImportController extends Controller
                 'title' => 'Thành công',
                 'content' => 'Cập nhật phiếu nhập thuốc thành công!'
             ]);
-
         } catch (\Exception $e) {
             return response()->json([
                 'type' => 'error',
@@ -159,7 +145,6 @@ class MedicineImportController extends Controller
                 'title' => 'Thành công',
                 'content' => 'Xóa phiếu nhập thuốc thành công!'
             ]);
-
         } catch (\Exception $e) {
             return response()->json([
                 'type' => 'error',
@@ -170,23 +155,68 @@ class MedicineImportController extends Controller
     }
 
     /**
+     * Get data for edit
+     */
+    public function getData($id = null)
+    {
+        try {
+            if (!$id) {
+                $id = request()->get('id');
+            }
+
+            $import = MedicineImport::with('medicine')->findOrFail($id);
+
+            $data = [
+                'id' => $import->id,
+                'medicine_id' => $import->medicine_id,
+                'quantity' => $import->quantity,
+                'total_amount' => (float)$import->total_amount,
+                'import_date' => $import->import_date->format('Y-m-d'),
+                'notes' => $import->notes,
+                'invoice_image_url' => $import->invoice_image_url,
+                'has_invoice' => $import->invoice_image && Storage::disk('public')->exists($import->invoice_image),
+                'medicine_name' => $import->medicine ? $import->medicine->name : '',
+                'created_at' => $import->created_at->format('d/m/Y H:i'),
+                'updated_at' => $import->updated_at->format('d/m/Y H:i')
+            ];
+
+            return response()->json([
+                'type' => 'success',
+                'data' => $data
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'type' => 'error',
+                'message' => 'Có lỗi xảy ra: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
      * Get list for DataTable
      */
     private function getList()
     {
         $query = MedicineImport::with('medicine')
-                              ->select(['id', 'import_code', 'medicine_id', 'quantity', 'unit_price', 
-                                       'total_price', 'import_date', 'invoice_image', 'created_at']);
+            ->select([
+                'id',
+                'import_code',
+                'medicine_id',
+                'quantity',
+                'total_amount',
+                'import_date',
+                'invoice_image',
+                'created_at'
+            ]);
 
         // Apply search filter
         if (request()->has('search_table') && !empty(request()->search_table)) {
             $search = request()->search_table;
             $query->where(function ($q) use ($search) {
                 $q->where('import_code', 'like', "%{$search}%")
-                  ->orWhereHas('medicine', function ($mq) use ($search) {
-                      $mq->where('name', 'like', "%{$search}%")
-                        ->orWhere('code', 'like', "%{$search}%");
-                  });
+                    ->orWhereHas('medicine', function ($mq) use ($search) {
+                        $mq->where('name', 'like', "%{$search}%");
+                    });
             });
         }
 
@@ -202,7 +232,7 @@ class MedicineImportController extends Controller
                     break;
                 case 'month':
                     $query->whereMonth('import_date', now()->month)
-                          ->whereYear('import_date', now()->year);
+                        ->whereYear('import_date', now()->year);
                     break;
             }
         }
@@ -213,26 +243,22 @@ class MedicineImportController extends Controller
         }
 
         $imports = $query->orderBy('created_at', 'desc')->get();
-        
+
         return DataTables::of($imports)
             ->addColumn('medicine_info', function ($import) {
                 return [
                     'name' => $import->medicine->name ?? 'N/A',
-                    'code' => $import->medicine->code ?? 'N/A',
-                    'unit' => $import->medicine->unit ?? 'N/A'
+                    'type' => $import->medicine->type ?? 'N/A'
                 ];
             })
-            ->addColumn('formatted_unit_price', function ($import) {
-                return number_format($import->unit_price, 0, '.', '.') . ' VNĐ';
-            })
-            ->addColumn('formatted_total_price', function ($import) {
-                return number_format($import->total_price, 0, '.', '.') . ' VNĐ';
+            ->addColumn('formatted_total_amount', function ($import) {
+                return number_format($import->total_amount, 0, '.', '.') . ' VNĐ';
             })
             ->addColumn('formatted_import_date', function ($import) {
                 return $import->import_date->format('d/m/Y');
             })
             ->addColumn('import_date_value', function ($import) {
-                return $import->import_date->format('Y-m-d'); // Thêm format cho input date
+                return $import->import_date->format('Y-m-d');
             })
             ->addColumn('invoice_image_url', function ($import) {
                 return $import->invoice_image_url;
@@ -252,30 +278,30 @@ class MedicineImportController extends Controller
             $total_imports = MedicineImport::count();
             $today_imports = MedicineImport::whereDate('import_date', today())->count();
             $month_imports = MedicineImport::whereMonth('import_date', now()->month)
-                                          ->whereYear('import_date', now()->year)
-                                          ->count();
-            $total_value = MedicineImport::sum('total_price');
+                ->whereYear('import_date', now()->year)
+                ->count();
+            $total_value = MedicineImport::sum('total_amount');
             $month_value = MedicineImport::whereMonth('import_date', now()->month)
-                                        ->whereYear('import_date', now()->year)
-                                        ->sum('total_price');
+                ->whereYear('import_date', now()->year)
+                ->sum('total_amount');
             $total_quantity = MedicineImport::sum('quantity');
 
             return response()->json([
                 'total_imports' => $total_imports,
                 'today_imports' => $today_imports,
                 'month_imports' => $month_imports,
+                'total_quantity' => number_format($total_quantity),
                 'total_value' => number_format($total_value, 0, '.', '.') . ' VNĐ',
                 'month_value' => number_format($month_value, 0, '.', '.') . ' VNĐ',
-                'total_quantity' => number_format($total_quantity),
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'total_imports' => 0,
                 'today_imports' => 0,
                 'month_imports' => 0,
+                'total_quantity' => 0,
                 'total_value' => '0 VNĐ',
                 'month_value' => '0 VNĐ',
-                'total_quantity' => 0,
             ]);
         }
     }
@@ -286,9 +312,15 @@ class MedicineImportController extends Controller
     private function getMedicines()
     {
         $medicines = Medicine::where('is_active', true)
-                           ->select('id', 'name', 'code', 'unit')
-                           ->orderBy('name')
-                           ->get();
+            ->select('id', 'name', 'type')
+            ->orderBy('name')
+            ->get()
+            ->map(function ($medicine) {
+                return [
+                    'id' => $medicine->id,
+                    'text' => $medicine->name . ' (' . $medicine->type_name . ')'
+                ];
+            });
 
         return response()->json($medicines);
     }
@@ -310,7 +342,7 @@ class MedicineImportController extends Controller
             }
 
             $imports = MedicineImport::whereIn('id', $ids)->get();
-            
+
             // Xóa ảnh hóa đơn của các phiếu nhập
             foreach ($imports as $import) {
                 if ($import->invoice_image && Storage::disk('public')->exists($import->invoice_image)) {

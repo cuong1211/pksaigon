@@ -6,9 +6,6 @@
     <div class="aside-toolbar flex-column-auto" id="kt_aside_toolbar">
         <!--begin::User-->
         <div class="aside-user d-flex align-items-sm-center justify-content-center py-5">
-            <!--begin::Symbol-->
-
-            <!--end::Symbol-->
             <!--begin::Wrapper-->
             <div class="aside-user-info flex-row-fluid flex-wrap ms-5">
                 <!--begin::Section-->
@@ -35,19 +32,7 @@
                         <a href="#" class="btn btn-icon btn-sm btn-active-color-primary mt-n2"
                             data-kt-menu-trigger="click" data-kt-menu-placement="bottom-start"
                             data-kt-menu-overflow="true">
-                            <!--begin::Svg Icon | path: icons/duotune/coding/cod001.svg-->
-                            <span class="svg-icon svg-icon-muted svg-icon-1">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                                    viewBox="0 0 24 24" fill="none">
-                                    <path opacity="0.3"
-                                        d="M22.1 11.5V12.6C22.1 13.2 21.7 13.6 21.2 13.7L19.9 13.9C19.7 14.7 19.4 15.5 18.9 16.2L19.7 17.2999C20 17.6999 20 18.3999 19.6 18.7999L18.8 19.6C18.4 20 17.8 20 17.3 19.7L16.2 18.9C15.5 19.3 14.7 19.7 13.9 19.9L13.7 21.2C13.6 21.7 13.1 22.1 12.6 22.1H11.5C10.9 22.1 10.5 21.7 10.4 21.2L10.2 19.9C9.4 19.7 8.6 19.4 7.9 18.9L6.8 19.7C6.4 20 5.7 20 5.3 19.6L4.5 18.7999C4.1 18.3999 4.1 17.7999 4.4 17.2999L5.2 16.2C4.8 15.5 4.4 14.7 4.2 13.9L2.9 13.7C2.4 13.6 2 13.1 2 12.6V11.5C2 10.9 2.4 10.5 2.9 10.4L4.2 10.2C4.4 9.39995 4.7 8.60002 5.2 7.90002L4.4 6.79993C4.1 6.39993 4.1 5.69993 4.5 5.29993L5.3 4.5C5.7 4.1 6.3 4.10002 6.8 4.40002L7.9 5.19995C8.6 4.79995 9.4 4.39995 10.2 4.19995L10.4 2.90002C10.5 2.40002 11 2 11.5 2H12.6C13.2 2 13.6 2.40002 13.7 2.90002L13.9 4.19995C14.7 4.39995 15.5 4.69995 16.2 5.19995L17.3 4.40002C17.7 4.10002 18.4 4.1 18.8 4.5L19.6 5.29993C20 5.69993 20 6.29993 19.7 6.79993L18.9 7.90002C19.3 8.60002 19.7 9.39995 19.9 10.2L21.2 10.4C21.7 10.5 22.1 11 22.1 11.5ZM12.1 8.59998C10.2 8.59998 8.6 10.2 8.6 12.1C8.6 14 10.2 15.6 12.1 15.6C14 15.6 15.6 14 15.6 12.1C15.6 10.2 14 8.59998 12.1 8.59998Z"
-                                        fill="black" />
-                                    <path
-                                        d="M17.1 12.1C17.1 14.9 14.9 17.1 12.1 17.1C9.30001 17.1 7.10001 14.9 7.10001 12.1C7.10001 9.29998 9.30001 7.09998 12.1 7.09998C14.9 7.09998 17.1 9.29998 17.1 12.1ZM12.1 10.1C11 10.1 10.1 11 10.1 12.1C10.1 13.2 11 14.1 12.1 14.1C13.2 14.1 14.1 13.2 14.1 12.1C14.1 11 13.2 10.1 12.1 10.1Z"
-                                        fill="black" />
-                                </svg>
-                            </span>
-                            <!--end::Svg Icon-->
+                            <i class="fas fa-cog text-white fs-4"></i>
                         </a>
                         <!--begin::Menu-->
                         <div class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-800 menu-state-bg menu-state-primary fw-bold py-4 fs-6 w-275px"
@@ -55,9 +40,6 @@
                             <!--begin::Menu item-->
                             <div class="menu-item px-3">
                                 <div class="menu-content d-flex align-items-center px-3">
-                                    <!--begin::Avatar-->
-
-                                    <!--end::Avatar-->
                                     <!--begin::Username-->
                                     <div class="d-flex flex-column">
                                         <div class="fw-bolder d-flex align-items-center fs-5">{{ Auth::user()->name }}
@@ -68,23 +50,18 @@
                                     <!--end::Username-->
                                 </div>
                             </div>
-                            <!--end::Menu item-->
                             <!--begin::Menu separator-->
                             <div class="separator my-2"></div>
                             <!--end::Menu separator-->
-                            <!--begin::Menu item-->
-
                             <!--begin::Menu item-->
                             <div class="menu-item px-5">
-                                <a href="{{ route('logout') }}" class="menu-link px-5">Sign Out</a>
+                                <a href="{{ route('logout') }}" class="menu-link px-5">
+                                    <i class="fas fa-sign-out-alt me-2"></i>
+                                    Sign Out
+                                </a>
                             </div>
                             <!--end::Menu item-->
-                            <!--begin::Menu separator-->
                             <div class="separator my-2"></div>
-                            <!--end::Menu separator-->
-                            <!--begin::Menu item-->
-
-                            <!--end::Menu item-->
                         </div>
                         <!--end::Menu-->
                         <!--end::Action-->
@@ -96,10 +73,6 @@
             <!--end::Wrapper-->
         </div>
         <!--end::User-->
-        <!--begin::Aside search-->
-
-        <!--end::Aside search-->
-        <!--end::Aside user-->
     </div>
     <!--end::Aside Toolbarl-->
     <!--begin::Aside menu-->
@@ -117,247 +90,88 @@
                         <span class="menu-section text-muted text-uppercase fs-8 ls-1">Chức năng</span>
                     </div>
                 </div>
-                <div class="menu-item">
-                    <a class="menu-link" id="btn" href="{{ route('admin') }}">
+
+                <!-- Trang chủ -->
+                <div class="menu-item {{ request()->routeIs('admin') ? 'here' : '' }}">
+                    <a class="menu-link" href="{{ route('admin') }}">
                         <span class="menu-icon">
-
-                            <span class="svg-icon svg-icon-2">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                                    viewBox="0 0 24 24" fill="none">
-                                    <rect x="2" y="2" width="9" height="9" rx="2" fill="black" />
-                                    <rect opacity="0.3" x="13" y="2" width="9" height="9" rx="2"
-                                        fill="black" />
-                                    <rect opacity="0.3" x="13" y="13" width="9" height="9" rx="2"
-                                        fill="black" />
-                                    <rect opacity="0.3" x="2" y="13" width="9" height="9" rx="2"
-                                        fill="black" />
-                                </svg>
-                            </span>
-
+                            <i class="fas fa-home"></i>
                         </span>
                         <span class="menu-title">Trang chủ</span>
                     </a>
                 </div>
-                <div class="menu-item">
-                    <a class="menu-link" href="{{ route('posts.index') }}">
+
+
+
+                <!-- Quản lý dịch vụ -->
+                <div class="menu-item {{ request()->routeIs('service.*') ? 'here' : '' }}">
+                    <a class="menu-link" href="{{ route('service.index') }}">
                         <span class="menu-icon">
-                            <!-- Icon posts -->
-                        </span>
-                        <span class="menu-title">Quản lý bài viết</span>
-                    </a>
-                </div>
-                <div class="menu-item">
-                    <a class="menu-link" id="btn" href="{{ route('service.index') }}">
-                        <span class="menu-icon">
-                            <!--begin::Svg Icon | path: icons/duotune/general/gen025.svg-->
-                            <span class="svg-icon svg-icon-2">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                                    viewBox="0 0 24 24" fill="none">
-                                    <path opacity="0.3"
-                                        d="M22 12C22 17.5 17.5 22 12 22C6.5 22 2 17.5 2 12C2 6.5 6.5 2 12 2C17.5 2 22 6.5 22 12ZM12 7C10.3 7 9 8.3 9 10C9 11.7 10.3 13 12 13C13.7 13 15 11.7 15 10C15 8.3 13.7 7 12 7Z"
-                                        fill="black" />
-                                    <path
-                                        d="M12 22C14.6 22 17 21 18.7 19.4C17.9 16.9 15.2 15 12 15C8.8 15 6.09999 16.9 5.3 19.4C6.99999 21 9.4 22 12 22Z"
-                                        fill="black" />
-                                </svg>
-                            </span>
-                            <!--end::Svg Icon-->
+                            <i class="fas fa-concierge-bell"></i>
                         </span>
                         <span class="menu-title">Quản lý dịch vụ</span>
                     </a>
                 </div>
-                <div class="menu-item">
+
+                <!-- Quản lý thuốc -->
+                <div class="menu-item {{ request()->routeIs('medicine.*') ? 'here' : '' }}">
                     <a class="menu-link" href="{{ route('medicine.index') }}">
                         <span class="menu-icon">
-                            <span class="svg-icon svg-icon-2">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                                    viewBox="0 0 24 24" fill="none">
-                                    <path
-                                        d="M20 6H16V4C16 2.9 15.1 2 14 2H10C8.9 2 8 2.9 8 4V6H4C3.4 6 3 6.4 3 7C3 7.6 3.4 8 4 8H5V19C5 20.1 5.9 21 7 21H17C18.1 21 19 20.1 19 19V8H20C20.6 8 21 7.6 21 7C21 6.4 20.6 6 20 6ZM10 4H14V6H10V4ZM17 19H7V8H17V19Z"
-                                        fill="black" />
-                                    <path
-                                        d="M9 10C8.4 10 8 10.4 8 11V17C8 17.6 8.4 18 9 18C9.6 18 10 17.6 10 17V11C10 10.4 9.6 10 9 10Z"
-                                        fill="black" />
-                                    <path
-                                        d="M15 10C14.4 10 14 10.4 14 11V17C14 17.6 14.4 18 15 18C15.6 18 16 17.6 16 17V11C16 10.4 15.6 10 15 10Z"
-                                        fill="black" />
-                                </svg>
-                            </span>
+                            <i class="fas fa-pills"></i>
                         </span>
                         <span class="menu-title">Quản lý thuốc</span>
                     </a>
                 </div>
-                <!-- Thêm menu nhập thuốc -->
-                <div class="menu-item">
+
+                <!-- Nhập thuốc -->
+                <div class="menu-item {{ request()->routeIs('medicine-import.*') ? 'here' : '' }}">
                     <a class="menu-link" href="{{ route('medicine-import.index') }}">
                         <span class="menu-icon">
-                            <span class="svg-icon svg-icon-2">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                                    viewBox="0 0 24 24" fill="none">
-                                    <path
-                                        d="M15 12H9M12 9V15M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z"
-                                        stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                        stroke-linejoin="round" />
-                                    <path d="M8 21L12 17L16 21" stroke="currentColor" stroke-width="2"
-                                        stroke-linecap="round" stroke-linejoin="round" />
-                                </svg>
-                            </span>
+                            <i class="fas fa-truck-loading"></i>
                         </span>
                         <span class="menu-title">Nhập thuốc</span>
                     </a>
                 </div>
-                <div class="menu-item">
+                <!-- Danh sách khám -->
+                <div class="menu-item {{ request()->routeIs('examination.*') ? 'here' : '' }}">
+                    <a class="menu-link" href="{{ route('examination.index') }}">
+                        <span class="menu-icon">
+                            <i class="fas fa-stethoscope"></i>
+                        </span>
+                        <span class="menu-title">Danh sách khám</span>
+                    </a>
+                </div>
+                <!-- Quản lý bệnh nhân -->
+                <div class="menu-item {{ request()->routeIs('patient.*') ? 'here' : '' }}">
                     <a class="menu-link" href="{{ route('patient.index') }}">
                         <span class="menu-icon">
-                            <span class="svg-icon svg-icon-2">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                                    viewBox="0 0 24 24" fill="none">
-                                    <path opacity="0.3"
-                                        d="M22 12C22 17.5 17.5 22 12 22C6.5 22 2 17.5 2 12C2 6.5 6.5 2 12 2C17.5 2 22 6.5 22 12ZM12 7C10.3 7 9 8.3 9 10C9 11.7 10.3 13 12 13C13.7 13 15 11.7 15 10C15 8.3 13.7 7 12 7Z"
-                                        fill="black" />
-                                    <path
-                                        d="M12 22C14.6 22 17 21 18.7 19.4C17.9 16.9 15.2 15 12 15C8.8 15 6.09999 16.9 5.3 19.4C6.99999 21 9.4 22 12 22Z"
-                                        fill="black" />
-                                </svg>
-                            </span>
+                            <i class="fas fa-user-injured"></i>
                         </span>
                         <span class="menu-title">Quản lý bệnh nhân</span>
                     </a>
                 </div>
 
-                <!-- Examination Management -->
-                <div class="menu-item">
-                    <a class="menu-link" href="{{ route('examination.index') }}">
-                        <span class="menu-icon">
-                            <span class="svg-icon svg-icon-2">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                                    viewBox="0 0 24 24" fill="none">
-                                    <path
-                                        d="M20 6H16V4C16 2.9 15.1 2 14 2H10C8.9 2 8 2.9 8 4V6H4C3.4 6 3 6.4 3 7C3 7.6 3.4 8 4 8H5V19C5 20.1 5.9 21 7 21H17C18.1 21 19 20.1 19 19V8H20C20.6 8 21 7.6 21 7C21 6.4 20.6 6 20 6ZM10 4H14V6H10V4ZM17 19H7V8H17V19Z"
-                                        fill="black" />
-                                    <path opacity="0.3" d="M9 10V17H11V10H9ZM13 10V17H15V10H13Z" fill="black" />
-                                </svg>
-                            </span>
-                        </span>
-                        <span class="menu-title">Danh sách khám</span>
-                    </a>
-                </div>
-                <div class="menu-item">
+
+
+
+                <!-- Quản lý đặt lịch -->
+                <div class="menu-item {{ request()->routeIs('appointment.*') ? 'here' : '' }}">
                     <a class="menu-link" href="{{ route('appointment.index') }}">
                         <span class="menu-icon">
-                            <span class="svg-icon svg-icon-2">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                                    viewBox="0 0 24 24" fill="none">
-                                    <path opacity="0.3"
-                                        d="M18 21.6C16.3 21.6 15 20.3 15 18.6V2.50001C15 2.20001 14.6 1.99996 14.3 2.19996L13 3.59999L11.7 2.3C11.3 1.9 10.7 1.9 10.3 2.3L9 3.59999L7.70001 2.3C7.30001 1.9 6.69999 1.9 6.29999 2.3L5 3.59999L3.70001 2.19996C3.40001 1.99996 3 2.20001 3 2.50001V18.6C3 20.3 4.3 21.6 6 21.6H18Z"
-                                        fill="black" />
-                                    <path
-                                        d="M12 12.6H11C10.4 12.6 10 12.2 10 11.6C10 11 10.4 10.6 11 10.6H12C12.6 10.6 13 11 13 11.6C13 12.2 12.6 12.6 12 12.6ZM9 11.6C9 11 8.6 10.6 8 10.6H7C6.4 10.6 6 11 6 11.6C6 12.2 6.4 12.6 7 12.6H8C8.6 12.6 9 12.2 9 11.6ZM9 7.59998C9 6.99998 8.6 6.59998 8 6.59998H7C6.4 6.59998 6 6.99998 6 7.59998C6 8.19998 6.4 8.59998 7 8.59998H8C8.6 8.59998 9 8.19998 9 7.59998ZM13 7.59998C13 6.99998 12.6 6.59998 12 6.59998H11C10.4 6.59998 10 6.99998 10 7.59998C10 8.19998 10.4 8.59998 11 8.59998H12C12.6 8.59998 13 8.19998 13 7.59998ZM13 15.6C13 15 12.6 14.6 12 14.6H11C10.4 14.6 10 15 10 15.6C10 16.2 10.4 16.6 11 16.6H12C12.6 16.6 13 16.2 13 15.6ZM9 15.6C9 15 8.6 14.6 8 14.6H7C6.4 14.6 6 15 6 15.6C6 16.2 6.4 16.6 7 16.6H8C8.6 16.6 9 16.2 9 15.6Z"
-                                        fill="black" />
-                                </svg>
-                            </span>
+                            <i class="fas fa-calendar-check"></i>
                         </span>
                         <span class="menu-title">Quản lý đặt lịch</span>
                     </a>
                 </div>
-                {{-- <div data-kt-menu-trigger="click" class="menu-item menu-accordion">
-                    <span class="menu-link">
+                <!-- Quản lý bài viết -->
+                <div class="menu-item {{ request()->routeIs('posts.*') ? 'here' : '' }}">
+                    <a class="menu-link" href="{{ route('posts.index') }}">
                         <span class="menu-icon">
-                            
-                            <span class="svg-icon svg-icon-2">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                                    viewBox="0 0 24 24" fill="none">
-                                    <path
-                                        d="M11.2929 2.70711C11.6834 2.31658 12.3166 2.31658 12.7071 2.70711L15.2929 5.29289C15.6834 5.68342 15.6834 6.31658 15.2929 6.70711L12.7071 9.29289C12.3166 9.68342 11.6834 9.68342 11.2929 9.29289L8.70711 6.70711C8.31658 6.31658 8.31658 5.68342 8.70711 5.29289L11.2929 2.70711Z"
-                                        fill="black" />
-                                    <path
-                                        d="M11.2929 14.7071C11.6834 14.3166 12.3166 14.3166 12.7071 14.7071L15.2929 17.2929C15.6834 17.6834 15.6834 18.3166 15.2929 18.7071L12.7071 21.2929C12.3166 21.6834 11.6834 21.6834 11.2929 21.2929L8.70711 18.7071C8.31658 18.3166 8.31658 17.6834 8.70711 17.2929L11.2929 14.7071Z"
-                                        fill="black" />
-                                    <path opacity="0.3"
-                                        d="M5.29289 8.70711C5.68342 8.31658 6.31658 8.31658 6.70711 8.70711L9.29289 11.2929C9.68342 11.6834 9.68342 12.3166 9.29289 12.7071L6.70711 15.2929C6.31658 15.6834 5.68342 15.6834 5.29289 15.2929L2.70711 12.7071C2.31658 12.3166 2.31658 11.6834 2.70711 11.2929L5.29289 8.70711Z"
-                                        fill="black" />
-                                    <path opacity="0.3"
-                                        d="M17.2929 8.70711C17.6834 8.31658 18.3166 8.31658 18.7071 8.70711L21.2929 11.2929C21.6834 11.6834 21.6834 12.3166 21.2929 12.7071L18.7071 15.2929C18.3166 15.6834 17.6834 15.6834 17.2929 15.2929L14.7071 12.7071C14.3166 12.3166 14.3166 11.6834 14.7071 11.2929L17.2929 8.70711Z"
-                                        fill="black" />
-                                </svg>
-                            </span>
-                   
+                            <i class="fas fa-newspaper"></i>
                         </span>
-                        <span class="menu-title">Quản lý sản phẩm</span>
-                        <span class="menu-arrow"></span>
-                    </span>
-                    <div class="menu-sub menu-sub-accordion menu-active-bg">
-
-                        <div class="menu-item">
-                            <a class="menu-link" id="btn" href="{{ route('category.index') }}">
-                                <span class="menu-icon">
-                     
-                                    <span class="svg-icon svg-icon-2">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                                            viewBox="0 0 24 24" fill="none">
-                                            <rect x="2" y="2" width="9" height="9" rx="2"
-                                                fill="black" />
-                                            <rect opacity="0.3" x="13" y="2" width="9" height="9"
-                                                rx="2" fill="black" />
-                                            <rect opacity="0.3" x="13" y="13" width="9" height="9"
-                                                rx="2" fill="black" />
-                                            <rect opacity="0.3" x="2" y="13" width="9" height="9"
-                                                rx="2" fill="black" />
-                                        </svg>
-                                    </span>
-                                 
-                                </span>
-                                <span class="menu-title">Quản lý mặt hàng</span>
-                            </a>
-                        </div>
-                        <div class="menu-item">
-                            <a class="menu-link" id="btn" href="{{ route('type.index') }}">
-                                <span class="menu-icon">
-                           
-                                    <span class="svg-icon svg-icon-2">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                                            viewBox="0 0 24 24" fill="none">
-                                            <rect x="2" y="2" width="9" height="9" rx="2"
-                                                fill="black" />
-                                            <rect opacity="0.3" x="13" y="2" width="9" height="9"
-                                                rx="2" fill="black" />
-                                            <rect opacity="0.3" x="13" y="13" width="9" height="9"
-                                                rx="2" fill="black" />
-                                            <rect opacity="0.3" x="2" y="13" width="9" height="9"
-                                                rx="2" fill="black" />
-                                        </svg>
-                                    </span>
-                                 
-                                </span>
-                                <span class="menu-title">Quản lý sản phẩm</span>
-                            </a>
-                        </div>
-
-                    </div>
-                </div>
-                <div class="menu-item">
-                    <a class="menu-link" id="btn" href="{{ route('order.index') }}">
-                        <span class="menu-icon">
-                         
-                            <span class="svg-icon svg-icon-2">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                                    viewBox="0 0 24 24" fill="none">
-                                    <rect x="2" y="2" width="9" height="9" rx="2" fill="black" />
-                                    <rect opacity="0.3" x="13" y="2" width="9" height="9" rx="2"
-                                        fill="black" />
-                                    <rect opacity="0.3" x="13" y="13" width="9" height="9" rx="2"
-                                        fill="black" />
-                                    <rect opacity="0.3" x="2" y="13" width="9" height="9" rx="2"
-                                        fill="black" />
-                                </svg>
-                            </span>
-                        
-                        </span>
-                        <span class="menu-title">Quản lý đơn hàng</span>
+                        <span class="menu-title">Quản lý bài viết</span>
                     </a>
-                </div> --}}
-
-
+                </div>
             </div>
             <!--end::Menu-->
         </div>
@@ -365,3 +179,32 @@
     </div>
     <!--end::Aside menu-->
 </div>
+
+<style>
+    /* Font Awesome Icons */
+    .menu-icon i {
+        font-size: 18px;
+        color: #7E8299;
+    }
+
+    /* Active Menu */
+    .menu-item.here .menu-link {
+        background-color: #F7F9FC;
+        border-radius: 0.475rem;
+    }
+
+    .menu-item.here .menu-link .menu-title {
+        color: #009EF7;
+        font-weight: 600;
+    }
+
+    .menu-item.here .menu-link .menu-icon i {
+        color: #009EF7;
+    }
+
+    /* Hover */
+    .menu-item:hover .menu-link .menu-title,
+    .menu-item:hover .menu-link .menu-icon i {
+        color: #009EF7;
+    }
+</style>

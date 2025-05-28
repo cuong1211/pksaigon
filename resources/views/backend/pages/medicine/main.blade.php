@@ -58,10 +58,17 @@
                                     <option value="0">Ngưng hoạt động</option>
                                 </select>
 
+                                <!-- Type Filter -->
+                                <select class="form-select form-select-solid w-150px me-3 search_table" data-filter="type">
+                                    <option value="">Tất cả loại</option>
+                                    <option value="supplement">TPCN</option>
+                                    <option value="medicine">Thuốc điều trị</option>
+                                    <option value="other">Khác</option>
+                                </select>
+
                                 <!-- Alert Filter -->
                                 <select class="form-select form-select-solid w-150px me-3 search_table" data-filter="alert">
                                     <option value="">Tất cả cảnh báo</option>
-                                    <option value="low_stock">Sắp hết</option>
                                     <option value="expiring">Sắp hết hạn</option>
                                     <option value="expired">Đã hết hạn</option>
                                 </select>
@@ -127,9 +134,8 @@
                                     </th>
                                     <th class="min-w-125px">Ảnh</th>
                                     <th class="min-w-200px">Thông tin thuốc</th>
-                                    <th class="min-w-100px">Giá</th>
-                                    <th class="min-w-100px">Tồn kho</th>
-                                    <th class="min-w-125px">Nhà sản xuất</th>
+                                    <th class="min-w-100px">Giá nhập</th>
+                                    <th class="min-w-100px">Giá bán</th>
                                     <th class="min-w-100px">Hạn sử dụng</th>
                                     <th class="min-w-100px">Trạng thái</th>
                                     <th class="text-end min-w-100px">Thao tác</th>
@@ -180,25 +186,6 @@
             line-height: 1.4;
         }
 
-        .medicine-code {
-            color: #7E8299;
-            font-size: 12px;
-            background-color: #F1F1F2;
-            padding: 2px 6px;
-            border-radius: 4px;
-            display: inline-block;
-            margin-top: 2px;
-        }
-
-        .status-badge {
-            font-size: 11px;
-            font-weight: 600;
-            padding: 4px 8px;
-            border-radius: 4px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
         .stats-card {
             transition: transform 0.2s ease;
         }
@@ -211,12 +198,6 @@
             font-weight: 600;
             color: #50CD89;
             font-size: 14px;
-        }
-
-        .quantity-display {
-            display: flex;
-            align-items: center;
-            gap: 4px;
         }
 
         .alert-badges {

@@ -21,17 +21,12 @@ class MedicineRequest extends FormRequest
      */
     public function rules(): array
     {
-        $medicineId = $this->route('medicine');
-        
         return [
             'name' => 'required|string|max:255',
-            'code' => 'required|string|max:50|unique:medicines,code,' . $medicineId,
+            'type' => 'required|in:supplement,medicine,other',
             'description' => 'nullable|string',
-            'unit' => 'required|string|max:50',
-            'price' => 'required|numeric|min:0',
-            'quantity' => 'required|integer|min:0',
-            'min_quantity' => 'required|integer|min:0',
-            'manufacturer' => 'nullable|string|max:255',
+            'import_price' => 'required|numeric|min:0',
+            'sale_price' => 'required|numeric|min:0',
             'expiry_date' => 'nullable|date',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'is_active' => 'boolean'
@@ -46,21 +41,14 @@ class MedicineRequest extends FormRequest
         return [
             'name.required' => 'Tên thuốc là bắt buộc.',
             'name.max' => 'Tên thuốc không được vượt quá 255 ký tự.',
-            'code.required' => 'Mã thuốc là bắt buộc.',
-            'code.unique' => 'Mã thuốc đã tồn tại.',
-            'code.max' => 'Mã thuốc không được vượt quá 50 ký tự.',
-            'unit.required' => 'Đơn vị là bắt buộc.',
-            'unit.max' => 'Đơn vị không được vượt quá 50 ký tự.',
-            'price.required' => 'Giá thuốc là bắt buộc.',
-            'price.numeric' => 'Giá thuốc phải là số.',
-            'price.min' => 'Giá thuốc không được âm.',
-            'quantity.required' => 'Số lượng là bắt buộc.',
-            'quantity.integer' => 'Số lượng phải là số nguyên.',
-            'quantity.min' => 'Số lượng không được âm.',
-            'min_quantity.required' => 'Số lượng tối thiểu là bắt buộc.',
-            'min_quantity.integer' => 'Số lượng tối thiểu phải là số nguyên.',
-            'min_quantity.min' => 'Số lượng tối thiểu không được âm.',
-            'manufacturer.max' => 'Nhà sản xuất không được vượt quá 255 ký tự.',
+            'type.required' => 'Loại thuốc là bắt buộc.',
+            'type.in' => 'Loại thuốc không hợp lệ.',
+            'import_price.required' => 'Giá nhập là bắt buộc.',
+            'import_price.numeric' => 'Giá nhập phải là số.',
+            'import_price.min' => 'Giá nhập không được âm.',
+            'sale_price.required' => 'Giá bán là bắt buộc.',
+            'sale_price.numeric' => 'Giá bán phải là số.',
+            'sale_price.min' => 'Giá bán không được âm.',
             'expiry_date.date' => 'Hạn sử dụng phải là ngày hợp lệ.',
             'image.image' => 'File phải là hình ảnh.',
             'image.mimes' => 'Hình ảnh phải có định dạng: jpeg, png, jpg, gif.',
@@ -84,30 +72,26 @@ class MedicineRequest extends FormRequest
             ]);
         }
 
-        // FIX: Parse price properly to handle decimal values
-        if ($this->has('price') && $this->price !== null) {
-            // Convert string price to float, handling both "599000" and "599000.00" formats
-            $price = str_replace([',', ' '], '', $this->price); // Remove commas and spaces
-            $price = (float) $price; // Convert to float (599000.00 becomes 599000.0)
-            
-            $this->merge([
-                'price' => $price
-            ]);
+        // Parse prices properly
+        if ($this->has('import_price') && $this->import_price !== null) {
+            $price = str_replace([',', ' '], '', $this->import_price);
+            $price = (float) $price;
+            $this->merge(['import_price' => $price]);
         }
 
-        // FIX: Handle expiry_date properly - ensure it's in Y-m-d format
+        if ($this->has('sale_price') && $this->sale_price !== null) {
+            $price = str_replace([',', ' '], '', $this->sale_price);
+            $price = (float) $price;
+            $this->merge(['sale_price' => $price]);
+        }
+
+        // Handle expiry_date properly
         if ($this->has('expiry_date') && $this->expiry_date) {
-            // If date is already in Y-m-d format, keep it. Otherwise try to convert
             $date = $this->expiry_date;
-            
-            // If date contains '/', convert to Y-m-d format
             if (strpos($date, '/') !== false) {
                 $date = date('Y-m-d', strtotime($date));
             }
-            
-            $this->merge([
-                'expiry_date' => $date
-            ]);
+            $this->merge(['expiry_date' => $date]);
         }
     }
 }

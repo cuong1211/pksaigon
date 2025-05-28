@@ -12,20 +12,18 @@ class Medicine extends Model
 
     protected $fillable = [
         'name',
-        'code',
+        'type',
         'description',
-        'unit',
-        'price',
-        'quantity',
-        'min_quantity',
-        'manufacturer',
+        'import_price',
+        'sale_price',
         'expiry_date',
         'image',
         'is_active'
     ];
 
     protected $casts = [
-        'price' => 'decimal:2',
+        'import_price' => 'decimal:2',
+        'sale_price' => 'decimal:2',
         'expiry_date' => 'date',
         'is_active' => 'boolean'
     ];
@@ -37,6 +35,28 @@ class Medicine extends Model
             return asset('storage/' . $this->image);
         }
         return asset('images/default-medicine.png'); // Ảnh mặc định
+    }
+
+    // Accessor để lấy tên loại thuốc
+    public function getTypeNameAttribute()
+    {
+        $types = [
+            'supplement' => 'Thực phẩm chức năng',
+            'medicine' => 'Thuốc điều trị',
+            'other' => 'Khác'
+        ];
+        return $types[$this->type] ?? $this->type;
+    }
+
+    // Accessor để format giá
+    public function getFormattedImportPriceAttribute()
+    {
+        return number_format($this->import_price, 0, '.', '.') . ' VNĐ';
+    }
+
+    public function getFormattedSalePriceAttribute()
+    {
+        return number_format($this->sale_price, 0, '.', '.') . ' VNĐ';
     }
 
     // Kiểm tra thuốc sắp hết hạn (trong vòng 30 ngày)
@@ -53,16 +73,16 @@ class Medicine extends Model
         return $this->expiry_date->isPast();
     }
 
-    // Kiểm tra thuốc sắp hết
-    public function getIsLowStockAttribute()
-    {
-        return $this->quantity <= $this->min_quantity;
-    }
-
     // Scope để lọc thuốc đang hoạt động
     public function scopeActive($query)
     {
         return $query->where('is_active', true);
+    }
+
+    // Scope để lọc theo loại
+    public function scopeByType($query, $type)
+    {
+        return $query->where('type', $type);
     }
 
     // Scope để lọc thuốc sắp hết hạn
@@ -78,9 +98,15 @@ class Medicine extends Model
         return $query->whereDate('expiry_date', '<', now());
     }
 
-    // Scope để lọc thuốc sắp hết
-    public function scopeLowStock($query)
+    // Relationship với medicine imports
+    public function imports()
     {
-        return $query->whereRaw('quantity <= min_quantity');
+        return $this->hasMany(MedicineImport::class);
+    }
+
+    // Method để lấy tổng số lượng đã nhập
+    public function getTotalImportedQuantityAttribute()
+    {
+        return $this->imports()->sum('quantity');
     }
 }

@@ -22,14 +22,6 @@ class MedicineController extends Controller
     }
 
     /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
      * Store a newly created resource in storage.
      */
     public function store(MedicineRequest $request)
@@ -52,7 +44,6 @@ class MedicineController extends Controller
                 'title' => 'Thành công',
                 'content' => 'Thêm thuốc thành công!'
             ]);
-
         } catch (\Exception $e) {
             return response()->json([
                 'type' => 'error',
@@ -75,19 +66,15 @@ class MedicineController extends Controller
             return $this->getStatistics();
         }
 
+        if ($id == 'get-data') {
+            return $this->getData();
+        }
+
         $medicine = Medicine::findOrFail($id);
         return response()->json([
             'type' => 'success',
             'data' => $medicine
         ]);
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
     }
 
     /**
@@ -120,7 +107,6 @@ class MedicineController extends Controller
                 'title' => 'Thành công',
                 'content' => 'Cập nhật thuốc thành công!'
             ]);
-
         } catch (\Exception $e) {
             return response()->json([
                 'type' => 'error',
@@ -154,7 +140,6 @@ class MedicineController extends Controller
                 'title' => 'Thành công',
                 'content' => 'Xóa thuốc thành công!'
             ]);
-
         } catch (\Exception $e) {
             return response()->json([
                 'type' => 'error',
@@ -165,20 +150,68 @@ class MedicineController extends Controller
     }
 
     /**
+     * Get data for edit
+     */
+    public function getData($id = null)
+    {
+        try {
+            if (!$id) {
+                $id = request()->get('id');
+            }
+
+            $medicine = Medicine::findOrFail($id);
+
+            $data = [
+                'id' => $medicine->id,
+                'name' => $medicine->name,
+                'type' => $medicine->type,
+                'description' => $medicine->description,
+                'import_price' => (int)$medicine->import_price,
+                'sale_price' => (int)$medicine->sale_price,
+                'expiry_date' => $medicine->expiry_date ? $medicine->expiry_date->format('Y-m-d') : null,
+                'is_active' => $medicine->is_active,
+                'image_url' => $medicine->image_url,
+                'has_image' => $medicine->image && Storage::disk('public')->exists($medicine->image),
+                'created_at' => $medicine->created_at->format('d/m/Y H:i'),
+                'updated_at' => $medicine->updated_at->format('d/m/Y H:i')
+            ];
+
+            return response()->json([
+                'type' => 'success',
+                'data' => $data
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'type' => 'error',
+                'message' => 'Có lỗi xảy ra: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
      * Get list for DataTable
      */
     private function getList()
     {
-        $query = Medicine::select(['id', 'name', 'code', 'unit', 'price', 'quantity', 'min_quantity', 
-                                  'manufacturer', 'expiry_date', 'image', 'is_active', 'created_at']);
+        $query = Medicine::select([
+            'id',
+            'name',
+            'type',
+            'description',
+            'import_price',
+            'sale_price',
+            'expiry_date',
+            'image',
+            'is_active',
+            'created_at'
+        ]);
 
         // Apply search filter
         if (request()->has('search_table') && !empty(request()->search_table)) {
             $search = request()->search_table;
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                    ->orWhere('code', 'like', "%{$search}%")
-                    ->orWhere('manufacturer', 'like', "%{$search}%");
+                    ->orWhere('description', 'like', "%{$search}%");
             });
         }
 
@@ -187,16 +220,18 @@ class MedicineController extends Controller
             $query->where('is_active', request()->status_filter);
         }
 
+        // Apply type filter
+        if (request()->has('type_filter') && !empty(request()->type_filter)) {
+            $query->where('type', request()->type_filter);
+        }
+
         // Apply alert filter
         if (request()->has('alert_filter') && !empty(request()->alert_filter)) {
             $alertType = request()->alert_filter;
             switch ($alertType) {
-                case 'low_stock':
-                    $query->whereRaw('quantity <= min_quantity');
-                    break;
                 case 'expiring':
                     $query->whereDate('expiry_date', '<=', now()->addDays(30))
-                          ->whereDate('expiry_date', '>', now());
+                        ->whereDate('expiry_date', '>', now());
                     break;
                 case 'expired':
                     $query->whereDate('expiry_date', '<', now());
@@ -205,7 +240,7 @@ class MedicineController extends Controller
         }
 
         $medicines = $query->orderBy('created_at', 'desc')->get();
-        
+
         return DataTables::of($medicines)
             ->addColumn('image_display', function ($medicine) {
                 if ($medicine->image && Storage::disk('public')->exists($medicine->image)) {
@@ -220,18 +255,19 @@ class MedicineController extends Controller
                     return '<span class="badge badge-light-danger">Ngưng hoạt động</span>';
                 }
             })
-            ->addColumn('quantity_badge', function ($medicine) {
-                $badgeClass = $medicine->quantity <= $medicine->min_quantity ? 'badge-light-warning' : 'badge-light-success';
-                return '<span class="badge ' . $badgeClass . '">' . $medicine->quantity . '</span>';
+            ->addColumn('type_badge', function ($medicine) {
+                $typeLabels = [
+                    'supplement' => ['label' => 'TPCN', 'class' => 'badge-light-info'],
+                    'medicine' => ['label' => 'Thuốc', 'class' => 'badge-light-primary'],
+                    'other' => ['label' => 'Khác', 'class' => 'badge-light-secondary'],
+                ];
+
+                $type = $typeLabels[$medicine->type] ?? ['label' => $medicine->type, 'class' => 'badge-light-secondary'];
+                return '<span class="badge ' . $type['class'] . '">' . $type['label'] . '</span>';
             })
             ->addColumn('alerts', function ($medicine) {
                 $alerts = [];
-                
-                // Kiểm tra sắp hết hàng
-                if ($medicine->quantity <= $medicine->min_quantity) {
-                    $alerts[] = '<span class="badge badge-warning">Sắp hết</span>';
-                }
-                
+
                 // Kiểm tra hạn sử dụng
                 if ($medicine->expiry_date) {
                     $diffDays = now()->diffInDays($medicine->expiry_date, false);
@@ -241,16 +277,22 @@ class MedicineController extends Controller
                         $alerts[] = '<span class="badge badge-warning">Sắp hết hạn</span>';
                     }
                 }
-                
+
                 return implode(' ', $alerts);
             })
-            ->addColumn('formatted_price', function ($medicine) {
-                return number_format($medicine->price, 0, '.', '.') . ' VNĐ';
+            ->addColumn('formatted_import_price', function ($medicine) {
+                return number_format($medicine->import_price, 0, '.', '.') . ' VNĐ';
+            })
+            ->addColumn('formatted_sale_price', function ($medicine) {
+                return number_format($medicine->sale_price, 0, '.', '.') . ' VNĐ';
             })
             ->addColumn('formatted_expiry_date', function ($medicine) {
                 return $medicine->expiry_date ? $medicine->expiry_date->format('d/m/Y') : '';
             })
-            ->rawColumns(['status_badge', 'quantity_badge', 'alerts'])
+            ->addColumn('short_description', function ($medicine) {
+                return $medicine->description ? Str::limit(strip_tags($medicine->description), 50) : '-';
+            })
+            ->rawColumns(['status_badge', 'type_badge', 'alerts'])
             ->make(true);
     }
 
@@ -263,31 +305,36 @@ class MedicineController extends Controller
             $total = Medicine::count();
             $active = Medicine::where('is_active', true)->count();
             $inactive = Medicine::where('is_active', false)->count();
-            $lowStock = Medicine::whereRaw('quantity <= min_quantity')->count();
             $expiringSoon = Medicine::whereDate('expiry_date', '<=', now()->addDays(30))
-                                   ->whereDate('expiry_date', '>', now())
-                                   ->count();
+                ->whereDate('expiry_date', '>', now())
+                ->count();
             $expired = Medicine::whereDate('expiry_date', '<', now())->count();
-            $totalValue = Medicine::sum(DB::raw('price * quantity'));
+
+            // Count by types
+            $supplement = Medicine::where('type', 'supplement')->count();
+            $medicine = Medicine::where('type', 'medicine')->count();
+            $other = Medicine::where('type', 'other')->count();
 
             return response()->json([
                 'total' => $total,
                 'active' => $active,
                 'inactive' => $inactive,
-                'low_stock' => $lowStock,
                 'expiring_soon' => $expiringSoon,
                 'expired' => $expired,
-                'total_value' => number_format($totalValue, 0, '.', '.') . ' VNĐ'
+                'supplement' => $supplement,
+                'medicine' => $medicine,
+                'other' => $other
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'total' => 0,
                 'active' => 0,
                 'inactive' => 0,
-                'low_stock' => 0,
                 'expiring_soon' => 0,
                 'expired' => 0,
-                'total_value' => '0 VNĐ'
+                'supplement' => 0,
+                'medicine' => 0,
+                'other' => 0
             ]);
         }
     }
@@ -309,7 +356,7 @@ class MedicineController extends Controller
             }
 
             $medicines = Medicine::whereIn('id', $ids)->get();
-            
+
             // Xóa ảnh của các thuốc
             foreach ($medicines as $medicine) {
                 if ($medicine->image && Storage::disk('public')->exists($medicine->image)) {

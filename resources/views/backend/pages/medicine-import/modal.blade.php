@@ -1,6 +1,6 @@
 <div class="modal fade" id="kt_modal_add_customer" tabindex="-1" aria-hidden="true">
     <!--begin::Modal dialog-->
-    <div class="modal-dialog modal-dialog-centered mw-750px">
+    <div class="modal-dialog modal-dialog-centered mw-900px">
         <!--begin::Modal content-->
         <div class="modal-content">
             <!--begin::Form-->
@@ -44,11 +44,12 @@
                         <div class="row">
                             <!--begin::Col-->
                             <div class="col-md-12">
-                                <!--begin::Input group - Chọn thuốc-->
+                                <!--begin::Input group - Chọn thuốc với Select2-->
                                 <div class="fv-row mb-7">
                                     <label class="required fs-6 fw-bold mb-2">Chọn thuốc</label>
                                     <select class="form-select form-select-solid" name="medicine_id"
-                                        id="medicine_select">
+                                        id="medicine_select" data-control="select2"
+                                        data-placeholder="Tìm và chọn thuốc..." data-allow-clear="true">
                                         <option value="">-- Chọn thuốc --</option>
                                     </select>
                                     <div class="form-text">Chọn thuốc cần nhập kho</div>
@@ -74,11 +75,12 @@
                             <!--end::Col-->
                             <!--begin::Col-->
                             <div class="col-md-4">
-                                <!--begin::Input group - Giá nhập-->
+                                <!--begin::Input group - Tổng tiền-->
                                 <div class="fv-row mb-7">
-                                    <label class="required fs-6 fw-bold mb-2">Giá nhập (VNĐ)</label>
-                                    <input type="number" class="form-control form-control-solid" placeholder="Nhập giá"
-                                        name="unit_price" min="0" />
+                                    <label class="required fs-6 fw-bold mb-2">Tổng tiền (VNĐ)</label>
+                                    <input type="number" class="form-control form-control-solid"
+                                        placeholder="Nhập tổng tiền" name="total_amount" min="0"
+                                        step="1000" />
                                 </div>
                                 <!--end::Input group-->
                             </div>
@@ -97,27 +99,10 @@
                         </div>
                         <!--end::Row-->
 
-                        <!--begin::Row-->
-                        <div class="row">
-                            <!--begin::Col-->
-                            <div class="col-md-6">
-                                <!--begin::Input group - Tổng tiền (tự động tính)-->
-                                <div class="fv-row mb-7">
-                                    <label class="fs-6 fw-bold mb-2">Tổng tiền (VNĐ)</label>
-                                    <input type="text" class="form-control form-control-solid bg-light"
-                                        id="total_price_display" placeholder="0" readonly />
-                                    <div class="form-text">Tự động tính = Số lượng × Giá nhập</div>
-                                </div>
-                                <!--end::Input group-->
-                            </div>
-                            <!--end::Col-->
-                        </div>
-                        <!--end::Row-->
-
                         <!--begin::Input group - Ghi chú-->
                         <div class="fv-row mb-7">
                             <label class="fs-6 fw-bold mb-2">Ghi chú</label>
-                            <textarea class="form-control form-control-solid" rows="3" placeholder="Nhập ghi chú (tùy chọn)" name="notes"></textarea>
+                            <textarea class="form-control form-control-solid" rows="4" placeholder="Nhập ghi chú (tùy chọn)" name="notes"></textarea>
                         </div>
                         <!--end::Input group-->
 
@@ -133,7 +118,7 @@
                                 <label class="fs-7 fw-bold text-gray-600">Preview hóa đơn:</label>
                                 <div class="mt-2">
                                     <img id="invoice-preview" src="" class="img-fluid rounded"
-                                        style="max-height: 200px; max-width: 300px;">
+                                        style="max-height: 250px; max-width: 350px;">
                                     <button type="button" class="btn btn-sm btn-light-danger mt-2"
                                         onclick="removeInvoiceImage()">
                                         Xóa ảnh
@@ -186,18 +171,6 @@
 
 @push('jscustom')
     <script>
-        // Tự động tính tổng tiền
-        function calculateTotalPrice() {
-            const quantity = parseFloat($('input[name="quantity"]').val()) || 0;
-            const unitPrice = parseFloat($('input[name="unit_price"]').val()) || 0;
-            const totalPrice = quantity * unitPrice;
-
-            $('#total_price_display').val(new Intl.NumberFormat('vi-VN').format(totalPrice));
-        }
-
-        // Event listeners cho tính tổng tiền
-        $('input[name="quantity"], input[name="unit_price"]').on('input', calculateTotalPrice);
-
         // Preview invoice image function
         function previewInvoiceImage(input) {
             const container = document.getElementById('invoice-preview-container');
@@ -229,5 +202,82 @@
             $('#invoice-full-preview').attr('src', imageUrl);
             $('#kt_modal_invoice_preview').modal('show');
         }
+
+        // Initialize Select2 when modal is shown
+        $('#kt_modal_add_customer').on('shown.bs.modal', function() {
+            $('#medicine_select').select2({
+                dropdownParent: $('#kt_modal_add_customer'),
+                placeholder: "Tìm và chọn thuốc...",
+                allowClear: true,
+                width: '100%'
+            });
+        });
+
+        // Destroy Select2 when modal is hidden
+        $('#kt_modal_add_customer').on('hidden.bs.modal', function() {
+            $('#medicine_select').select2('destroy');
+        });
     </script>
+@endpush
+
+@push('csscustom')
+    <style>
+        /* Custom CSS cho modal */
+        .modal-dialog.mw-900px {
+            max-width: 900px !important;
+        }
+
+        .form-control-solid {
+            border: 1px solid #e4e6ef;
+        }
+
+        .form-control-solid:focus {
+            border-color: #009ef7;
+            box-shadow: 0 0 0 0.2rem rgba(0, 158, 247, 0.25);
+        }
+
+        #invoice-preview {
+            border: 2px solid #e4e6ef;
+            border-radius: 0.475rem;
+            padding: 5px;
+        }
+
+        .scroll-y {
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+
+        /* Select2 styling */
+        .select2-container--default .select2-selection--single {
+            /* height: calc(1.5em + 1.3rem + 2px) !important; */
+            border: 1px solid #e4e6ef !important;
+            border-radius: 0.475rem !important;
+        }
+
+        .select2-container--default .select2-selection--single .select2-selection__rendered {
+            /* line-height: calc(1.5em + 1.3rem) !important; */
+            padding-left: 1rem !important;
+            color: #5e6278 !important;
+        }
+
+        .select2-container--default .select2-selection--single .select2-selection__arrow {
+            /* height: calc(1.5em + 1.3rem) !important; */
+            right: 1rem !important;
+        }
+
+        .select2-dropdown {
+            border: 1px solid #e4e6ef !important;
+            border-radius: 0.475rem !important;
+        }
+
+        /* Image preview modal */
+        .image-preview-modal .modal-dialog {
+            max-width: 800px;
+        }
+
+        .image-preview-modal img {
+            width: 100%;
+            height: auto;
+        }
+    </style>
 @endpush
