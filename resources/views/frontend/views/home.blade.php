@@ -119,13 +119,13 @@
                     <div class="about-image">
                         <div class="about-img-1">
                             <figure class="image-anime reveal">
-                                <img src="images/about-us-img-1.jpg" alt="">
+                                <img src="images/sc-2-1.jpg" alt="">
                             </figure>
                         </div>
 
                         <div class="about-img-2">
                             <figure class="image-anime reveal">
-                                <img src="images/about-us-img-2.jpg" alt="">
+                                <img src="images/sc-2-2.jpg" alt="">
                             </figure>
                         </div>
 
