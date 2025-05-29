@@ -37,7 +37,10 @@ Route::get('/about', [AboutController::class, 'index'])->name('about');
 
 // Services Routes
 Route::get('/services', [FrontendServiceController::class, 'index'])->name('frontend.services');
+Route::get('/services/type/{type}', [FrontendServiceController::class, 'indexByType'])->name('frontend.services.type');
 Route::get('/services/{slug}', [FrontendServiceController::class, 'show'])->name('frontend.services.show');
+// API route để lấy dịch vụ theo loại (cho AJAX nếu cần)
+Route::get('/api/services/type/{type}', [FrontendServiceController::class, 'getServicesByType'])->name('frontend.services.by-type');
 
 // Contact Routes
 Route::get('/contact', [FrontendContactController::class, 'index'])->name('contact');
@@ -52,9 +55,12 @@ Route::get('/medicines', [FrontendMedicineController::class, 'index'])->name('fr
 Route::get('/medicines/{slug}', [FrontendMedicineController::class, 'show'])->name('frontend.medicines.show');
 
 // Appointment Routes
+
 Route::get('/appointment', [FrontendAppointmentController::class, 'index'])->name('frontend.appointment');
 Route::post('/appointment', [FrontendAppointmentController::class, 'store'])->name('frontend.appointment.store');
 
+// API Routes cho Frontend (không cần auth)
+Route::get('/api/services', [FrontendAppointmentController::class, 'getServices'])->name('frontend.services.api');
 
 // Routes cho authentication
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
@@ -95,6 +101,9 @@ Route::middleware(['auth'])->group(function () {
 
 
         Route::resource('appointment', AppointmentController::class);
+        Route::post('appointment/{id}/confirm', [AppointmentController::class, 'confirm'])->name('appointment.confirm');
+        Route::post('appointment/{id}/cancel', [AppointmentController::class, 'cancel'])->name('appointment.cancel');
+        Route::post('appointment/{id}/complete', [AppointmentController::class, 'complete'])->name('appointment.complete');
         // Route tạo slug cho service
         Route::get('create-slug', function (Request $request) {
             $name = $request->get('name');

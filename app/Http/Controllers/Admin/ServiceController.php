@@ -83,7 +83,7 @@ class ServiceController extends Controller
 
         // Route mới để lấy dữ liệu chi tiết cho edit
         if ($id == 'get-data') {
-            return $this->getData();
+            return $this->getData($id);
         }
 
         $service = Service::findOrFail($id);

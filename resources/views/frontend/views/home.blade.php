@@ -33,7 +33,7 @@
                         <!-- Hero Img Start -->
                         <div class="hero-img">
                             <figure>
-                                <img src="images/hero-img.png" alt="">
+                                <img src="images/bs-3-1.png" alt="">
                             </figure>
                         </div>
                         <!-- Hero Img End -->
@@ -42,11 +42,11 @@
                         <div class="export-dantist-box">
                             <div class="icon-box">
                                 <figure class="image-anime">
-                                    <img src="images/dantist-doctor-img.jpg" alt="">
+                                    <img src="images/bs-3-2.png" alt="">
                                 </figure>
                             </div>
                             <div class="export-dantist-content">
-                                <h3>BS. Nguyễn Thị Minh</h3>
+                                <h3>BS. Nguyễn Thị Thu Hiển</h3>
                                 <p>bác sĩ sản phụ khoa</p>
                             </div>
                         </div>
@@ -201,7 +201,7 @@
                     <div class="service-item wow fadeInUp">
                         <div class="icon-box">
                             <div class="img">
-                                <img src="images/icon-services-1.svg" alt="">
+                                <img src="icon/icon_1.png" alt="">
                             </div>
                         </div>
                         <div class="service-body">
@@ -220,7 +220,7 @@
                     <div class="service-item wow fadeInUp" data-wow-delay="0.25s">
                         <div class="icon-box">
                             <div class="img">
-                                <img src="images/icon-services-2.svg" alt="">
+                                <img src="icon/icon_2.png" alt="">
                             </div>
                         </div>
                         <div class="service-body">
@@ -240,7 +240,7 @@
                     <div class="service-item wow fadeInUp" data-wow-delay="0.5s">
                         <div class="icon-box">
                             <div class="img">
-                                <img src="images/icon-services-3.svg" alt="">
+                                <img src="icon/icon_3.png" alt="">
                             </div>
                         </div>
                         <div class="service-body">
@@ -259,7 +259,7 @@
                     <div class="service-item wow fadeInUp" data-wow-delay="0.75s">
                         <div class="icon-box">
                             <div class="img">
-                                <img src="images/icon-services-4.svg" alt="">
+                                <img src="icon/icon_4.png" alt="">
                             </div>
                         </div>
                         <div class="service-body">
@@ -330,7 +330,7 @@
                         <div class="why-choose-item wow fadeInUp" data-wow-delay="0.25s">
                             <!-- Icon Box Start -->
                             <div class="icon-box">
-                                <img src="images/icon-why-us-2.svg" alt="">
+                                <img src="icon/icon_1.png" alt="">
                             </div>
                             <!-- Icon Box End -->
 
@@ -560,25 +560,19 @@
             </div>
 
             <div class="row">
-                <div class="col-lg-3 col-md-6">
+                <div class="col-lg-4 col-md-6">
                     <!-- Team Member Item Start -->
                     <div class="team-member-item wow fadeInUp">
                         <!-- Team Image Start -->
                         <div class="team-image">
                             <figure class="image-anime">
-                                <img src="images/team-1.jpg" alt="">
+                                <img src="images/bs-3.png" alt="">
                             </figure>
 
                             <!-- Team Social Icon Start -->
                             <div class="team-social-icon">
                                 <ul>
                                     <li><a href="#" class="social-icon"><i class="fa-brands fa-facebook-f"></i></a>
-                                    </li>
-                                    <li><a href="#" class="social-icon"><i class="fa-brands fa-youtube"></i></a>
-                                    </li>
-                                    <li><a href="#" class="social-icon"><i class="fa-brands fa-instagram"></i></a>
-                                    </li>
-                                    <li><a href="#" class="social-icon"><i class="fa-brands fa-x-twitter"></i></a>
                                     </li>
                                 </ul>
                             </div>
@@ -588,7 +582,7 @@
 
                         <!-- Team Content Start -->
                         <div class="team-content">
-                            <h3>BS. Nguyễn Văn An</h3>
+                            <h3>BS. Nguyễn Thị Thu Hiền</h3>
                             <p>trưởng khoa sản</p>
                         </div>
                         <!-- Team Content End -->
@@ -596,35 +590,24 @@
                     <!-- Team Member Item End -->
                 </div>
 
-                <div class="col-lg-3 col-md-6">
+                <div class="col-lg-4 col-md-6">
                     <!-- Team Member Item Start -->
                     <div class="team-member-item wow fadeInUp" data-wow-delay="0.25s">
                         <!-- Team Image Start -->
                         <div class="team-image">
                             <figure class="image-anime">
-                                <img src="images/team-2.jpg" alt="">
+                                <img src="images/bs_1.png" alt="">
                             </figure>
 
                             <!-- Team Social Icon Start -->
-                            <div class="team-social-icon">
-                                <ul>
-                                    <li><a href="#" class="social-icon"><i class="fa-brands fa-facebook-f"></i></a>
-                                    </li>
-                                    <li><a href="#" class="social-icon"><i class="fa-brands fa-youtube"></i></a>
-                                    </li>
-                                    <li><a href="#" class="social-icon"><i class="fa-brands fa-instagram"></i></a>
-                                    </li>
-                                    <li><a href="#" class="social-icon"><i class="fa-brands fa-x-twitter"></i></a>
-                                    </li>
-                                </ul>
-                            </div>
+                        
                             <!-- Team Social Icon End -->
                         </div>
                         <!-- Team Image End -->
 
                         <!-- Team Content Start -->
                         <div class="team-content">
-                            <h3>BS. Trần Thị Bình</h3>
+                            <h3>BS. Nguyễn Thị Rỳ</h3>
                             <p>bác sĩ phụ khoa</p>
                         </div>
                         <!-- Team Content End -->
@@ -632,35 +615,24 @@
                     <!-- Team Member Item End -->
                 </div>
 
-                <div class="col-lg-3 col-md-6">
+                <div class="col-lg-4 col-md-6">
                     <!-- Team Member Item Start -->
                     <div class="team-member-item wow fadeInUp" data-wow-delay="0.5s">
                         <!-- Team Image Start -->
                         <div class="team-image">
                             <figure class="image-anime">
-                                <img src="images/team-3.jpg" alt="">
+                                <img src="images/bs_2.png" alt="">
                             </figure>
 
                             <!-- Team Social Icon Start -->
-                            <div class="team-social-icon">
-                                <ul>
-                                    <li><a href="#" class="social-icon"><i class="fa-brands fa-facebook-f"></i></a>
-                                    </li>
-                                    <li><a href="#" class="social-icon"><i class="fa-brands fa-youtube"></i></a>
-                                    </li>
-                                    <li><a href="#" class="social-icon"><i class="fa-brands fa-instagram"></i></a>
-                                    </li>
-                                    <li><a href="#" class="social-icon"><i class="fa-brands fa-x-twitter"></i></a>
-                                    </li>
-                                </ul>
-                            </div>
+                            
                             <!-- Team Social Icon End -->
                         </div>
                         <!-- Team Image End -->
 
                         <!-- Team Content Start -->
                         <div class="team-content">
-                            <h3>BS. Lê Thị Cúc</h3>
+                            <h3>BS. Trịnh Thị Sâm</h3>
                             <p>chuyên gia sản khoa</p>
                         </div>
                         <!-- Team Content End -->
@@ -668,41 +640,6 @@
                     <!-- Team Member Item End -->
                 </div>
 
-                <div class="col-lg-3 col-md-6">
-                    <!-- Team Member Item Start -->
-                    <div class="team-member-item wow fadeInUp" data-wow-delay="0.75s">
-                        <!-- Team Image Start -->
-                        <div class="team-image">
-                            <figure class="image-anime">
-                                <img src="images/team-4.jpg" alt="">
-                            </figure>
-
-                            <!-- Team Social Icon Start -->
-                            <div class="team-social-icon">
-                                <ul>
-                                    <li><a href="#" class="social-icon"><i class="fa-brands fa-facebook-f"></i></a>
-                                    </li>
-                                    <li><a href="#" class="social-icon"><i class="fa-brands fa-youtube"></i></a>
-                                    </li>
-                                    <li><a href="#" class="social-icon"><i class="fa-brands fa-instagram"></i></a>
-                                    </li>
-                                    <li><a href="#" class="social-icon"><i class="fa-brands fa-x-twitter"></i></a>
-                                    </li>
-                                </ul>
-                            </div>
-                            <!-- Team Social Icon End -->
-                        </div>
-                        <!-- Team Image End -->
-
-                        <!-- Team Content Start -->
-                        <div class="team-content">
-                            <h3>BS. Phạm Văn Dũng</h3>
-                            <p>bác sĩ nội tiết phụ khoa</p>
-                        </div>
-                        <!-- Team Content End -->
-                    </div>
-                    <!-- Team Member Item End -->
-                </div>
             </div>
         </div>
         <!-- Icon Start Image Start -->

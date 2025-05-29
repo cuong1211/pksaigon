@@ -1,4 +1,5 @@
 <?php
+// database/migrations/xxxx_xx_xx_create_appointments_table.php
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
@@ -6,34 +7,29 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
-    public function up(): void
+    public function up()
     {
-        Schema::dropIfExists('appointments');
-
         Schema::create('appointments', function (Blueprint $table) {
             $table->id();
-            $table->string('patient_name'); // Tên bệnh nhân
-            $table->string('patient_phone'); // SĐT bệnh nhân
-            $table->enum('patient_gender', ['male', 'female', 'other'])->default('other'); // Giới tính
+            $table->foreignId('patient_id')->constrained('patients')->onDelete('cascade'); // Liên kết với bệnh nhân
             $table->foreignId('service_id')->nullable()->constrained('services')->onDelete('set null'); // Dịch vụ
-            $table->datetime('appointment_date'); // Ngày giờ hẹn
+            $table->date('appointment_date'); // Ngày hẹn
+            $table->string('appointment_time'); // Giờ hẹn (08:00, 09:30, etc.)
+            $table->text('symptoms')->nullable(); // Triệu chứng
+            $table->text('notes')->nullable(); // Ghi chú
+            $table->enum('status', ['pending', 'confirmed', 'completed', 'cancelled'])->default('pending'); // Trạng thái
+            $table->enum('source', ['website', 'phone', 'walk-in'])->default('website'); // Nguồn đặt lịch
             $table->timestamps();
-
+            
             // Indexes
-            $table->index(['appointment_date', 'status']);
-            $table->index('patient_phone');
+            $table->index('patient_id');
+            $table->index('service_id');  
+            $table->index('appointment_date');
             $table->index('status');
-            $table->index('service_id');
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
-    public function down(): void
+    public function down()
     {
         Schema::dropIfExists('appointments');
     }

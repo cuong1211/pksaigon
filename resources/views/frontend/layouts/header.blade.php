@@ -30,34 +30,52 @@
                 <div class="collapse navbar-collapse main-menu">
                     <div class="nav-menu-wrapper">
                         <ul class="navbar-nav mr-auto" id="menu">
-                            <li class="nav-item"><a class="nav-link" href="{{ route('home') }}">Trang chủ</a>
-                            </li>
+                            <li class="nav-item"><a class="nav-link" href="{{ route('home') }}">Trang chủ</a></li>
                             <li class="nav-item"><a class="nav-link" href="{{ route('about') }}">Về chúng tôi</a></li>
-                            <li class="nav-item submenu"><a class="nav-link"
-                                    href="{{ route('frontend.services') }}">Dịch
-                                    vụ</a>
+                            
+                            <!-- Services Dropdown -->
+                            <li class="nav-item submenu">
+                                <a class="nav-link" href="{{ route('frontend.services') }}">Dịch vụ</a>
                                 <ul>
-                                    <li class="nav-item"><a class="nav-link"
-                                            href="{{ route('frontend.services') }}">Dịch vụ khám
-                                            bệnh</a></li>
-                                    <li class="nav-item"><a class="nav-link"
-                                            href="{{ route('frontend.services') }}">Dịch vụ xét nghiệm</a></li>
+                                    <li class="nav-item">
+                                        <a class="nav-link" href="{{ route('frontend.services.type', 'procedure') }}">
+                                            <i class="fas fa-stethoscope me-2"></i>Thủ thuật
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link" href="{{ route('frontend.services.type', 'laboratory') }}">
+                                            <i class="fas fa-microscope me-2"></i>Xét nghiệm
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link" href="{{ route('frontend.services.type', 'other') }}">
+                                            <i class="fas fa-plus-circle me-2"></i>Dịch vụ khác
+                                        </a>
+                                    </li>
                                 </ul>
                             </li>
-                            <li class="nav-item submenu"><a class="nav-link"
-                                    href="{{ route('frontend.medicines') }}">Sản phẩm</a>
+                            
+                            <!-- Products Dropdown -->
+                            <li class="nav-item submenu">
+                                <a class="nav-link" href="{{ route('frontend.medicines') }}">Sản phẩm</a>
                                 <ul>
-                                    <li class="nav-item"><a class="nav-link"
-                                            href="{{ route('frontend.medicines') }}">Thuốc điều trị</a></li>
-                                    <li class="nav-item"><a class="nav-link"
-                                            href="{{ route('frontend.medicines') }}">Thực phẩm bổ sung</a></li>
+                                    <li class="nav-item">
+                                        <a class="nav-link" href="{{ route('frontend.medicines') }}">
+                                            <i class="fas fa-pills me-2"></i>Thuốc điều trị
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link" href="{{ route('frontend.medicines') }}">
+                                            <i class="fas fa-leaf me-2"></i>Thực phẩm bổ sung
+                                        </a>
+                                    </li>
                                 </ul>
                             </li>
-                            <li class="nav-item"><a class="nav-link" href="{{ route('contact') }}">Liên hệ</a>
+
+                            <li class="nav-item"><a class="nav-link" href="{{ route('contact') }}">Liên hệ</a></li>
+                            <li class="nav-item highlighted-menu">
+                                <a class="nav-link" href="{{ route('frontend.appointment') }}">Đặt lịch khám</a>
                             </li>
-                            <li class="nav-item highlighted-menu"><a class="nav-link"
-                                    href="{{ route('frontend.appointment') }}">Đặt lịch
-                                    khám</a></li>
                         </ul>
                     </div>
                     <!-- Let's Start Button Start -->
@@ -73,49 +91,92 @@
         <div class="responsive-menu"></div>
     </div>
 </header>
+
 @push('csscustom')
-    <style>
+<style>
+    .brand-text {
+        font-family: 'Poppins', sans-serif;
+        font-size: 32px;
+        font-weight: 700;
+        color: #333;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        transition: all 0.3s ease;
+    }
+
+    .navbar-brand:hover .brand-text {
+        color: #1e85b4;
+        text-decoration: none;
+    }
+
+    /* Dropdown Menu Styling */
+    .nav-item.submenu .nav-link {
+        position: relative;
+    }
+
+    .nav-item.submenu ul {
+        background: white;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        border-radius: 8px;
+        padding: 10px 0;
+        min-width: 220px;
+    }
+
+    .nav-item.submenu ul li a {
+        padding: 10px 20px;
+        color: #666;
+        font-size: 14px;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+    }
+
+    .nav-item.submenu ul li a:hover {
+        background: #f8f9fa;
+        color: #1e85b4;
+        padding-left: 25px;
+    }
+
+    .nav-item.submenu ul li a i {
+        color: #1e85b4;
+        width: 16px;
+        font-size: 12px;
+    }
+
+    /* Responsive cho mobile */
+    @media (max-width: 768px) {
         .brand-text {
-            font-family: 'Poppins', sans-serif;
-            font-size: 32px;
-            font-weight: 700;
-            color: #333;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            transition: all 0.3s ease;
+            font-size: 24px;
+            margin-right: 0;
         }
 
-        .navbar-brand:hover .brand-text {
-            color: #007bff;
-            text-decoration: none;
+        .navbar-brand {
+            flex-direction: column !important;
+            align-items: center !important;
         }
 
-        /* Responsive cho mobile */
-        @media (max-width: 768px) {
-            .brand-text {
-                font-size: 24px;
-                margin-right: 0;
-            }
-
-            .navbar-brand {
-                flex-direction: column !important;
-                align-items: center !important;
-            }
-
-            .navbar-brand img {
-                margin-right: 0 !important;
-                margin-bottom: 5px;
-            }
+        .navbar-brand img {
+            margin-right: 0 !important;
+            margin-bottom: 5px;
         }
 
-        @media (max-width: 480px) {
-            .brand-text {
-                font-size: 20px;
-            }
-
-            .navbar-brand img {
-                width: 50px;
-            }
+        .nav-item.submenu ul {
+            position: static;
+            box-shadow: none;
+            background: #f8f9fa;
+            margin-top: 10px;
+            border-radius: 5px;
         }
-    </style>
+    }
+
+    @media (max-width: 480px) {
+        .brand-text {
+            font-size: 20px;
+        }
+
+        .navbar-brand img {
+            width: 50px;
+        }
+    }
+</style>
 @endpush

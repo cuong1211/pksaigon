@@ -647,4 +647,5 @@
             });
         });
     </script>
+    @include('backend.layout.js')
 @endsection
