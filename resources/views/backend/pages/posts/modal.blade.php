@@ -34,30 +34,58 @@
                                 <div class="fv-row mb-7">
                                     <label class="required fs-6 fw-bold mb-2">Tiêu đề bài viết</label>
                                     <input type="text" class="form-control form-control-solid"
-                                        placeholder="Nhập tiêu đề bài viết" name="title" />
+                                        placeholder="Nhập tiêu đề bài viết" name="title" id="post_title" />
                                 </div>
 
-                                <!-- Excerpt -->
+                                <!-- Slug -->
                                 <div class="fv-row mb-7">
-                                    <label class="fs-6 fw-bold mb-2">Tóm tắt</label>
-                                    <textarea class="form-control form-control-solid" placeholder="Tóm tắt ngắn gọn về bài viết" name="excerpt"
-                                        rows="3"></textarea>
-                                    <div class="form-text">Tối đa 500 ký tự. Nếu để trống sẽ tự động tạo từ nội dung
-                                    </div>
+                                    <label class="fs-6 fw-bold mb-2">Slug</label>
+                                    <input type="text" class="form-control form-control-solid"
+                                        placeholder="Tự động tạo từ tiêu đề" name="slug" id="post_slug" />
+                                    <div class="form-text">Để trống để tự động tạo từ tiêu đề. Chỉ chứa chữ thường, số
+                                        và dấu gạch ngang.</div>
                                 </div>
 
-                                <!-- Content -->
+                                <!-- Content with TinyMCE -->
                                 <div class="fv-row mb-7">
                                     <label class="required fs-6 fw-bold mb-2">Nội dung bài viết</label>
-                                    <textarea class="form-control form-control-solid" placeholder="Nhập nội dung bài viết" name="content" rows="10"
-                                        id="post_content"></textarea>
+                                    <textarea class="form-control" id="post_content" name="content" rows="15"></textarea>
+                                    <div class="form-text">Nội dung chi tiết của bài viết</div>
+                                </div>
+                            </div>
+
+                            <!-- Right Column -->
+                            <div class="col-md-4">
+                                <!-- Status -->
+                                <div class="fv-row mb-7">
+                                    <label class="fs-6 fw-bold mb-2">Trạng thái</label>
+                                    <div class="form-check form-switch form-check-custom form-check-solid">
+                                        <input class="form-check-input" type="checkbox" name="status" id="post_status"
+                                            checked />
+                                        <label class="form-check-label fw-bold fs-6" for="post_status">
+                                            Hiển thị bài viết
+                                        </label>
+                                    </div>
+                                    <div class="form-text">Bật để hiển thị bài viết trên website</div>
+                                </div>
+
+                                <!-- Featured -->
+                                <div class="fv-row mb-7">
+                                    <div class="form-check form-switch form-check-custom form-check-solid">
+                                        <input class="form-check-input" type="checkbox" name="is_featured"
+                                            id="is_featured" />
+                                        <label class="form-check-label fw-bold fs-6" for="is_featured">
+                                            Bài viết nổi bật
+                                        </label>
+                                    </div>
+                                    <div class="form-text">Bài viết nổi bật sẽ hiển thị ưu tiên</div>
                                 </div>
 
                                 <!-- Featured Image -->
                                 <div class="fv-row mb-7">
                                     <label class="fs-6 fw-bold mb-2">Ảnh đại diện</label>
                                     <input type="file" class="form-control form-control-solid" name="featured_image"
-                                        accept="image/*" />
+                                        accept="image/*" onchange="previewPostImage(this)" />
                                     <div class="form-text">Chấp nhận: JPEG, PNG, JPG, GIF. Tối đa 2MB</div>
 
                                     <!-- Current image preview -->
@@ -76,34 +104,9 @@
                                             <img id="preview_img" src="" class="img-fluid rounded"
                                                 style="max-height: 150px;">
                                             <button type="button" class="btn btn-sm btn-light-danger mt-2"
-                                                onclick="removeNewImage()">Xóa ảnh</button>
+                                                onclick="removeNewPostImage()">Xóa ảnh</button>
                                         </div>
                                     </div>
-                                </div>
-                            </div>
-
-                            <!-- Right Column -->
-                            <div class="col-md-4">
-                                <!-- Status -->
-                                <div class="fv-row mb-7">
-                                    <label class="required fs-6 fw-bold mb-2">Trạng thái</label>
-                                    <select name="status" class="form-select form-select-solid">
-                                        <option value="draft">Bản nháp</option>
-                                        <option value="published">Xuất bản</option>
-                                        <option value="archived">Lưu trữ</option>
-                                    </select>
-                                </div>
-
-                                <!-- Featured -->
-                                <div class="fv-row mb-7">
-                                    <div class="form-check form-switch form-check-custom form-check-solid">
-                                        <input class="form-check-input" type="checkbox" name="is_featured"
-                                            id="is_featured" />
-                                        <label class="form-check-label fw-bold fs-6" for="is_featured">
-                                            Bài viết nổi bật
-                                        </label>
-                                    </div>
-                                    <div class="form-text">Bài viết nổi bật sẽ hiển thị ưu tiên</div>
                                 </div>
 
                                 <!-- SEO Preview -->
@@ -122,7 +125,8 @@
                                                 <span id="seo_url">{{ url('/') }}/posts/slug</span>
                                             </div>
                                             <div class="seo-description text-muted mt-2" style="font-size: 13px;">
-                                                <span id="seo_description">Mô tả bài viết...</span>
+                                                <span id="seo_description">Mô tả bài viết sẽ được tạo từ nội
+                                                    dung...</span>
                                             </div>
                                         </div>
                                     </div>
@@ -147,48 +151,176 @@
 </div>
 
 @push('jscustom')
+    <script src="https://cdn.tiny.cloud/1/q9sm369apfbukdo5v87vua3kadrt69sdc8jtdci6pu72rmbr/tinymce/7/tinymce.min.js"
+        referrerpolicy="origin"></script>
+
     <script>
-        // Image preview functionality
-        $('input[name="featured_image"]').on('change', function() {
-            const file = this.files[0];
-            if (file) {
+        // Khởi tạo TinyMCE khi modal mở
+        function initPostTinyMCE() {
+            if (typeof tinymce !== 'undefined') {
+                tinymce.remove('#post_content');
+                tinymce.init({
+                    selector: '#post_content',
+                    height: 400,
+                    menubar: false,
+                    plugins: [
+                        'advlist autolink lists link image charmap print preview anchor',
+                        'searchreplace visualblocks code fullscreen',
+                        'insertdatetime media table paste code help wordcount'
+                    ],
+                    toolbar: 'undo redo | formatselect | bold italic backcolor | \
+                             alignleft aligncenter alignright alignjustify | \
+                             bullist numlist outdent indent | removeformat | link image | code | help',
+                    content_style: 'body { font-family: "Be Vietnam Pro", sans-serif; font-size:14px }',
+                    language: 'vi',
+                    branding: false,
+                    setup: function(editor) {
+                        editor.on('change keyup', function() {
+                            editor.save();
+                            updatePostSEOPreview();
+                        });
+                    }
+                });
+            }
+        }
+
+        // Preview image function
+        function previewPostImage(input) {
+            const container = document.getElementById('new_image_preview');
+            const preview = document.getElementById('preview_img');
+
+            if (input.files && input.files[0]) {
                 const reader = new FileReader();
                 reader.onload = function(e) {
-                    $('#preview_img').attr('src', e.target.result);
-                    $('#new_image_preview').show();
+                    preview.src = e.target.result;
+                    container.style.display = 'block';
                 };
-                reader.readAsDataURL(file);
+                reader.readAsDataURL(input.files[0]);
             }
+        }
+
+        // Remove image function
+        function removeNewPostImage() {
+            const input = document.querySelector('input[name="featured_image"]');
+            const container = document.getElementById('new_image_preview');
+            const preview = document.getElementById('preview_img');
+
+            input.value = '';
+            preview.src = '';
+            container.style.display = 'none';
+        }
+
+        // Auto generate slug from title
+        $(document).on('input', '#post_title', function() {
+            let title = $(this).val();
+            if (title && $('#post_slug').val() === '') {
+                // Tạo slug từ tiêu đề
+                let slug = title.toLowerCase()
+                    .replace(/[àáạảãâầấậẩẫăằắặẳẵ]/g, 'a')
+                    .replace(/[èéẹẻẽêềếệểễ]/g, 'e')
+                    .replace(/[ìíịỉĩ]/g, 'i')
+                    .replace(/[òóọỏõôồốộổỗơờớợởỡ]/g, 'o')
+                    .replace(/[ùúụủũưừứựửữ]/g, 'u')
+                    .replace(/[ỳýỵỷỹ]/g, 'y')
+                    .replace(/đ/g, 'd')
+                    .replace(/[^a-z0-9\s]/g, '')
+                    .replace(/\s+/g, '-')
+                    .replace(/-+/g, '-')
+                    .trim('-');
+                $('#post_slug').val(slug);
+            }
+            updatePostSEOPreview();
         });
 
-        function removeNewImage() {
-            $('input[name="featured_image"]').val('');
-            $('#new_image_preview').hide();
-        }
-
         // SEO Preview Updates
-        function updateSEOPreview() {
-            const title = $('input[name="title"]').val() || 'Tiêu đề bài viết';
-            const excerpt = $('textarea[name="excerpt"]').val() || 'Mô tả bài viết...';
-            const slug = title.toLowerCase()
-                .replace(/[àáạảãâầấậẩẫăằắặẳẵ]/g, 'a')
-                .replace(/[èéẹẻẽêềếệểễ]/g, 'e')
-                .replace(/[ìíịỉĩ]/g, 'i')
-                .replace(/[òóọỏõôồốộổỗơờớợởỡ]/g, 'o')
-                .replace(/[ùúụủũưừứựửữ]/g, 'u')
-                .replace(/[ỳýỵỷỹ]/g, 'y')
-                .replace(/đ/g, 'd')
-                .replace(/[^a-z0-9\s-]/g, '')
-                .replace(/\s+/g, '-')
-                .replace(/-+/g, '-')
-                .trim('-');
+        function updatePostSEOPreview() {
+            const title = $('#post_title').val() || 'Tiêu đề bài viết';
+            const slug = $('#post_slug').val() || 'slug';
+
+            // Lấy nội dung từ TinyMCE
+            let content = '';
+            if (typeof tinymce !== 'undefined' && tinymce.get('post_content')) {
+                content = tinymce.get('post_content').getContent({
+                    format: 'text'
+                });
+            }
+            const description = content ? content.substring(0, 160) + (content.length > 160 ? '...' : '') :
+                'Mô tả bài viết sẽ được tạo từ nội dung...';
 
             $('#seo_title').text(title);
-            $('#seo_url').text(`{{ url('/') }}/posts/${slug || 'slug'}`);
-            $('#seo_description').text(excerpt.substring(0, 160) + (excerpt.length > 160 ? '...' : ''));
+            $('#seo_url').text(`{{ url('/') }}/posts/${slug}`);
+            $('#seo_description').text(description);
         }
 
-        // Update SEO preview on input
-        $(document).on('keyup', 'input[name="title"], textarea[name="excerpt"]', updateSEOPreview);
+        // Update SEO preview on slug change
+        $(document).on('keyup', '#post_slug', updatePostSEOPreview);
+
+        // Event listeners cho modal
+        $('#kt_modal_add_post').on('shown.bs.modal', function() {
+            initPostTinyMCE();
+            updatePostSEOPreview();
+        });
+
+        $('#kt_modal_add_post').on('hidden.bs.modal', function() {
+            if (typeof tinymce !== 'undefined') {
+                tinymce.remove('#post_content');
+            }
+        });
     </script>
+@endpush
+
+@push('csscustom')
+    <style>
+        /* Custom CSS cho modal */
+        .modal-dialog.modal-xl {
+            max-width: 1200px !important;
+        }
+
+        .tox-tinymce {
+            border-radius: 0.475rem !important;
+            border: 1px solid #e4e6ef !important;
+        }
+
+        .form-control-solid {
+            border: 1px solid #e4e6ef;
+        }
+
+        .form-control-solid:focus {
+            border-color: #009ef7;
+            box-shadow: 0 0 0 0.2rem rgba(0, 158, 247, 0.25);
+        }
+
+        #preview_img,
+        #current_image {
+            border: 2px solid #e4e6ef;
+            border-radius: 0.475rem;
+            padding: 5px;
+        }
+
+        .scroll-y {
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+
+        .seo-preview {
+            background: #fff;
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px solid #e4e6ef;
+        }
+
+        .card.bg-light {
+            background-color: #f8f9fa !important;
+        }
+
+        .form-check-input:checked {
+            background-color: #009ef7;
+            border-color: #009ef7;
+        }
+
+        .form-text {
+            color: #a1a5b7;
+            font-size: 12px;
+        }
+    </style>
 @endpush

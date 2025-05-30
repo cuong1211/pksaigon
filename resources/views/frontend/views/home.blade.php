@@ -447,7 +447,7 @@
                     <!-- How It Work Image Start -->
                     <div class="how-it-work-img">
                         <figure class="reveal image-anime">
-                            <img src="images/how-it-work-img.jpg" alt="">
+                            <img src="images/sc-4_1.png" alt="">
                         </figure>
                     </div>
                     <!-- How It Work Image End -->
@@ -600,7 +600,7 @@
                             </figure>
 
                             <!-- Team Social Icon Start -->
-                        
+
                             <!-- Team Social Icon End -->
                         </div>
                         <!-- Team Image End -->
@@ -625,7 +625,7 @@
                             </figure>
 
                             <!-- Team Social Icon Start -->
-                            
+
                             <!-- Team Social Icon End -->
                         </div>
                         <!-- Team Image End -->
@@ -821,94 +821,42 @@
                 </div>
             </div>
 
-            <div class="row">
-                <div class="col-lg-4 col-md-6">
-                    <!-- Blog Item Start -->
-                    <div class="blog-item wow fadeInUp">
-                        <!-- Post Featured Image Start-->
-                        <div class="post-featured-image" data-cursor-text="View">
-                            <figure>
-                                <a href="#" class="image-anime">
-                                    <img src="images/post-1.jpg" alt="">
-                                </a>
-                            </figure>
-                        </div>
-                        <!-- Post Featured Image End -->
+            @if ($featuredPosts && $featuredPosts->count() > 0)
+                <div class="row">
+                    @foreach ($featuredPosts->take(3) as $index => $post)
+                        <div class="col-lg-4 col-md-6">
+                            <!-- Blog Item Start -->
+                            <div class="blog-item wow fadeInUp" data-wow-delay="{{ $index * 0.25 }}s">
+                                <!-- Post Featured Image Start-->
+                                <div class="post-featured-image" data-cursor-text="View">
+                                    <figure>
+                                        <a href="{{ route('frontend.posts.show', $post->slug) }}" class="image-anime">
+                                            <img src="{{ $post->featured_image_url }}" alt="{{ $post->title }}">
+                                        </a>
+                                    </figure>
+                                </div>
+                                <!-- Post Featured Image End -->
 
-                        <!-- post Item Body Start -->
-                        <div class="post-item-body">
-                            <h2><a href="#">Tầm quan trọng của việc khám phụ khoa định kỳ</a></h2>
-                            <p>Khám phụ khoa định kỳ giúp phát hiện sớm các bệnh lý và duy trì sức khỏe sinh sản tốt.</p>
-                        </div>
-                        <!-- Post Item Body End-->
+                                <!-- post Item Body Start -->
+                                <div class="post-item-body">
+                                    <h2><a href="{{ route('frontend.posts.show', $post->slug) }}">{{ $post->title }}</a>
+                                    </h2>
+                                    <p>{{ $post->excerpt }}</p>
+                                </div>
+                                <!-- Post Item Body End-->
 
-                        <!-- Post Item Footer Start-->
-                        <div class="post-item-footer">
-                            <a href="#" class="read-more-btn">đọc thêm</a>
+                                <!-- Post Item Footer Start-->
+                                <div class="post-item-footer">
+                                    <a href="{{ route('frontend.posts.show', $post->slug) }}" class="read-more-btn">đọc
+                                        thêm</a>
+                                </div>
+                                <!-- Post Item Footer End-->
+                            </div>
+                            <!-- Blog Item End -->
                         </div>
-                        <!-- Post Item Footer End-->
-                    </div>
-                    <!-- Blog Item End -->
+                    @endforeach
                 </div>
-
-                <div class="col-lg-4 col-md-6">
-                    <!-- Blog Item Start -->
-                    <div class="blog-item wow fadeInUp" data-wow-delay="0.25s">
-                        <!-- Post Featured Image Start-->
-                        <div class="post-featured-image" data-cursor-text="View">
-                            <figure>
-                                <a href="#" class="image-anime">
-                                    <img src="images/post-2.jpg" alt="">
-                                </a>
-                            </figure>
-                        </div>
-                        <!-- Post Featured Image End -->
-
-                        <!-- post Item Body Start -->
-                        <div class="post-item-body">
-                            <h2><a href="#">5 điều cần biết về chăm sóc thai kỳ</a></h2>
-                            <p>Hướng dẫn chi tiết về cách chăm sóc bản thân và thai nhi trong suốt quá trình mang thai.</p>
-                        </div>
-                        <!-- Post Item Body End-->
-
-                        <!-- Post Item Footer Start-->
-                        <div class="post-item-footer">
-                            <a href="#" class="read-more-btn">đọc thêm</a>
-                        </div>
-                        <!-- Post Item Footer End-->
-                    </div>
-                    <!-- Blog Item End -->
-                </div>
-
-                <div class="col-lg-4 col-md-6">
-                    <!-- Blog Item Start -->
-                    <div class="blog-item wow fadeInUp" data-wow-delay="0.25s">
-                        <!-- Post Featured Image Start-->
-                        <div class="post-featured-image" data-cursor-text="View">
-                            <figure>
-                                <a href="#" class="image-anime">
-                                    <img src="images/post-3.jpg" alt="">
-                                </a>
-                            </figure>
-                        </div>
-                        <!-- Post Featured Image End -->
-
-                        <!-- post Item Body Start -->
-                        <div class="post-item-body">
-                            <h2><a href="#">Hiểu về các phương pháp tránh thai hiện đại</a></h2>
-                            <p>Tìm hiểu về các phương pháp tránh thai an toàn và hiệu quả phù hợp với từng độ tuổi.</p>
-                        </div>
-                        <!-- Post Item Body End-->
-
-                        <!-- Post Item Footer Start-->
-                        <div class="post-item-footer">
-                            <a href="#" class="read-more-btn">đọc thêm</a>
-                        </div>
-                        <!-- Post Item Footer End-->
-                    </div>
-                    <!-- Blog Item End -->
-                </div>
-            </div>
+            @endif
         </div>
         <!-- Icon Start Image Start -->
 
@@ -924,9 +872,10 @@
                     <!-- Google Map Start -->
                     <div class="contact-google-map">
                         <!-- Google Map Iframe Start -->
+
                         <div class="google-map-iframe">
                             <iframe
-                                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d125428.84083980763!2d106.6056698!3d10.7575965!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31752f1c06f4e1dd%3A0x43900f1d4539ba3d!2sHo%20Chi%20Minh%20City%2C%20Vietnam!5e0!3m2!1sen!2s!4v1703158537552!5m2!1sen!2s"
+                                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d560.7132917885511!2d106.67725972899653!3d10.762753230234482!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31752f1dee235cc9%3A0x844785fe99581167!2zNjUgxJAuIEjDuW5nIFbGsMahbmcsIFBoxrDhu51uZyA0LCBRdeG6rW4gNSwgSOG7kyBDaMOtIE1pbmg!5e1!3m2!1sen!2s!4v1748595644802!5m2!1sen!2s"
                                 allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
                         </div>
                         <!-- Google Map Iframe End -->
@@ -958,7 +907,7 @@
 
                                 <!-- Contact Info Content Start -->
                                 <div class="contact-info-content">
-                                    <p>123 Nguyễn Văn Cừ, Quận 1, TP. Hồ Chí Minh</p>
+                                    <p>65 Hùng vương, Phường 4, Quận 5, TP. Hồ Chí Minh</p>
                                 </div>
                                 <!-- Contact Info Content End -->
                             </div>
@@ -974,7 +923,7 @@
 
                                 <!-- Contact Info Content Start -->
                                 <div class="contact-info-content">
-                                    <p>(028) 3822 5678</p>
+                                    <p>03845188881</p>
                                 </div>
                                 <!-- Contact Info Content End -->
                             </div>
@@ -990,7 +939,7 @@
 
                                 <!-- Contact Info Content Start -->
                                 <div class="contact-info-content">
-                                    <p>info@pksgsg.com</p>
+                                    <p>pksg@gmail.com</p>
                                 </div>
                                 <!-- Contact Info Content End -->
                             </div>

@@ -7,11 +7,11 @@
                 <div class="col-lg-12">
                     <!-- Page Header Box Start -->
                     <div class="page-header-box">
-                        <h1 class="text-anime-style-2" data-cursor="-opaque"><span>Our</span> Blog</h1>
+                        <h1 class="text-anime-style-2" data-cursor="-opaque"><span>Tin tức</span> & Blog</h1>
                         <nav class="wow fadeInUp">
                             <ol class="breadcrumb">
-                                <li class="breadcrumb-item"><a href="./">home</a></li>
-                                <li class="breadcrumb-item active" aria-current="page">blog</li>
+                                <li class="breadcrumb-item"><a href="{{ route('home') }}">Trang chủ</a></li>
+                                <li class="breadcrumb-item active" aria-current="page">Tin tức</li>
                             </ol>
                         </nav>
                     </div>
@@ -25,287 +25,164 @@
     <!-- Page Blog Start -->
     <div class="page-blog">
         <div class="container">
-            <div class="row">
-                <div class="col-lg-4 col-md-6">
-                    <!-- Blog Item Start -->
-                    <div class="blog-item wow fadeInUp">
-                        <!-- Post Featured Image Start-->
-                        <div class="post-featured-image" data-cursor-text="View">
-                            <figure>
-                                <a href="#" class="image-anime">
-                                    <img src="images/post-1.jpg" alt="">
-                                </a>
-                            </figure>
-                        </div>
-                        <!-- Post Featured Image End -->
+            @if ($posts->count() > 0)
+                <div class="row">
+                    @foreach ($posts as $index => $post)
+                        <div class="col-lg-4 col-md-6">
+                            <!-- Blog Item Start -->
+                            <div class="blog-item wow fadeInUp" data-wow-delay="{{ ($index % 3) * 0.2 }}s">
+                                <!-- Post Featured Image Start-->
+                                <div class="post-featured-image" data-cursor-text="Xem">
+                                    <figure>
+                                        <a href="{{ route('frontend.posts.show', $post->slug) }}" class="image-anime">
+                                            <img src="{{ $post->featured_image_url }}" alt="{{ $post->title }}">
+                                        </a>
+                                    </figure>
+                                </div>
+                                <!-- Post Featured Image End -->
 
-                        <!-- post Item Body Start -->
-                        <div class="post-item-body">
-                            <h2><a href="#">The Importance of Regular Dental Check-Ups</a></h2>
-                            <p>Our waiting room features a variety of plants that help purify the air.</p>
-                        </div>
-                        <!-- Post Item Body End-->
+                                <!-- post Item Body Start -->
+                                <div class="post-item-body">
+                                    <h2><a href="{{ route('frontend.posts.show', $post->slug) }}">{{ $post->title }}</a>
+                                    </h2>
+                                    <p>{{ $post->excerpt }}</p>
 
-                        <!-- Post Item Footer Start-->
-                        <div class="post-item-footer">
-                            <a href="#" class="read-more-btn">read more</a>
+                                    <!-- Post Meta Info (thêm thông tin) -->
+                                    <div class="post-meta-info">
+                                        <span class="post-author">
+                                            <i class="fa-regular fa-user"></i> {{ $post->author->name ?? 'Admin' }}
+                                        </span>
+                                        <span class="post-date">
+                                            <i class="fa-regular fa-clock"></i>
+                                            {{ $post->published_at ? $post->published_at->format('d/m/Y') : $post->created_at->format('d/m/Y') }}
+                                        </span>
+                                        @if ($post->views_count > 0)
+                                            <span class="post-views">
+                                                <i class="fa-regular fa-eye"></i> {{ $post->views_count }} lượt xem
+                                            </span>
+                                        @endif
+                                        @if ($post->is_featured)
+                                            <span class="featured-badge">
+                                                <i class="fa-solid fa-star"></i> Nổi bật
+                                            </span>
+                                        @endif
+                                    </div>
+                                </div>
+                                <!-- Post Item Body End-->
+
+                                <!-- Post Item Footer Start-->
+                                <div class="post-item-footer">
+                                    <a href="{{ route('frontend.posts.show', $post->slug) }}" class="read-more-btn">Đọc
+                                        thêm</a>
+                                </div>
+                                <!-- Post Item Footer End-->
+                            </div>
+                            <!-- Blog Item End -->
                         </div>
-                        <!-- Post Item Footer End-->
-                    </div>
-                    <!-- Blog Item End -->
+                    @endforeach
                 </div>
 
-                <div class="col-lg-4 col-md-6">
-                    <!-- Blog Item Start -->
-                    <div class="blog-item wow fadeInUp" data-wow-delay="0.2s">
-                        <!-- Post Featured Image Start-->
-                        <div class="post-featured-image" data-cursor-text="View">
-                            <figure>
-                                <a href="#" class="image-anime">
-                                    <img src="images/post-2.jpg" alt="">
-                                </a>
-                            </figure>
+                <!-- Pagination Start -->
+                @if ($posts->hasPages())
+                    <div class="row">
+                        <div class="col-md-12">
+                            <!-- Post Pagination Start -->
+                            <div class="post-pagination wow fadeInUp" data-wow-delay="1.8s">
+                                {{ $posts->links('frontend.pagination.custom') }}
+                            </div>
+                            <!-- Post Pagination End -->
                         </div>
-                        <!-- Post Featured Image End -->
-
-                        <!-- post Item Body Start -->
-                        <div class="post-item-body">
-                            <h2><a href="#">Top 5 Benefits of Professional Teeth Whitening</a></h2>
-                            <p>We believe in promoting health and wellness in every aspect of our clinic.</p>
-                        </div>
-                        <!-- Post Item Body End-->
-
-                        <!-- Post Item Footer Start-->
-                        <div class="post-item-footer">
-                            <a href="#" class="read-more-btn">read more</a>
-                        </div>
-                        <!-- Post Item Footer End-->
                     </div>
-                    <!-- Blog Item End -->
-                </div>
-
-                <div class="col-lg-4 col-md-6">
-                    <!-- Blog Item Start -->
-                    <div class="blog-item wow fadeInUp" data-wow-delay="0.4s">
-                        <!-- Post Featured Image Start-->
-                        <div class="post-featured-image" data-cursor-text="View">
-                            <figure>
-                                <a href="#" class="image-anime">
-                                    <img src="images/post-3.jpg" alt="">
-                                </a>
-                            </figure>
+                @endif
+                <!-- Pagination End -->
+            @else
+                <!-- No Posts Message -->
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="no-posts-message text-center">
+                            <div class="no-posts-icon">
+                                <i class="fas fa-newspaper fa-5x text-muted"></i>
+                            </div>
+                            <h3 class="mt-4">Chưa có bài viết nào</h3>
+                            <p class="text-muted">Hãy quay lại sau để xem những bài viết mới nhất từ chúng tôi.</p>
+                            <a href="{{ route('home') }}" class="btn btn-primary mt-3">Về trang chủ</a>
                         </div>
-                        <!-- Post Featured Image End -->
-
-                        <!-- post Item Body Start -->
-                        <div class="post-item-body">
-                            <h2><a href="#">Understanding Dental Implants: What You Need to Know</a></h2>
-                            <p>Our clinic donates dental care services to underprivileged families.</p>
-                        </div>
-                        <!-- Post Item Body End-->
-
-                        <!-- Post Item Footer Start-->
-                        <div class="post-item-footer">
-                            <a href="#" class="read-more-btn">read more</a>
-                        </div>
-                        <!-- Post Item Footer End-->
                     </div>
-                    <!-- Blog Item End -->
                 </div>
-
-                <div class="col-lg-4 col-md-6">
-                    <!-- Blog Item Start -->
-                    <div class="blog-item wow fadeInUp" data-wow-delay="0.6s">
-                        <!-- Post Featured Image Start-->
-                        <div class="post-featured-image" data-cursor-text="View">
-                            <figure>
-                                <a href="#" class="image-anime">
-                                    <img src="images/post-4.jpg" alt="">
-                                </a>
-                            </figure>
-                        </div>
-                        <!-- Post Featured Image End -->
-
-                        <!-- post Item Body Start -->
-                        <div class="post-item-body">
-                            <h2><a href="#">The Role of Fluoride in Preventing Tooth Decay and Strengthening
-                                    Enamel</a></h2>
-                            <p>Our waiting room features a variety of plants that help purify the air.</p>
-                        </div>
-                        <!-- Post Item Body End-->
-
-                        <!-- Post Item Footer Start-->
-                        <div class="post-item-footer">
-                            <a href="#" class="read-more-btn">read more</a>
-                        </div>
-                        <!-- Post Item Footer End-->
-                    </div>
-                    <!-- Blog Item End -->
-                </div>
-
-                <div class="col-lg-4 col-md-6">
-                    <!-- Blog Item Start -->
-                    <div class="blog-item wow fadeInUp" data-wow-delay="0.8s">
-                        <!-- Post Featured Image Start-->
-                        <div class="post-featured-image" data-cursor-text="View">
-                            <figure>
-                                <a href="#" class="image-anime">
-                                    <img src="images/post-5.jpg" alt="">
-                                </a>
-                            </figure>
-                        </div>
-                        <!-- Post Featured Image End -->
-
-                        <!-- post Item Body Start -->
-                        <div class="post-item-body">
-                            <h2><a href="#">Teeth Sensitivity: Causes, Treatments, and Prevention Strategies</a></h2>
-                            <p>We believe in promoting health and wellness in every aspect of our clinic.</p>
-                        </div>
-                        <!-- Post Item Body End-->
-
-                        <!-- Post Item Footer Start-->
-                        <div class="post-item-footer">
-                            <a href="#" class="read-more-btn">read more</a>
-                        </div>
-                        <!-- Post Item Footer End-->
-                    </div>
-                    <!-- Blog Item End -->
-                </div>
-
-                <div class="col-lg-4 col-md-6">
-                    <!-- Blog Item Start -->
-                    <div class="blog-item wow fadeInUp" data-wow-delay="1s">
-                        <!-- Post Featured Image Start-->
-                        <div class="post-featured-image" data-cursor-text="View">
-                            <figure>
-                                <a href="#" class="image-anime">
-                                    <img src="images/post-6.jpg" alt="">
-                                </a>
-                            </figure>
-                        </div>
-                        <!-- Post Featured Image End -->
-
-                        <!-- post Item Body Start -->
-                        <div class="post-item-body">
-                            <h2><a href="#">The Benefits of Dental Implants: Restoring Function</a></h2>
-                            <p>Our clinic donates dental care services to underprivileged families.</p>
-                        </div>
-                        <!-- Post Item Body End-->
-
-                        <!-- Post Item Footer Start-->
-                        <div class="post-item-footer">
-                            <a href="#" class="read-more-btn">read more</a>
-                        </div>
-                        <!-- Post Item Footer End-->
-                    </div>
-                    <!-- Blog Item End -->
-                </div>
-
-                <div class="col-lg-4 col-md-6">
-                    <!-- Blog Item Start -->
-                    <div class="blog-item wow fadeInUp" data-wow-delay="1.2s">
-                        <!-- Post Featured Image Start-->
-                        <div class="post-featured-image" data-cursor-text="View">
-                            <figure>
-                                <a href="#" class="image-anime">
-                                    <img src="images/post-7.jpg" alt="">
-                                </a>
-                            </figure>
-                        </div>
-                        <!-- Post Featured Image End -->
-
-                        <!-- post Item Body Start -->
-                        <div class="post-item-body">
-                            <h2><a href="#">The Importance of Flossing: Techniques for Healthy</a></h2>
-                            <p>Our waiting room features a variety of plants that help purify the air.</p>
-                        </div>
-                        <!-- Post Item Body End-->
-
-                        <!-- Post Item Footer Start-->
-                        <div class="post-item-footer">
-                            <a href="#" class="read-more-btn">read more</a>
-                        </div>
-                        <!-- Post Item Footer End-->
-                    </div>
-                    <!-- Blog Item End -->
-                </div>
-
-                <div class="col-lg-4 col-md-6">
-                    <!-- Blog Item Start -->
-                    <div class="blog-item wow fadeInUp" data-wow-delay="1.4s">
-                        <!-- Post Featured Image Start-->
-                        <div class="post-featured-image" data-cursor-text="View">
-                            <figure>
-                                <a href="#" class="image-anime">
-                                    <img src="images/post-8.jpg" alt="">
-                                </a>
-                            </figure>
-                        </div>
-                        <!-- Post Featured Image End -->
-
-                        <!-- post Item Body Start -->
-                        <div class="post-item-body">
-                            <h2><a href="#">Choosing the Best Mouthwash: Enhancing Your Daily Oral Care</a></h2>
-                            <p>We believe in promoting health and wellness in every aspect of our clinic.</p>
-                        </div>
-                        <!-- Post Item Body End-->
-
-                        <!-- Post Item Footer Start-->
-                        <div class="post-item-footer">
-                            <a href="#" class="read-more-btn">read more</a>
-                        </div>
-                        <!-- Post Item Footer End-->
-                    </div>
-                    <!-- Blog Item End -->
-                </div>
-
-                <div class="col-lg-4 col-md-6">
-                    <!-- Blog Item Start -->
-                    <div class="blog-item wow fadeInUp" data-wow-delay="1.6s">
-                        <!-- Post Featured Image Start-->
-                        <div class="post-featured-image" data-cursor-text="View">
-                            <figure>
-                                <a href="#" class="image-anime">
-                                    <img src="images/post-9.jpg" alt="">
-                                </a>
-                            </figure>
-                        </div>
-                        <!-- Post Featured Image End -->
-
-                        <!-- post Item Body Start -->
-                        <div class="post-item-body">
-                            <h2><a href="#">Senior Oral Health: Maintaining Strong Teeth and Gums in Later Years</a>
-                            </h2>
-                            <p>Our clinic donates dental care services to underprivileged families.</p>
-                        </div>
-                        <!-- Post Item Body End-->
-
-                        <!-- Post Item Footer Start-->
-                        <div class="post-item-footer">
-                            <a href="#" class="read-more-btn">read more</a>
-                        </div>
-                        <!-- Post Item Footer End-->
-                    </div>
-                    <!-- Blog Item End -->
-                </div>
-            </div>
-
-            <div class="row">
-                <div class="col-md-12">
-                    <!-- Post Pagination Start -->
-                    <div class="post-pagination wow fadeInUp" data-wow-delay="1.8s">
-                        <ul class="pagination">
-                            <li><a href="#"><i class="fa-solid fa-arrow-left-long"></i></a></li>
-                            <li class="active"><a href="#">1</a></li>
-                            <li><a href="#">2</a></li>
-                            <li><a href="#">3</a></li>
-                            <li><a href="#"><i class="fa-solid fa-arrow-right-long"></i></a></li>
-                        </ul>
-                    </div>
-                    <!-- Post Pagination End -->
-                </div>
-            </div>
+            @endif
         </div>
     </div>
     <!-- Page Blog End -->
 @endsection
+
+@push('csscustom')
+    <style>
+        /* Thêm CSS cho thông tin meta */
+        .post-meta-info {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 15px;
+            padding-top: 10px;
+            border-top: 1px solid #f0f0f0;
+            font-size: 0.85rem;
+            color: #666;
+        }
+
+        .post-meta-info span {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .post-meta-info i {
+            color: #007bff;
+            font-size: 0.8rem;
+        }
+
+        .featured-badge {
+            background: linear-gradient(45deg, #ffd700, #ffed4e);
+            color: #333;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            box-shadow: 0 2px 4px rgba(255, 215, 0, 0.3);
+        }
+
+        /* No posts styling */
+        .no-posts-message {
+            padding: 60px 20px;
+        }
+
+        .no-posts-icon {
+            opacity: 0.3;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            background: #0056b3;
+            color: white;
+            text-decoration: none;
+            transform: translateY(-2px);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .post-meta-info {
+                flex-direction: column;
+                gap: 8px;
+            }
+        }
+    </style>
+@endpush

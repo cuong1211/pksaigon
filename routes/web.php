@@ -76,7 +76,9 @@ Route::middleware(['auth'])->group(function () {
         })->name('admin');
 
         // Posts Management
+        // Posts Management
         Route::resource('posts', PostController::class);
+        Route::get('posts/get-data/{id}', [PostController::class, 'getData'])->name('posts.getData');
         Route::patch('posts/{id}/toggle-featured', [PostController::class, 'toggleFeatured'])->name('posts.toggle-featured');
 
         // Services Management

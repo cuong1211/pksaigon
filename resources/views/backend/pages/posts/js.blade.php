@@ -3,6 +3,11 @@
     let search_table = '';
     let status_filter = '';
 
+    // Load statistics on page load
+    $(document).ready(function() {
+        loadStatistics();
+    });
+
     var dt = $("#kt_posts_table").DataTable({
         serverSide: true,
         select: {
@@ -11,7 +16,7 @@
             className: 'row-selected'
         },
         ajax: {
-            url: "/admin/posts",
+            url: "{{ route('posts.show', 'get-list') }}",
             type: 'GET',
             data: function(d) {
                 d.search_table = search_table;
@@ -23,53 +28,46 @@
                 orderable: false,
                 searchable: false,
                 render: function(data, type, row, meta) {
-                    return meta.row + meta.settings._iDisplayStart + 1;
+                    return '<div class="form-check form-check-sm form-check-custom form-check-solid">' +
+                        '<input class="form-check-input" type="checkbox" value="' + row.id + '" />' +
+                        '</div>';
                 },
+            },
+            {
+                data: 'featured_image_url',
+                orderable: false,
+                searchable: false,
+                render: function(data, type, row, meta) {
+                    return '<img src="' + data + '" class="post-thumbnail" alt="' + row.title + '">';
+                }
             },
             {
                 data: 'title',
                 render: function(data, type, row, meta) {
                     return '<div class="d-flex flex-column">' +
-                        '<a href="#" class="text-gray-800 text-hover-primary fw-bolder">' + data +
-                        '</a>' +
-                        '<span class="text-muted fs-7">' + (row.excerpt || 'Không có tóm tắt') +
-                        '</span>' +
+                        '<div class="post-title">' + data + '</div>' +
+                        '<div class="post-excerpt">' + (row.excerpt || 'Không có mô tả') + '</div>' +
                         '</div>';
+                }
+            },
+            {
+                data: 'slug',
+                render: function(data, type, row, meta) {
+                    return '<span class="post-slug">' + data + '</span>';
                 }
             },
             {
                 data: 'author_name',
                 render: function(data, type, row, meta) {
-                    return data || 'N/A';
+                    return '<div class="author-info">' +
+                        '<div class="author-name">' + data + '</div>' +
+                        '</div>';
                 }
             },
             {
                 data: 'status',
                 render: function(data, type, row, meta) {
-                    let badgeClass = '';
-                    let text = '';
-                    switch (data) {
-                        case 'published':
-                            badgeClass = 'badge-light-success';
-                            text = 'Đã xuất bản';
-                            break;
-                        case 'draft':
-                            badgeClass = 'badge-light-warning';
-                            text = 'Bản nháp';
-                            break;
-                        case 'archived':
-                            badgeClass = 'badge-light-secondary';
-                            text = 'Lưu trữ';
-                            break;
-                        default:
-                            badgeClass = 'badge-light-dark';
-                            text = 'Không xác định';
-                    }
-
-                    let featuredBadge = row.is_featured ?
-                        '<span class="badge badge-light-primary ms-2">Nổi bật</span>' : '';
-
-                    return '<span class="badge ' + badgeClass + '">' + text + '</span>' + featuredBadge;
+                    return row.status_badge;
                 }
             },
             {
@@ -81,7 +79,7 @@
             {
                 data: 'created_at',
                 render: function(data, type, row, meta) {
-                    return new Date(data).toLocaleDateString('vi-VN');
+                    return '<span class="date-display">' + row.formatted_date + '</span>';
                 }
             },
             {
@@ -97,12 +95,12 @@
                         '</a> \n' +
                         '<div class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-bold fs-7 w-125px py-4" data-kt-menu="true"> \n' +
                         '<div class="menu-item px-3"> \n' +
-                        '<a href="" data-data=\'' + JSON.stringify(row) +
-                        '\' class="menu-link px-3 btn-edit" data-bs-toggle="modal" data-bs-target="#kt_modal_add_post">Sửa</a> \n' +
+                        '<a href="#" data-id="' + row.id +
+                        '" class="menu-link px-3 btn-edit" data-bs-toggle="modal" data-bs-target="#kt_modal_add_post">Sửa</a> \n' +
                         '</div> \n' +
                         '<div class="menu-item px-3"> \n' +
                         '<a href="#" data-id="' + row.id +
-                        '" class="menu-link px-3 btn-delete" data-kt-posts-table-filter="delete_row">Xoá</a> \n' +
+                        '" class="menu-link px-3 btn-delete" data-kt-posts-table-filter="delete_row">Xóa</a> \n' +
                         '</div> \n' +
                         (row.is_featured ?
                             '<div class="menu-item px-3"> \n' +
@@ -119,14 +117,54 @@
             }
         ],
         order: [
-            [5, 'desc']
+            [7, 'desc']
         ],
         pageLength: 10
     });
 
     dt.on('draw', function() {
         KTMenu.createInstances();
+        updateBulkActions();
     });
+
+    // Handle bulk selection
+    $('[data-kt-check="true"]').on('change', function() {
+        var isChecked = $(this).is(':checked');
+        $('#kt_posts_table tbody input[type="checkbox"]').prop('checked', isChecked);
+        updateBulkActions();
+    });
+
+    $(document).on('change', '#kt_posts_table tbody input[type="checkbox"]', function() {
+        updateBulkActions();
+    });
+
+    function updateBulkActions() {
+        var checkedCount = $('#kt_posts_table tbody input[type="checkbox"]:checked').length;
+
+        if (checkedCount > 0) {
+            $('[data-kt-posts-table-toolbar="base"]').addClass('d-none');
+            $('[data-kt-posts-table-toolbar="selected"]').removeClass('d-none');
+            $('[data-kt-posts-table-select="selected_count"]').text(checkedCount);
+        } else {
+            $('[data-kt-posts-table-toolbar="base"]').removeClass('d-none');
+            $('[data-kt-posts-table-toolbar="selected"]').addClass('d-none');
+        }
+    }
+
+    // Load statistics
+    function loadStatistics() {
+        $.ajax({
+            url: "{{ route('posts.show', 'get-statistics') }}",
+            type: 'GET',
+            success: function(data) {
+
+
+            },
+            error: function() {
+                console.log('Error loading statistics');
+            }
+        });
+    }
 
     // Close modal functions
     $('.btn-close, #kt_modal_add_post_close').on('click', function() {
@@ -147,31 +185,92 @@
         $('#current_image_preview').hide();
         $('#new_image_preview').hide();
         $('.print-error-msg').hide();
-        updateSEOPreview();
+
+        // Reset TinyMCE
+        if (typeof tinymce !== 'undefined' && tinymce.get('post_content')) {
+            tinymce.get('post_content').setContent('');
+        }
+
+        // Reset slug field
+        $('#post_slug').val('');
+
+        // Reset checkboxes
+        $('#post_status').prop('checked', true);
+        $('#is_featured').prop('checked', false);
+
+        updatePostSEOPreview();
+    }
+
+    // Function to load post data for edit
+    function loadPostData(id) {
+        // Show loading state
+        const submitBtn = $('#kt_modal_add_post_submit');
+        submitBtn.attr('data-kt-indicator', 'on');
+        submitBtn.prop('disabled', true);
+
+        $.ajax({
+            url: "{{ route('posts.getData', ':id') }}".replace(':id', id),
+            type: 'GET',
+            success: function(response) {
+                if (response.type === 'success') {
+                    let data = response.data;
+                    let modal = $('#kt_modal_add_post_form');
+
+                    // Set form values
+                    modal.find('.modal-title').text('Sửa bài viết');
+                    modal.find('input[name=id]').val(data.id);
+                    modal.find('input[name=title]').val(data.title);
+                    modal.find('input[name=slug]').val(data.slug);
+                    modal.find('input[name=status]').prop('checked', data.status);
+                    modal.find('input[name=is_featured]').prop('checked', data.is_featured);
+
+                    // Set TinyMCE content
+                    setTimeout(function() {
+                        if (typeof tinymce !== 'undefined' && tinymce.get('post_content')) {
+                            tinymce.get('post_content').setContent(data.content || '');
+                        }
+                    }, 500);
+
+                    // Show current image if exists
+                    if (data.has_image && data.featured_image_url) {
+                        $('#current_image').attr('src', data.featured_image_url);
+                        $('#current_image_preview').show();
+                    }
+
+                    updatePostSEOPreview();
+                    console.log('Post data loaded successfully:', data);
+                } else {
+                    notification('error', 'Lỗi', response.message || 'Không thể tải dữ liệu');
+                }
+            },
+            error: function(xhr) {
+                let message = 'Có lỗi xảy ra khi tải dữ liệu';
+                if (xhr.responseJSON && xhr.responseJSON.message) {
+                    message = xhr.responseJSON.message;
+                }
+                notification('error', 'Lỗi', message);
+                console.error('Error loading post data:', xhr);
+            },
+            complete: function() {
+                // Hide loading state
+                submitBtn.removeAttr('data-kt-indicator');
+                submitBtn.prop('disabled', false);
+            }
+        });
     }
 
     // Edit post
     $(document).on('click', '.btn-edit', function(e) {
         e.preventDefault();
         form_reset();
-        let data = $(this).data('data');
-        let modal = $('#kt_modal_add_post_form');
 
-        modal.find('.modal-title').text('Sửa bài viết');
-        modal.find('input[name=id]').val(data.id);
-        modal.find('input[name=title]').val(data.title);
-        modal.find('textarea[name=excerpt]').val(data.excerpt);
-        modal.find('textarea[name=content]').val(data.content);
-        modal.find('select[name=status]').val(data.status);
-        modal.find('input[name=is_featured]').prop('checked', data.is_featured);
-
-        // Show current image if exists
-        if (data.featured_image) {
-            $('#current_image').attr('src', data.featured_image_url);
-            $('#current_image_preview').show();
+        let id = $(this).data('id');
+        if (id) {
+            console.log('Loading post data for ID:', id);
+            loadPostData(id);
+        } else {
+            notification('error', 'Lỗi', 'Không tìm thấy ID bài viết');
         }
-
-        updateSEOPreview();
     });
 
     // Add post
@@ -187,13 +286,18 @@
     $('#kt_modal_add_post_form').on('submit', function(e) {
         e.preventDefault();
 
+        // Sync TinyMCE content before submit
+        if (typeof tinymce !== 'undefined' && tinymce.get('post_content')) {
+            tinymce.get('post_content').save();
+        }
+
         let formData = new FormData(this);
         let id = $('form#kt_modal_add_post_form input[name=id]').val();
-        let url = "/admin/posts";
+        let url = "{{ route('posts.store') }}";
         let method = 'POST';
 
         if (parseInt(id)) {
-            url = "/admin/posts/" + id;
+            url = "{{ route('posts.update', ':id') }}".replace(':id', id);
             formData.append('_method', 'PUT');
         }
 
@@ -216,6 +320,7 @@
                     dt.ajax.reload(null, false);
                     $('#kt_modal_add_post_form').trigger('reset');
                     $('#kt_modal_add_post').modal('hide');
+                    loadStatistics();
                 }
             },
             error: function(xhr) {
@@ -228,7 +333,11 @@
                     $('.print-error-msg ul').html(errorHtml);
                     $('.print-error-msg').show();
                 } else {
-                    notification('error', 'Lỗi', 'Có lỗi xảy ra khi lưu bài viết');
+                    let message = 'Có lỗi xảy ra';
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        message = xhr.responseJSON.message;
+                    }
+                    notification('error', 'Lỗi', message);
                 }
             },
             complete: function() {
@@ -257,7 +366,7 @@
         }).then(function(result) {
             if (result.value) {
                 $.ajax({
-                    url: "/admin/posts/" + id,
+                    url: "{{ route('posts.destroy', ':id') }}".replace(':id', id),
                     headers: {
                         'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
                     },
@@ -266,6 +375,7 @@
                         notification(data.type, data.title, data.content);
                         if (data.type == 'success') {
                             dt.ajax.reload(null, false);
+                            loadStatistics();
                         }
                     },
                     error: function(data) {
@@ -282,7 +392,7 @@
         let id = $(this).data('id');
 
         $.ajax({
-            url: `/admin/posts/${id}/toggle-featured`,
+            url: "{{ route('posts.toggle-featured', ':id') }}".replace(':id', id),
             headers: {
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
             },
@@ -291,6 +401,7 @@
                 notification(data.type, data.title, data.content);
                 if (data.type == 'success') {
                     dt.ajax.reload(null, false);
+                    loadStatistics();
                 }
             },
             error: function(data) {
@@ -299,13 +410,67 @@
         });
     });
 
+    // Handle bulk delete
+    $(document).on('click', '[data-kt-posts-table-select="delete_selected"]', function(e) {
+        e.preventDefault();
+        let selectedIds = [];
+        $('#kt_posts_table tbody input[type="checkbox"]:checked').each(function() {
+            selectedIds.push($(this).val());
+        });
+
+        if (selectedIds.length === 0) return;
+
+        Swal.fire({
+            text: "Bạn có muốn xóa " + selectedIds.length + " bài viết đã chọn không?",
+            icon: "warning",
+            showCancelButton: true,
+            buttonsStyling: false,
+            confirmButtonText: "Có!",
+            cancelButtonText: "Không",
+            customClass: {
+                confirmButton: "btn fw-bold btn-danger",
+                cancelButton: "btn fw-bold btn-active-light-primary",
+            }
+        }).then(function(result) {
+            if (result.value) {
+                $.ajax({
+                    url: "{{ route('posts.destroy', 'bulk') }}",
+                    headers: {
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                    },
+                    type: 'DELETE',
+                    data: {
+                        ids: selectedIds
+                    },
+                    success: function(data) {
+                        notification(data.type, data.title, data.content);
+                        if (data.type == 'success') {
+                            dt.ajax.reload(null, false);
+                            loadStatistics();
+                            $('[data-kt-check="true"]').prop('checked', false);
+                            updateBulkActions();
+                        }
+                    },
+                    error: function(data) {
+                        notification('error', 'Lỗi', 'Có lỗi xảy ra khi xóa các bài viết');
+                    }
+                });
+            }
+        });
+    });
+
     // Search functionality
     $(".search_table").on('change keyup', function() {
-        if ($(this).data('filter') === 'status') {
-            status_filter = $(this).val();
+        let data = $(this).val();
+        let filter = $(this).data('filter');
+
+        if (filter === 'status') {
+            status_filter = data;
         } else {
-            search_table = $(this).val();
+            search_table = data;
         }
+
+        console.log('Search:', search_table, 'Status:', status_filter);
         dt.ajax.reload();
     });
 </script>

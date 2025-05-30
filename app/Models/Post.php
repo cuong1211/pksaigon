@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class Post extends Model
 {
@@ -14,7 +15,6 @@ class Post extends Model
     protected $fillable = [
         'title',
         'slug',
-        'excerpt',
         'content',
         'featured_image',
         'status',
@@ -28,6 +28,7 @@ class Post extends Model
     protected $casts = [
         'meta_data' => 'array',
         'is_featured' => 'boolean',
+        'status' => 'boolean', // true = hiện, false = ẩn
         'published_at' => 'datetime',
         'created_at' => 'datetime',
         'updated_at' => 'datetime'
@@ -39,11 +40,16 @@ class Post extends Model
         return $this->belongsTo(User::class, 'author_id');
     }
 
-    // Scope cho bài viết đã xuất bản
-    public function scopePublished($query)
+    // Scope cho bài viết hiện
+    public function scopeVisible($query)
     {
-        return $query->where('status', 'published')
-            ->where('published_at', '<=', now());
+        return $query->where('status', true);
+    }
+
+    // Scope cho bài viết ẩn
+    public function scopeHidden($query)
+    {
+        return $query->where('status', false);
     }
 
     // Scope cho bài viết nổi bật
@@ -52,77 +58,75 @@ class Post extends Model
         return $query->where('is_featured', true);
     }
 
-    // Scope cho bài viết draft
-    public function scopeDraft($query)
-    {
-        return $query->where('status', 'draft');
-    }
-
-    // Tự động tạo slug khi tạo bài viết
+    // Tự động tạo slug khi tạo/cập nhật bài viết
     protected static function boot()
     {
         parent::boot();
 
         static::creating(function ($post) {
             if (empty($post->slug)) {
-                $post->slug = Str::slug($post->title);
-
-                // Đảm bảo slug là unique
-                $originalSlug = $post->slug;
-                $counter = 1;
-
-                while (static::where('slug', $post->slug)->exists()) {
-                    $post->slug = $originalSlug . '-' . $counter;
-                    $counter++;
-                }
+                $post->slug = static::generateUniqueSlug($post->title);
             }
+            
             if (empty($post->author_id)) {
                 $post->author_id = Auth::check() ? Auth::id() : null;
             }
 
-            if ($post->status === 'published' && empty($post->published_at)) {
+            if ($post->status && empty($post->published_at)) {
                 $post->published_at = now();
             }
         });
 
         static::updating(function ($post) {
-            if ($post->isDirty('status') && $post->status === 'published' && empty($post->published_at)) {
+            if ($post->isDirty('title') && !$post->isDirty('slug')) {
+                $post->slug = static::generateUniqueSlug($post->title, $post->id);
+            }
+            
+            if ($post->isDirty('status') && $post->status && empty($post->published_at)) {
                 $post->published_at = now();
             }
         });
     }
 
-    // Accessor cho excerpt
-    public function getExcerptAttribute($value)
+    // Tạo slug unique
+    public static function generateUniqueSlug($title, $excludeId = null)
     {
-        if ($value) {
-            return $value;
+        $slug = Str::slug($title);
+        $originalSlug = $slug;
+        $counter = 1;
+
+        $query = static::where('slug', $slug);
+        if ($excludeId) {
+            $query->where('id', '!=', $excludeId);
         }
 
-        // Nếu không có excerpt, tạo từ content
-        return Str::limit(strip_tags($this->content), 150);
+        while ($query->exists()) {
+            $slug = $originalSlug . '-' . $counter;
+            $counter++;
+
+            $query = static::where('slug', $slug);
+            if ($excludeId) {
+                $query->where('id', '!=', $excludeId);
+            }
+        }
+
+        return $slug;
     }
 
     // Accessor cho trạng thái (tiếng Việt)
     public function getStatusLabelAttribute()
     {
-        $statuses = [
-            'draft' => 'Nháp',
-            'published' => 'Đã xuất bản',
-            'archived' => 'Lưu trữ'
-        ];
-
-        return $statuses[$this->status] ?? 'Không xác định';
+        return $this->status ? 'Hiện' : 'Ẩn';
     }
 
     // Accessor cho đường dẫn ảnh đại diện
     public function getFeaturedImageUrlAttribute()
     {
-        if ($this->featured_image) {
+        if ($this->featured_image && Storage::disk('public')->exists($this->featured_image)) {
             return asset('storage/' . $this->featured_image);
         }
 
-        return asset('images/default-post.jpg'); // Ảnh mặc định
+        return asset('images/default-post.jpg');
     }
 
     // Method để tăng lượt xem
@@ -135,5 +139,11 @@ class Post extends Model
     public function getUrlAttribute()
     {
         return route('posts.show', $this->slug);
+    }
+
+    // Accessor để tạo excerpt từ content
+    public function getExcerptAttribute()
+    {
+        return Str::limit(strip_tags($this->content), 150);
     }
 }

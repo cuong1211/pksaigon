@@ -56,21 +56,7 @@
                             </li>
                             
                             <!-- Products Dropdown -->
-                            <li class="nav-item submenu">
-                                <a class="nav-link" href="{{ route('frontend.medicines') }}">Sản phẩm</a>
-                                <ul>
-                                    <li class="nav-item">
-                                        <a class="nav-link" href="{{ route('frontend.medicines') }}">
-                                            <i class="fas fa-pills me-2"></i>Thuốc điều trị
-                                        </a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a class="nav-link" href="{{ route('frontend.medicines') }}">
-                                            <i class="fas fa-leaf me-2"></i>Thực phẩm bổ sung
-                                        </a>
-                                    </li>
-                                </ul>
-                            </li>
+                            <li class="nav-item"><a class="nav-link" href="{{ route('frontend.medicines') }}">Thực phẩm chức năng</a></li>
 
                             <li class="nav-item"><a class="nav-link" href="{{ route('contact') }}">Liên hệ</a></li>
                             <li class="nav-item highlighted-menu">

@@ -75,7 +75,7 @@
                             <i class="fas fa-map-marker-alt me-3 mt-1"></i>
                             <div>
                                 <h6 class="mb-1">Địa chỉ</h6>
-                                <p class="mb-0">123 Đường Nguyễn Văn Cừ<br>Quận 1, TP. Hồ Chí Minh</p>
+                                <p class="mb-0">65 Hùng vương, Phường 4,<br>Quận 5, TP. Hồ Chí Minh</p>
                             </div>
                         </div>
                     </div>
@@ -86,7 +86,7 @@
                             <i class="fas fa-phone me-3"></i>
                             <div>
                                 <h6 class="mb-1">Hotline</h6>
-                                <a href="tel:+84123456789" class="contact-link">+(84) 123 456 789</a>
+                                <a href="tel:+84123456789" class="contact-link"> 03845188881</a>
                             </div>
                         </div>
                     </div>
@@ -95,7 +95,7 @@
                     <div class="social-links mt-4">
                         <h6 class="mb-3 text-white">Kết nối với chúng tôi</h6>
                         <div class="d-flex gap-2">
-                            <a href="#" class="social-link facebook" title="Facebook">
+                            <a href="https://www.facebook.com/pk.sanphukhoasaigon" class="social-link facebook" title="Facebook">
                                 <i class="fab fa-facebook-f"></i>
                             </a>
                         </div>
