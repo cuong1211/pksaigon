@@ -4,13 +4,12 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\MedicineImportRequest;
-use App\Models\MedicineImport;
 use App\Models\Medicine;
+use App\Models\MedicineImport;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Yajra\DataTables\Facades\DataTables;
-use Illuminate\Support\Facades\DB;
 
 class MedicineImportController extends Controller
 {
@@ -99,7 +98,7 @@ class MedicineImportController extends Controller
                 }
 
                 // Upload ảnh mới
-                $image = $request->file('image');
+                $image = $request->file('invoice_image');
                 $imageName = time() . '_' . Str::random(10) . '.' . $image->getClientOriginalExtension();
                 $imagePath = $image->storeAs('medicine-imports', $imageName, 'public');
                 $data['invoice_image'] = $imagePath;
@@ -133,7 +132,7 @@ class MedicineImportController extends Controller
 
             $import = MedicineImport::findOrFail($id);
 
-            // Xóa ảnh hóa đơn nếu có
+            // Xóa ảnh nếu có
             if ($import->invoice_image && Storage::disk('public')->exists($import->invoice_image)) {
                 Storage::disk('public')->delete($import->invoice_image);
             }
@@ -168,14 +167,15 @@ class MedicineImportController extends Controller
 
             $data = [
                 'id' => $import->id,
+                'import_code' => $import->import_code,
                 'medicine_id' => $import->medicine_id,
+                'medicine_name' => $import->medicine->name ?? '',
                 'quantity' => $import->quantity,
-                'total_amount' => (float)$import->total_amount,
+                'total_amount' => $import->total_amount,
                 'import_date' => $import->import_date->format('Y-m-d'),
                 'notes' => $import->notes,
-                'invoice_image_url' => $import->invoice_image_url,
                 'has_invoice' => $import->invoice_image && Storage::disk('public')->exists($import->invoice_image),
-                'medicine_name' => $import->medicine ? $import->medicine->name : '',
+                'invoice_image_url' => $import->invoice_image_url,
                 'created_at' => $import->created_at->format('d/m/Y H:i'),
                 'updated_at' => $import->updated_at->format('d/m/Y H:i')
             ];
@@ -206,6 +206,7 @@ class MedicineImportController extends Controller
                 'total_amount',
                 'import_date',
                 'invoice_image',
+                'notes',
                 'created_at'
             ]);
 
@@ -214,6 +215,7 @@ class MedicineImportController extends Controller
             $search = request()->search_table;
             $query->where(function ($q) use ($search) {
                 $q->where('import_code', 'like', "%{$search}%")
+                    ->orWhere('notes', 'like', "%{$search}%")
                     ->orWhereHas('medicine', function ($mq) use ($search) {
                         $mq->where('name', 'like', "%{$search}%");
                     });
@@ -242,13 +244,15 @@ class MedicineImportController extends Controller
             $query->where('medicine_id', request()->medicine_filter);
         }
 
-        $imports = $query->orderBy('created_at', 'desc')->get();
+        $imports = $query->orderBy('import_date', 'desc')
+            ->orderBy('created_at', 'desc')
+            ->get();
 
         return DataTables::of($imports)
             ->addColumn('medicine_info', function ($import) {
                 return [
                     'name' => $import->medicine->name ?? 'N/A',
-                    'type' => $import->medicine->type ?? 'N/A'
+                    'type' => $import->medicine->type ?? 'other'
                 ];
             })
             ->addColumn('formatted_total_amount', function ($import) {
@@ -257,14 +261,14 @@ class MedicineImportController extends Controller
             ->addColumn('formatted_import_date', function ($import) {
                 return $import->import_date->format('d/m/Y');
             })
-            ->addColumn('import_date_value', function ($import) {
-                return $import->import_date->format('Y-m-d');
+            ->addColumn('has_invoice', function ($import) {
+                return $import->invoice_image && Storage::disk('public')->exists($import->invoice_image);
             })
             ->addColumn('invoice_image_url', function ($import) {
-                return $import->invoice_image_url;
-            })
-            ->addColumn('has_invoice', function ($import) {
-                return $import->invoice_image ? true : false;
+                if ($import->invoice_image && Storage::disk('public')->exists($import->invoice_image)) {
+                    return asset('storage/' . $import->invoice_image);
+                }
+                return null;
             })
             ->make(true);
     }
@@ -275,33 +279,31 @@ class MedicineImportController extends Controller
     private function getStatistics()
     {
         try {
-            $total_imports = MedicineImport::count();
-            $today_imports = MedicineImport::whereDate('import_date', today())->count();
-            $month_imports = MedicineImport::whereMonth('import_date', now()->month)
+            $totalImports = MedicineImport::count();
+            $todayImports = MedicineImport::whereDate('import_date', today())->count();
+            $monthImports = MedicineImport::whereMonth('import_date', now()->month)
                 ->whereYear('import_date', now()->year)
                 ->count();
-            $total_value = MedicineImport::sum('total_amount');
-            $month_value = MedicineImport::whereMonth('import_date', now()->month)
+
+            $totalValue = MedicineImport::sum('total_amount');
+            $monthValue = MedicineImport::whereMonth('import_date', now()->month)
                 ->whereYear('import_date', now()->year)
                 ->sum('total_amount');
-            $total_quantity = MedicineImport::sum('quantity');
 
             return response()->json([
-                'total_imports' => $total_imports,
-                'today_imports' => $today_imports,
-                'month_imports' => $month_imports,
-                'total_quantity' => number_format($total_quantity),
-                'total_value' => number_format($total_value, 0, '.', '.') . ' VNĐ',
-                'month_value' => number_format($month_value, 0, '.', '.') . ' VNĐ',
+                'total_imports' => $totalImports,
+                'today_imports' => $todayImports,
+                'month_imports' => $monthImports,
+                'total_value' => number_format($totalValue, 0, '.', '.') . ' VNĐ',
+                'month_value' => number_format($monthValue, 0, '.', '.') . ' VNĐ'
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'total_imports' => 0,
                 'today_imports' => 0,
                 'month_imports' => 0,
-                'total_quantity' => 0,
                 'total_value' => '0 VNĐ',
-                'month_value' => '0 VNĐ',
+                'month_value' => '0 VNĐ'
             ]);
         }
     }
@@ -312,17 +314,27 @@ class MedicineImportController extends Controller
     private function getMedicines()
     {
         $medicines = Medicine::where('is_active', true)
-            ->select('id', 'name', 'type')
+            ->select('id', 'name', 'type', 'import_price')
             ->orderBy('name')
-            ->get()
-            ->map(function ($medicine) {
-                return [
-                    'id' => $medicine->id,
-                    'text' => $medicine->name . ' (' . $medicine->type_name . ')'
-                ];
-            });
+            ->get();
 
-        return response()->json($medicines);
+        $formattedMedicines = $medicines->map(function ($medicine) {
+            $typeNames = [
+                'supplement' => 'TPCN',
+                'medicine' => 'Thuốc',
+                'other' => 'Khác'
+            ];
+
+            return [
+                'id' => $medicine->id,
+                'text' => $medicine->name . ' (' . ($typeNames[$medicine->type] ?? 'Khác') . ') - ' . number_format($medicine->import_price, 0, '.', '.') . ' VNĐ',
+                'name' => $medicine->name,
+                'type_name' => $typeNames[$medicine->type] ?? 'Khác',
+                'import_price' => $medicine->import_price
+            ];
+        });
+
+        return response()->json($formattedMedicines);
     }
 
     /**
@@ -343,7 +355,7 @@ class MedicineImportController extends Controller
 
             $imports = MedicineImport::whereIn('id', $ids)->get();
 
-            // Xóa ảnh hóa đơn của các phiếu nhập
+            // Xóa ảnh của các phiếu nhập
             foreach ($imports as $import) {
                 if ($import->invoice_image && Storage::disk('public')->exists($import->invoice_image)) {
                     Storage::disk('public')->delete($import->invoice_image);

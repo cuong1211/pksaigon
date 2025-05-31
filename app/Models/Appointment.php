@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Carbon\Carbon;
 
 class Appointment extends Model
 {
@@ -37,6 +38,30 @@ class Appointment extends Model
     public function service()
     {
         return $this->belongsTo(Service::class);
+    }
+
+    // Accessor để lấy tên bệnh nhân (cần thiết cho backend list)
+    public function getPatientNameAttribute()
+    {
+        return $this->patient ? $this->patient->full_name : 'N/A';
+    }
+
+    // Accessor để lấy số điện thoại bệnh nhân
+    public function getPatientPhoneAttribute()
+    {
+        return $this->patient ? $this->patient->phone : 'N/A';
+    }
+
+    // Accessor để lấy tên dịch vụ
+    public function getServiceNameAttribute()
+    {
+        return $this->service ? $this->service->name : 'Không có';
+    }
+
+    // Accessor để format ngày giờ hẹn cho hiển thị
+    public function getFormattedAppointmentDateAttribute()
+    {
+        return $this->appointment_date->format('d/m/Y') . ' - ' . $this->appointment_time;
     }
 
     // Scope để lọc theo ngày
@@ -127,6 +152,37 @@ class Appointment extends Model
     }
 
     // Method để xác nhận lịch hẹn
+    public function confirm($userId = null)
+    {
+        $this->update([
+            'status' => 'confirmed',
+            'confirmed_at' => now(),
+            'confirmed_by' => $userId
+        ]);
+    }
 
-    
+    // Method để hủy lịch hẹn
+    public function cancel()
+    {
+        $this->update(['status' => 'cancelled']);
+    }
+
+    // Method để hoàn thành lịch hẹn
+    public function complete()
+    {
+        $this->update(['status' => 'completed']);
+    }
+
+    // Boot method để tự động tạo mã appointment nếu cần
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($appointment) {
+            // Có thể thêm logic tự động tạo mã appointment nếu cần
+            if (empty($appointment->source)) {
+                $appointment->source = 'website';
+            }
+        });
+    }
 }

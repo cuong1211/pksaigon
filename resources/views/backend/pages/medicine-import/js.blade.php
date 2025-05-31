@@ -1,7 +1,3 @@
-{
-data: 'quantity',
-render: function(data, type, row, meta) {
-return '
 <script>
     // Private functions
     let search_table = '';
@@ -150,92 +146,75 @@ return '
             type: 'GET',
             success: function(data) {
                 $('#statsContainer').html(`
-        <div class="col-xl-3">
-            <div class="card stats-card card-xl-stretch mb-xl-8">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="symbol symbol-50px me-5">
-                            <span class="symbol-label bg-light-primary">
-                                <i class="fas fa-file-import text-primary fs-2x"></i>
-                            </span>
-                        </div>
-                        <div class="d-flex flex-column">
-                            <span class="text-dark fw-bolder fs-2">${data.total_imports || 0}</span>
-                            <span class="text-muted fw-bold fs-7">Tổng phiếu nhập</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-xl-3">
-            <div class="card stats-card card-xl-stretch mb-xl-8">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="symbol symbol-50px me-5">
-                            <span class="symbol-label bg-light-success">
-                                <i class="fas fa-calendar-day text-success fs-2x"></i>
-                            </span>
-                        </div>
-                        <div class="d-flex flex-column">
-                            <span class="text-dark fw-bolder fs-2">${data.today_imports || 0}</span>
-                            <span class="text-muted fw-bold fs-7">Nhập hôm nay</span>
+                    <div class="col-xl-3">
+                        <div class="card stats-card card-xl-stretch mb-xl-8">
+                            <div class="card-body">
+                                <div class="d-flex align-items-center">
+                                    <div class="symbol symbol-50px me-5">
+                                        <span class="symbol-label bg-light-primary">
+                                            <i class="fas fa-file-import text-primary fs-2x"></i>
+                                        </span>
+                                    </div>
+                                    <div class="d-flex flex-column">
+                                        <span class="text-dark fw-bolder fs-2">${data.total_imports || 0}</span>
+                                        <span class="text-muted fw-bold fs-7">Tổng phiếu nhập</span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-xl-3">
-            <div class="card stats-card card-xl-stretch mb-xl-8">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="symbol symbol-50px me-5">
-                            <span class="symbol-label bg-light-info">
-                                <i class="fas fa-calendar-alt text-info fs-2x"></i>
-                            </span>
-                        </div>
-                        <div class="d-flex flex-column">
-                            <span class="text-dark fw-bolder fs-2">${data.month_imports || 0}</span>
-                            <span class="text-muted fw-bold fs-7">Nhập tháng này</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-xl-3">
-            <div class="card stats-card card-xl-stretch mb-xl-8">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="symbol symbol-50px me-5">
-                            <span class="symbol-label bg-light-warning">
-                                <i class="fas fa-boxes text-warning fs-2x"></i>
-                            </span>
-                        </div>
-                        <div class="d-flex flex-column">
-                            <span class="text-dark fw-bolder fs-2">${data.total_value || '0 VNĐ'}</span>
-                            <span class="text-muted fw-bold fs-7">Tổng giá trị</span>
+                    <div class="col-xl-3">
+                        <div class="card stats-card card-xl-stretch mb-xl-8">
+                            <div class="card-body">
+                                <div class="d-flex align-items-center">
+                                    <div class="symbol symbol-50px me-5">
+                                        <span class="symbol-label bg-light-success">
+                                            <i class="fas fa-calendar-day text-success fs-2x"></i>
+                                        </span>
+                                    </div>
+                                    <div class="d-flex flex-column">
+                                        <span class="text-dark fw-bolder fs-2">${data.today_imports || 0}</span>
+                                        <span class="text-muted fw-bold fs-7">Nhập hôm nay</span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-xl-3">
-            <div class="card stats-card card-xl-stretch mb-xl-8">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="symbol symbol-50px me-5">
-                            <span class="symbol-label bg-light-success">
-                                <i class="fas fa-calendar-check text-success fs-2x"></i>
-                            </span>
-                        </div>
-                        <div class="d-flex flex-column">
-                            <span class="text-dark fw-bolder fs-2">${data.month_value || '0 VNĐ'}</span>
-                            <span class="text-muted fw-bold fs-7">GT tháng này</span>
+                    <div class="col-xl-3">
+                        <div class="card stats-card card-xl-stretch mb-xl-8">
+                            <div class="card-body">
+                                <div class="d-flex align-items-center">
+                                    <div class="symbol symbol-50px me-5">
+                                        <span class="symbol-label bg-light-info">
+                                            <i class="fas fa-calendar-alt text-info fs-2x"></i>
+                                        </span>
+                                    </div>
+                                    <div class="d-flex flex-column">
+                                        <span class="text-dark fw-bolder fs-2">${data.month_imports || 0}</span>
+                                        <span class="text-muted fw-bold fs-7">Nhập tháng này</span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </div>
-            </div>
-        </div>
-    `);
+                    <div class="col-xl-3">
+                        <div class="card stats-card card-xl-stretch mb-xl-8">
+                            <div class="card-body">
+                                <div class="d-flex align-items-center">
+                                    <div class="symbol symbol-50px me-5">
+                                        <span class="symbol-label bg-light-warning">
+                                            <i class="fas fa-money-bill-wave text-warning fs-2x"></i>
+                                        </span>
+                                    </div>
+                                    <div class="d-flex flex-column">
+                                        <span class="text-dark fw-bolder fs-2">${data.total_value || '0 VNĐ'}</span>
+                                        <span class="text-muted fw-bold fs-7">Tổng giá trị</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `);
             },
             error: function() {
                 console.log('Error loading statistics');
@@ -252,8 +231,7 @@ return '
                 let filterOptions = '<option value="">Tất cả thuốc</option>';
 
                 $.each(data, function(index, medicine) {
-                    filterOptions += '<option value="' + medicine.id + '">' + medicine.text +
-                        '</option>';
+                    filterOptions += '<option value="' + medicine.id + '">' + medicine.name + ' (' + medicine.type_name + ')</option>';
                 });
 
                 $('#medicine-filter').html(filterOptions);
@@ -280,8 +258,18 @@ return '
         });
         $("#kt_modal_add_customer_form").trigger("reset");
         $('#invoice-preview-container').hide();
+        $('#medicine-info-display').hide();
         $('.print-error-msg').hide();
 
+        // Reset các trường tính toán
+        $('#unit_price_display').val('');
+        $('#unit_price_value').val('');
+        $('#total_amount_display').val('');
+        $('#total_amount_value').val('');
+        
+        // Reset selected medicine data
+        selectedMedicineData = null;
+        
         // Reset Select2
         if ($('#medicine_select').hasClass('select2-hidden-accessible')) {
             $('#medicine_select').val(null).trigger('change');
@@ -289,6 +277,24 @@ return '
 
         // Set default date to today
         $('input[name="import_date"]').val('{{ date('Y-m-d') }}');
+    }
+
+    // Function to load medicine data by ID (for edit mode)
+    function loadMedicineById(medicineId, callback) {
+        $.ajax({
+            url: "{{ route('medicine-import.show', 'get-medicines') }}",
+            type: 'GET',
+            success: function(data) {
+                const medicine = data.find(m => m.id == medicineId);
+                if (medicine && callback) {
+                    callback(medicine);
+                }
+            },
+            error: function() {
+                console.log('Error loading medicine data');
+                if (callback) callback(null);
+            }
+        });
     }
 
     // Function to load import data for edit
@@ -313,15 +319,45 @@ return '
                     modal.find('.modal-title').text('Sửa phiếu nhập thuốc');
                     modal.find('input[name=id]').val(data.id);
                     modal.find('input[name=quantity]').val(data.quantity);
-                    modal.find('input[name=total_amount]').val(data.total_amount);
                     modal.find('input[name=import_date]').val(data.import_date);
                     modal.find('textarea[name=notes]').val(data.notes || '');
 
-                    // Set medicine select value
+                    // Load medicine data and setup select2
                     if (data.medicine_id) {
-                        // Create option and select it
-                        let option = new Option(data.medicine_name, data.medicine_id, true, true);
-                        $('#medicine_select').append(option).trigger('change');
+                        // Load thông tin thuốc từ API
+                        loadMedicineById(data.medicine_id, function(medicineData) {
+                            if (medicineData) {
+                                // Tạo option và select
+                                let option = new Option(medicineData.text, medicineData.id, true, true);
+                                $('#medicine_select').append(option);
+                                
+                                // Set selected medicine data
+                                selectedMedicineData = medicineData;
+                                
+                                // Hiển thị thông tin thuốc
+                                $('#selected-medicine-name').text(medicineData.name);
+                                $('#selected-medicine-type').text(medicineData.type_name);
+                                $('#selected-medicine-price').text(formatCurrency(medicineData.import_price) + ' VNĐ');
+                                $('#medicine-info-display').show();
+                                
+                                // Set giá nhập
+                                $('#unit_price_display').val(formatCurrency(medicineData.import_price) + ' VNĐ');
+                                $('#unit_price_value').val(medicineData.import_price);
+                                
+                                // Set tổng tiền từ data có sẵn
+                                if (data.total_amount) {
+                                    $('#total_amount_display').val(formatCurrency(data.total_amount) + ' VNĐ');
+                                    $('#total_amount_value').val(data.total_amount);
+                                }
+                                
+                                // Trigger change event sau khi setup xong
+                                $('#medicine_select').trigger('change');
+                                
+                                console.log('Medicine data loaded for edit:', medicineData);
+                            } else {
+                                console.error('Could not load medicine data for ID:', data.medicine_id);
+                            }
+                        });
                     }
 
                     // Show current invoice if exists
@@ -370,18 +406,6 @@ return '
         let modal = $('#kt_modal_add_customer_form');
         modal.find('.modal-title').text('Thêm phiếu nhập thuốc');
         modal.find('input[name=id]').val('');
-
-        // Load medicines for Select2
-        $.ajax({
-            url: "{{ route('medicine-import.show', 'get-medicines') }}",
-            type: 'GET',
-            success: function(data) {
-                $('#medicine_select').empty().append('<option value="">-- Chọn thuốc --</option>');
-                $.each(data, function(index, medicine) {
-                    $('#medicine_select').append(new Option(medicine.text, medicine.id));
-                });
-            }
-        });
     });
 
     $('#kt_modal_add_customer_form').on('submit', function(e) {

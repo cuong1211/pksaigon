@@ -26,6 +26,7 @@
                     <!-- Stats sẽ được load bằng Ajax -->
                 </div>
 
+                <!-- Quick Info Card -->
                 <!-- Main Table Card -->
                 <div class="card card-xl-stretch">
                     <div class="card-header border-0 pt-6">
@@ -175,6 +176,7 @@
             font-weight: 600;
             color: #3F4254;
             font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
         }
 
         .stats-card {
@@ -203,6 +205,25 @@
             object-fit: cover;
             border-radius: 4px;
             cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+
+        .invoice-preview:hover {
+            transform: scale(1.1);
+        }
+
+        /* Quick Info Card */
+        .card .symbol {
+            flex-shrink: 0;
+        }
+
+        /* Enhanced table styling */
+
+        /* Badge improvements */
+        .badge-light-info {
+            background-color: #e3f2fd;
+            color: #1976d2;
+            font-weight: 600;
         }
 
         /* Responsive adjustments */
@@ -217,6 +238,16 @@
                 margin-bottom: 8px;
                 margin-right: 0;
             }
+
+            .quick-info-card .d-flex {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .quick-info-card .me-5 {
+                margin-right: 0 !important;
+                margin-bottom: 10px;
+            }
         }
 
         /* DataTable custom styling */
@@ -227,18 +258,11 @@
 
         #kt_customers_table tbody tr {
             border-bottom: 1px solid #E4E6EF;
-            transition: all 0.2s ease;
-        }
-
-        #kt_customers_table tbody tr:hover {
-            background-color: #F9F9F9;
-            box-shadow: 0 0 20px 0 rgba(76, 87, 125, 0.02);
+            transition: all 0.3s ease;
         }
 
         #kt_customers_table th {
-            background-color: #F7F8FA;
-            border-bottom: 1px solid #E4E6EF;
-            padding: 12px 8px;
+            padding: 15px 8px;
         }
 
         #kt_customers_table td {
@@ -254,6 +278,75 @@
         .image-preview-modal img {
             width: 100%;
             height: auto;
+        }
+
+        /* Loading states */
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #007bff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Success states */
+        .success-highlight {
+            background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+            border-left: 4px solid #28a745;
+        }
+
+        /* Filter enhancements */
+        .form-select:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        }
+
+        /* Button improvements */
+        .btn-primary {
+            background: linear-gradient(45deg, #007bff, #0056b3);
+            border: none;
+            box-shadow: 0 2px 4px rgba(0, 123, 255, 0.3);
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(45deg, #0056b3, #004085);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0, 123, 255, 0.4);
+        }
+
+        .btn-light-primary {
+            background: rgba(0, 123, 255, 0.1);
+            color: #007bff;
+            border: 1px solid rgba(0, 123, 255, 0.2);
+        }
+
+        .btn-light-primary:hover {
+            background: rgba(0, 123, 255, 0.2);
+            transform: translateY(-1px);
         }
     </style>
 @endpush

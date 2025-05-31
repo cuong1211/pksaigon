@@ -58,6 +58,16 @@
                                     <option value="month">Tháng này</option>
                                 </select>
 
+                                <!-- Status Filter -->
+                                <select class="form-select form-select-solid w-150px me-3 search_table"
+                                    data-filter="status">
+                                    <option value="">Tất cả trạng thái</option>
+                                    <option value="pending">Chờ xác nhận</option>
+                                    <option value="confirmed">Đã xác nhận</option>
+                                    <option value="completed">Đã hoàn thành</option>
+                                    <option value="cancelled">Đã hủy</option>
+                                </select>
+
                                 <!-- Service Filter -->
                                 <select class="form-select form-select-solid w-200px me-3 search_table"
                                     data-filter="service" id="service-filter">
@@ -124,10 +134,11 @@
                                                 value="1" />
                                         </div>
                                     </th>
-                                    <th class="min-w-150px">Tên bệnh nhân</th>
-                                    <th class="min-w-125px">Số điện thoại</th>
+                                    <th class="min-w-150px">Bệnh nhân</th>
                                     <th class="min-w-150px">Dịch vụ khám</th>
                                     <th class="min-w-150px">Ngày giờ hẹn</th>
+                                    <th class="min-w-100px">Trạng thái</th>
+                                    <th class="min-w-100px">Nguồn</th>
                                     <th class="text-end min-w-100px">Thao tác</th>
                                 </tr>
                             </thead>
@@ -164,6 +175,55 @@
 
         .stats-card:hover {
             transform: translateY(-2px);
+        }
+
+        /* Badge styles */
+        .badge {
+            font-size: 0.8rem;
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.5rem;
+        }
+
+        .badge-warning {
+            background-color: #FFF8DD;
+            color: #F1C40F;
+        }
+
+        .badge-info {
+            background-color: #EBF8FF;
+            color: #3498DB;
+        }
+
+        .badge-success {
+            background-color: #D4EDDA;
+            color: #27AE60;
+        }
+
+        .badge-danger {
+            background-color: #F8D7DA;
+            color: #E74C3C;
+        }
+
+        .badge-primary {
+            background-color: #E3F2FD;
+            color: #2196F3;
+        }
+
+        /* Patient info styling */
+        .patient-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .patient-name {
+            font-weight: 600;
+            color: #181C32;
+            line-height: 1.4;
+        }
+
+        .patient-phone {
+            font-size: 0.85rem;
+            color: #7E8299;
         }
 
         /* Responsive adjustments */
@@ -205,6 +265,11 @@
         #kt_customers_table td {
             padding: 16px 8px;
             vertical-align: middle;
+        }
+
+        /* Action menu width */
+        .menu-sub-dropdown {
+            min-width: 200px !important;
         }
     </style>
 @endpush

@@ -106,6 +106,17 @@ Route::middleware(['auth'])->group(function () {
         Route::post('appointment/{id}/confirm', [AppointmentController::class, 'confirm'])->name('appointment.confirm');
         Route::post('appointment/{id}/cancel', [AppointmentController::class, 'cancel'])->name('appointment.cancel');
         Route::post('appointment/{id}/complete', [AppointmentController::class, 'complete'])->name('appointment.complete');
+
+
+        Route::prefix('medicine-statistics')->name('medicine-statistics.')->group(function () {
+            Route::get('/', [App\Http\Controllers\Admin\MedicineStatisticsController::class, 'index'])->name('index');
+            Route::get('/overview', [App\Http\Controllers\Admin\MedicineStatisticsController::class, 'getOverviewStats'])->name('overview');
+            Route::get('/import-trends', [App\Http\Controllers\Admin\MedicineStatisticsController::class, 'getImportTrends'])->name('import-trends');
+            Route::get('/top-medicines', [App\Http\Controllers\Admin\MedicineStatisticsController::class, 'getTopImportedMedicines'])->name('top-medicines');
+            Route::get('/expiry-report', [App\Http\Controllers\Admin\MedicineStatisticsController::class, 'getExpiryReport'])->name('expiry-report');
+            Route::get('/type-statistics', [App\Http\Controllers\Admin\MedicineStatisticsController::class, 'getTypeStatistics'])->name('type-statistics');
+            Route::get('/export', [App\Http\Controllers\Admin\MedicineStatisticsController::class, 'exportReport'])->name('export');
+        });
         // Route tạo slug cho service
         Route::get('create-slug', function (Request $request) {
             $name = $request->get('name');

@@ -132,6 +132,14 @@
                         <span class="menu-title">Nhập thuốc</span>
                     </a>
                 </div>
+                <div class="menu-item {{ request()->routeIs('medicine-statistics.*') ? 'here' : '' }}">
+                    <a class="menu-link" href="{{ route('medicine-statistics.index') }}">
+                        <span class="menu-icon">
+                            <i class="fas fa-chart-bar"></i>
+                        </span>
+                        <span class="menu-title">Thống kê kho thuốc</span>
+                    </a>
+                </div>
                 <!-- Danh sách khám -->
                 <div class="menu-item {{ request()->routeIs('examination.*') ? 'here' : '' }}">
                     <a class="menu-link" href="{{ route('examination.index') }}">
