@@ -118,7 +118,7 @@ class Examination extends Model
             if (empty($examination->examination_code)) {
                 $examination->examination_code = 'PK' . date('YmdHis') . rand(100, 999);
             }
-            
+
             // Tính tổng tiền
             $examination->total_fee = $examination->service_fee + $examination->medicine_fee;
         });
@@ -135,10 +135,10 @@ class Examination extends Model
     public function getServicesDetails()
     {
         if (!$this->services) return collect();
-        
+
         $serviceIds = collect($this->services)->pluck('service_id');
         $services = Service::whereIn('id', $serviceIds)->get();
-        
+
         return collect($this->services)->map(function ($item) use ($services) {
             $service = $services->firstWhere('id', $item['service_id']);
             return [
@@ -154,10 +154,10 @@ class Examination extends Model
     public function getMedicinesDetails()
     {
         if (!$this->medicines) return collect();
-        
+
         $medicineIds = collect($this->medicines)->pluck('medicine_id');
         $medicines = Medicine::whereIn('id', $medicineIds)->get();
-        
+
         return collect($this->medicines)->map(function ($item) use ($medicines) {
             $medicine = $medicines->firstWhere('id', $item['medicine_id']);
             return [
@@ -168,5 +168,11 @@ class Examination extends Model
                 'price' => $item['price'] ?? 0
             ];
         });
+    }
+
+    // Relationship với medicine usage
+    public function medicineUsages()
+    {
+        return $this->hasMany(MedicineUsage::class);
     }
 }

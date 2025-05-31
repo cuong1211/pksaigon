@@ -1,23 +1,28 @@
 <script>
-    // Private functions
+    // Private variables
     let search_table = '';
     let status_filter = '';
     let payment_filter = '';
     let date_filter = '';
-    let currentStep = 1;
-    let maxStep = 4;
-    let services = [];
-    let medicines = [];
-    let currentExaminationId = null;
 
-    // Load statistics and options on page load
+    // Data caches
+    let servicesData = [];
+    let medicinesData = [];
+    let selectedPatientData = null;
+
+    // Counters for dynamic items
+    let serviceCounter = 0;
+    let medicineCounter = 0;
+
+    // Load data on page load
     $(document).ready(function() {
         loadStatistics();
-        loadServices();
-        loadMedicines();
+        loadServicesData();
+        loadMedicinesData();
     });
 
-    var dt = $("#kt_examinations_table").DataTable({
+    // DataTable initialization
+    var dt = $("#kt_examination_table").DataTable({
         serverSide: true,
         select: {
             style: 'multi',
@@ -55,30 +60,26 @@
                 render: function(data, type, row, meta) {
                     let html = '<div class="patient-info">';
                     html += '<div class="patient-name">' + data.name + '</div>';
-                    html += '<code class="patient-code">' + data.code + '</code>';
                     html += '<div class="patient-phone">' + data.phone + '</div>';
                     html += '</div>';
                     return html;
                 }
             },
             {
-                data: 'diagnosis',
-                render: function(data, type, row, meta) {
-                    return data ? (data.length > 50 ? data.substring(0, 50) + '...' : data) : '-';
-                }
-            },
-            {
-                data: 'total_fee',
-                render: function(data, type, row, meta) {
-                    return '<span class="price-display">' + new Intl.NumberFormat('vi-VN').format(
-                        data) + ' VNĐ</span>';
-                }
-            },
-            {
                 data: 'formatted_examination_date'
             },
             {
-                data: 'formatted_next_appointment'
+                data: 'diagnosis',
+                render: function(data, type, row, meta) {
+                    if (!data) return '<span class="text-muted">Chưa có</span>';
+                    return data.length > 50 ? data.substring(0, 50) + '...' : data;
+                }
+            },
+            {
+                data: 'formatted_total_fee',
+                render: function(data, type, row, meta) {
+                    return '<span class="price-display fw-bold">' + data + '</span>';
+                }
             },
             {
                 data: 'status',
@@ -106,24 +107,28 @@
                         '</a> \n' +
                         '<div class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-bold fs-7 w-150px py-4" data-kt-menu="true"> \n';
 
+                    // QR Payment action
                     if (row.payment_status === 'pending') {
                         actions += '<div class="menu-item px-3"> \n' +
-                            '<a href="#" data-id="' + row.id +
-                            '" class="menu-link px-3 btn-generate-qr">Tạo QR thanh toán</a> \n' +
+                            '<a href="#" data-id="' + row.id + '" data-examination-code="' + row
+                            .examination_code +
+                            '" data-patient-name="' + row.patient_info.name + '" data-total-fee="' + row
+                            .formatted_total_fee +
+                            '" class="menu-link px-3 btn-payment-qr">Thanh toán QR</a> \n' +
                             '</div> \n';
                     }
 
+                    // Edit action
                     actions += '<div class="menu-item px-3"> \n' +
-                        '<a href="" data-data=\'' + JSON.stringify(row) +
-                        '\' class="menu-link px-3 btn-edit" data-bs-toggle="modal" data-bs-target="#kt_modal_add_examination">Sửa</a> \n' +
+                        '<a href="#" data-id="' + row.id +
+                        '" class="menu-link px-3 btn-edit" data-bs-toggle="modal" data-bs-target="#kt_modal_examination">Sửa</a> \n' +
                         '</div> \n';
 
-                    if (row.payment_status !== 'paid') {
-                        actions += '<div class="menu-item px-3"> \n' +
-                            '<a href="#" data-id="' + row.id +
-                            '" class="menu-link px-3 btn-delete" data-kt-examination-table-filter="delete_row">Xóa</a> \n' +
-                            '</div> \n';
-                    }
+                    // Delete action
+                    actions += '<div class="menu-item px-3"> \n' +
+                        '<a href="#" data-id="' + row.id +
+                        '" class="menu-link px-3 btn-delete">Xóa</a> \n' +
+                        '</div> \n';
 
                     actions += '</div>';
                     return actions;
@@ -137,27 +142,27 @@
         updateBulkActions();
     });
 
-    // Handle bulk selection
+    // Bulk selection handlers
     $('[data-kt-check="true"]').on('change', function() {
         var isChecked = $(this).is(':checked');
-        $('#kt_examinations_table tbody input[type="checkbox"]').prop('checked', isChecked);
+        $('#kt_examination_table tbody input[type="checkbox"]').prop('checked', isChecked);
         updateBulkActions();
     });
 
-    $(document).on('change', '#kt_examinations_table tbody input[type="checkbox"]', function() {
+    $(document).on('change', '#kt_examination_table tbody input[type="checkbox"]', function() {
         updateBulkActions();
     });
 
     function updateBulkActions() {
-        var checkedCount = $('#kt_examinations_table tbody input[type="checkbox"]:checked').length;
+        var checkedCount = $('#kt_examination_table tbody input[type="checkbox"]:checked').length;
 
         if (checkedCount > 0) {
-            $('[data-kt-examinations-table-toolbar="base"]').addClass('d-none');
-            $('[data-kt-examinations-table-toolbar="selected"]').removeClass('d-none');
-            $('[data-kt-examinations-table-select="selected_count"]').text(checkedCount);
+            $('[data-kt-examination-table-toolbar="base"]').addClass('d-none');
+            $('[data-kt-examination-table-toolbar="selected"]').removeClass('d-none');
+            $('[data-kt-examination-table-select="selected_count"]').text(checkedCount);
         } else {
-            $('[data-kt-examinations-table-toolbar="base"]').removeClass('d-none');
-            $('[data-kt-examinations-table-toolbar="selected"]').addClass('d-none');
+            $('[data-kt-examination-table-toolbar="base"]').removeClass('d-none');
+            $('[data-kt-examination-table-toolbar="selected"]').addClass('d-none');
         }
     }
 
@@ -207,12 +212,29 @@
                             <div class="card-body">
                                 <div class="d-flex align-items-center">
                                     <div class="symbol symbol-50px me-5">
+                                        <span class="symbol-label bg-light-info">
+                                            <i class="fas fa-calendar-alt text-info fs-2x"></i>
+                                        </span>
+                                    </div>
+                                    <div class="d-flex flex-column">
+                                        <span class="text-dark fw-bolder fs-2">${data.this_month || 0}</span>
+                                        <span class="text-muted fw-bold fs-7">Khám tháng này</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-2">
+                        <div class="card stats-card card-xl-stretch mb-xl-8">
+                            <div class="card-body">
+                                <div class="d-flex align-items-center">
+                                    <div class="symbol symbol-50px me-5">
                                         <span class="symbol-label bg-light-warning">
                                             <i class="fas fa-clock text-warning fs-2x"></i>
                                         </span>
                                     </div>
                                     <div class="d-flex flex-column">
-                                        <span class="text-dark fw-bolder fs-2">${data.pending || 0}</span>
+                                        <span class="text-dark fw-bolder fs-2">${data.pending_payment || 0}</span>
                                         <span class="text-muted fw-bold fs-7">Chờ thanh toán</span>
                                     </div>
                                 </div>
@@ -229,25 +251,8 @@
                                         </span>
                                     </div>
                                     <div class="d-flex flex-column">
-                                        <span class="text-dark fw-bolder fs-2">${data.completed || 0}</span>
-                                        <span class="text-muted fw-bold fs-7">Hoàn thành</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-xl-2">
-                        <div class="card stats-card card-xl-stretch mb-xl-8">
-                            <div class="card-body">
-                                <div class="d-flex align-items-center">
-                                    <div class="symbol symbol-50px me-5">
-                                        <span class="symbol-label bg-light-info">
-                                            <i class="fas fa-dollar-sign text-info fs-2x"></i>
-                                        </span>
-                                    </div>
-                                    <div class="d-flex flex-column">
-                                        <span class="text-dark fw-bolder fs-2">${data.today_revenue || '0 VNĐ'}</span>
-                                        <span class="text-muted fw-bold fs-7">DT hôm nay</span>
+                                        <span class="text-dark fw-bolder fs-2">${data.paid || 0}</span>
+                                        <span class="text-muted fw-bold fs-7">Đã thanh toán</span>
                                     </div>
                                 </div>
                             </div>
@@ -259,12 +264,12 @@
                                 <div class="d-flex align-items-center">
                                     <div class="symbol symbol-50px me-5">
                                         <span class="symbol-label bg-light-primary">
-                                            <i class="fas fa-chart-line text-primary fs-2x"></i>
+                                            <i class="fas fa-money-bill-wave text-primary fs-2x"></i>
                                         </span>
                                     </div>
                                     <div class="d-flex flex-column">
-                                        <span class="text-dark fw-bolder fs-2">${data.month_revenue || '0 VNĐ'}</span>
-                                        <span class="text-muted fw-bold fs-7">DT tháng này</span>
+                                        <span class="text-dark fw-bolder fs-1">${data.total_revenue || '0 VNĐ'}</span>
+                                        <span class="text-muted fw-bold fs-7">Tổng doanh thu</span>
                                     </div>
                                 </div>
                             </div>
@@ -278,377 +283,561 @@
         });
     }
 
-    // Load services and medicines
-    function loadServices() {
+    // Load services data
+    function loadServicesData() {
         $.ajax({
-            url: "{{ route('service.show', 'get-list') }}",
+            url: "{{ route('examination.show', 'get-services') }}",
             type: 'GET',
-            success: function(response) {
-                services = response.data || [];
-                updateServiceOptions();
-            }
-        });
-    }
-
-    function loadMedicines() {
-        $.ajax({
-            url: "{{ route('medicine.show', 'get-list') }}",
-            type: 'GET',
-            success: function(response) {
-                medicines = response.data || [];
-                updateMedicineOptions();
-            }
-        });
-    }
-
-    function updateServiceOptions() {
-        let options = '<option value="">-- Chọn dịch vụ --</option>';
-        services.forEach(function(service) {
-            if (service.is_active) {
-                options +=
-                    `<option value="${service.id}" data-price="${service.price}">${service.name} - ${new Intl.NumberFormat('vi-VN').format(service.price)} VNĐ</option>`;
-            }
-        });
-        $('.service-select').html(options);
-    }
-
-    function updateMedicineOptions() {
-        let options = '<option value="">-- Chọn thuốc --</option>';
-        medicines.forEach(function(medicine) {
-            if (medicine.is_active) {
-                options +=
-                    `<option value="${medicine.id}" data-price="${medicine.price}">${medicine.name} (${medicine.code}) - ${new Intl.NumberFormat('vi-VN').format(medicine.price)} VNĐ</option>`;
-            }
-        });
-        $('.medicine-select').html(options);
-    }
-
-    // Step navigation
-    function showStep(step) {
-        $('.step-content').removeClass('active');
-        $('.step-item').removeClass('active completed');
-
-        for (let i = 1; i < step; i++) {
-            $('.step-item[data-step="' + i + '"]').addClass('completed');
-        }
-
-        $('.step-item[data-step="' + step + '"]').addClass('active');
-        $('#step-' + step).addClass('active');
-        currentStep = step;
-
-        // Update navigation buttons
-        if (step === 1) {
-            $('#prev-step').hide();
-        } else {
-            $('#prev-step').show();
-        }
-
-        if (step === maxStep) {
-            $('#next-step').hide();
-            $('#finish-examination').show();
-        } else {
-            $('#next-step').show();
-            $('#finish-examination').hide();
-        }
-    }
-
-    $('#next-step').on('click', function() {
-        if (validateCurrentStep()) {
-            if (currentStep < maxStep) {
-                showStep(currentStep + 1);
-                if (currentStep === 4) {
-                    calculateTotalFees();
-                }
-            }
-        }
-    });
-
-    $('#prev-step').on('click', function() {
-        if (currentStep > 1) {
-            showStep(currentStep - 1);
-        }
-    });
-
-    function validateCurrentStep() {
-        // Basic validation for each step
-        switch (currentStep) {
-            case 1:
-                if (!$('input[name="patient_id"]').val() && !$('input[name="patient_name"]').val()) {
-                    notification('error', 'Lỗi', 'Vui lòng chọn hoặc nhập thông tin bệnh nhân');
-                    return false;
-                }
-                if (!$('input[name="patient_id"]').val() && !$('input[name="patient_phone"]').val()) {
-                    notification('error', 'Lỗi', 'Vui lòng nhập số điện thoại bệnh nhân');
-                    return false;
-                }
-                break;
-            case 3:
-                if (!$('textarea[name="diagnosis"]').val()) {
-                    notification('error', 'Lỗi', 'Vui lòng nhập chuẩn đoán');
-                    return false;
-                }
-                break;
-        }
-        return true;
-    }
-
-    // Patient search
-    let searchTimeout;
-    $('#patient-search').on('input', function() {
-        clearTimeout(searchTimeout);
-        let search = $(this).val();
-
-        if (search.length < 2) {
-            $('#patient-search-results').hide();
-            return;
-        }
-
-        searchTimeout = setTimeout(function() {
-            searchPatients(search);
-        }, 500);
-    });
-
-    function searchPatients(search) {
-        $.ajax({
-            url: "{{ route('patient.show', 'search') }}",
-            type: 'GET',
-            data: {
-                search: search
+            success: function(data) {
+                servicesData = data;
             },
-            success: function(patients) {
-                let html = '';
-                if (patients.length > 0) {
-                    html += '<div class="border rounded p-3">';
-                    html += '<h6 class="mb-3">Kết quả tìm kiếm:</h6>';
-                    patients.forEach(function(patient) {
-                        html +=
-                            `<div class="patient-result p-2 border-bottom cursor-pointer" data-patient='${JSON.stringify(patient)}'>`;
-                        html += `<div class="fw-bold">${patient.full_name}</div>`;
-                        html +=
-                            `<div class="text-muted fs-7">${patient.patient_code} - ${patient.phone}</div>`;
-                        if (patient.address) {
-                            html += `<div class="text-muted fs-8">${patient.address}</div>`;
-                        }
-                        html += '</div>';
-                    });
-                    html += '</div>';
-
-                    $('#patient-search-results').html(html).show();
-                } else {
-                    $('#patient-search-results').html(
-                        '<div class="alert alert-info">Không tìm thấy bệnh nhân nào</div>').show();
-                }
+            error: function() {
+                console.log('Error loading services data');
             }
         });
     }
 
-    // Select patient from search results
-    $(document).on('click', '.patient-result', function() {
-        let patient = $(this).data('patient');
-        selectPatient(patient);
-    });
-
-    function selectPatient(patient) {
-        $('input[name="patient_id"]').val(patient.id);
-        $('input[name="patient_name"]').val(patient.full_name);
-        $('input[name="patient_phone"]').val(patient.phone);
-        $('input[name="patient_address"]').val(patient.address || '');
-        $('input[name="patient_dob"]').val(patient.date_of_birth || '');
-        $('select[name="patient_gender"]').val(patient.gender || '');
-        $('input[name="patient_citizen_id"]').val(patient.citizen_id || '');
-
-        $('#patient-search').val(patient.full_name + ' - ' + patient.phone);
-        $('#patient-search-results').hide();
-
-        // Disable form fields since patient is selected
-        $('input[name="patient_name"], input[name="patient_phone"], input[name="patient_address"], input[name="patient_dob"], select[name="patient_gender"], input[name="patient_citizen_id"]')
-            .prop('disabled', true);
+    // Load medicines data
+    function loadMedicinesData() {
+        $.ajax({
+            url: "{{ route('examination.show', 'get-medicines') }}",
+            type: 'GET',
+            success: function(data) {
+                medicinesData = data;
+            },
+            error: function() {
+                console.log('Error loading medicines data');
+            }
+        });
     }
 
-    // Clear patient selection
-    function clearPatientSelection() {
-        $('input[name="patient_id"]').val('');
-        $('#patient-search').val('');
-        $('#patient-search-results').hide();
-        $('input[name="patient_name"], input[name="patient_phone"], input[name="patient_address"], input[name="patient_dob"], select[name="patient_gender"], input[name="patient_citizen_id"]')
-            .prop('disabled', false).val('');
-        $('select[name="patient_gender"]').val('');
+    // Modal management
+    $('.btn-close').on('click', function() {
+        form_reset();
+        $('#kt_modal_examination').modal('hide');
+    });
+
+    $('#kt_modal_examination_cancel').on('click', function() {
+        form_reset();
+    });
+
+    function form_reset() {
+        $("#kt_modal_examination").modal({
+            'backdrop': 'static',
+            'keyboard': false
+        });
+        $("#kt_modal_examination_form").trigger("reset");
+        $('.print-error-msg').hide();
+
+        // Reset dynamic sections
+        $('#services-container').empty();
+        $('#medicines-container').empty();
+        $('#fee-summary').hide();
+        $('#patient-info-display').hide();
+        $('#edit-mode-fields').hide();
+
+        // Reset counters
+        serviceCounter = 0;
+        medicineCounter = 0;
+        selectedPatientData = null;
+
+        // Reset patient select2
+        if ($('#patient_select').hasClass('select2-hidden-accessible')) {
+            $('#patient_select').val(null).trigger('change');
+        }
+
+        // Set default date
+        $('input[name="examination_date"]').val('{{ date('Y-m-d') }}');
+
+        updateTotalFee();
     }
 
-    // Add service
-    $('#add-service').on('click', function() {
-        let template = $('#service-item-template').html();
-        let serviceItem = $(template);
-        $('#services-container').append(serviceItem);
-        updateServiceOptions();
+    // Patient selection handling
+    $('#kt_modal_examination').on('shown.bs.modal', function() {
+        $('#patient_select').select2({
+            dropdownParent: $('#kt_modal_examination'),
+            placeholder: "Tìm và chọn bệnh nhân...",
+            allowClear: true,
+            width: '100%',
+            ajax: {
+                url: "{{ route('examination.show', 'get-patients') }}",
+                dataType: 'json',
+                delay: 250,
+                data: function(params) {
+                    return {
+                        search: params.term
+                    };
+                },
+                processResults: function(data) {
+                    return {
+                        results: data.map(function(item) {
+                            return {
+                                id: item.id,
+                                text: item.full_name + ' (' + item.phone + ')',
+                                patient_code: item.patient_code,
+                                full_name: item.full_name,
+                                phone: item.phone,
+                                address: item.address
+                            };
+                        })
+                    };
+                },
+                cache: true
+            }
+        });
+
+        $('#patient_select').on('select2:select', function(e) {
+            const data = e.params.data;
+            selectedPatientData = data;
+
+            $('#selected-patient-code').text(data.patient_code);
+            $('#selected-patient-phone').text(data.phone);
+            $('#patient-info-display').show();
+        });
+
+        $('#patient_select').on('select2:clear', function(e) {
+            selectedPatientData = null;
+            $('#patient-info-display').hide();
+        });
     });
 
-    // Remove service
-    $(document).on('click', '.remove-service', function() {
-        $(this).closest('.service-item').remove();
-        calculateTotalFees();
+    $('#kt_modal_examination').on('hidden.bs.modal', function() {
+        if ($('#patient_select').hasClass('select2-hidden-accessible')) {
+            $('#patient_select').select2('destroy');
+        }
     });
 
-    // Service change handlers
-    $(document).on('change', '.service-select', function() {
-        let price = $(this).find('option:selected').data('price') || 0;
-        $(this).closest('.service-item').find('.service-price').val(price);
-        calculateServiceTotal($(this).closest('.service-item'));
+    // Add/Remove services
+    $('#add-service-btn').on('click', function() {
+        addServiceItem();
     });
 
-    $(document).on('input', '.service-quantity, .service-price', function() {
-        calculateServiceTotal($(this).closest('.service-item'));
-    });
+    function addServiceItem(serviceData = null) {
+        const template = document.getElementById('service-item-template');
+        const clone = template.content.cloneNode(true);
 
-    function calculateServiceTotal(serviceItem) {
-        let quantity = parseInt(serviceItem.find('.service-quantity').val()) || 0;
-        let price = parseInt(serviceItem.find('.service-price').val()) || 0;
-        let total = quantity * price;
-        serviceItem.find('.service-total').text(new Intl.NumberFormat('vi-VN').format(total) + ' VNĐ');
-        calculateTotalFees();
+        // Set index
+        const index = serviceCounter++;
+        clone.querySelector('.item-row').setAttribute('data-index', index);
+
+        // Populate services dropdown
+        const select = clone.querySelector('.service-select');
+        servicesData.forEach(service => {
+            const option = document.createElement('option');
+            option.value = service.id;
+            option.textContent = service.name + ' - ' + formatCurrency(service.price) + ' VNĐ';
+            option.setAttribute('data-price', service.price);
+            select.appendChild(option);
+        });
+
+        // Set data if provided (for edit mode)
+        if (serviceData) {
+            select.value = serviceData.service_id;
+            clone.querySelector('.service-quantity').value = serviceData.quantity;
+            clone.querySelector('.service-price').value = formatCurrency(serviceData.price) + ' VNĐ';
+            clone.querySelector('.service-price-value').value = serviceData.price;
+
+            const total = serviceData.quantity * serviceData.price;
+            clone.querySelector('.service-total').value = formatCurrency(total) + ' VNĐ';
+        }
+
+        $('#services-container').append(clone);
+        updateTotalFee();
     }
 
-    // Add medicine
-    $('#add-medicine').on('click', function() {
-        let template = $('#medicine-item-template').html();
-        let medicineItem = $(template);
-        $('#medicines-container').append(medicineItem);
-        updateMedicineOptions();
+    function removeServiceItem(button) {
+        $(button).closest('.item-row').remove();
+        updateTotalFee();
+    }
+
+    function updateServicePrice(select) {
+        const row = $(select).closest('.item-row');
+        const selectedOption = select.options[select.selectedIndex];
+        const price = selectedOption.getAttribute('data-price') || 0;
+
+        row.find('.service-price').val(formatCurrency(price) + ' VNĐ');
+        row.find('.service-price-value').val(price);
+
+        calculateServiceTotal(row.find('.service-quantity')[0]);
+    }
+
+    function calculateServiceTotal(input) {
+        const row = $(input).closest('.item-row');
+        const quantity = parseInt(input.value) || 0;
+        const price = parseFloat(row.find('.service-price-value').val()) || 0;
+        const total = quantity * price;
+
+        row.find('.service-total').val(formatCurrency(total) + ' VNĐ');
+        updateTotalFee();
+    }
+
+    // Add/Remove medicines
+    $('#add-medicine-btn').on('click', function() {
+        addMedicineItem();
     });
 
-    // Remove medicine
-    $(document).on('click', '.remove-medicine', function() {
-        $(this).closest('.medicine-item').remove();
-        calculateTotalFees();
-    });
+    function addMedicineItem(medicineData = null) {
+        const template = document.getElementById('medicine-item-template');
+        const clone = template.content.cloneNode(true);
 
-    // Medicine change handlers
-    $(document).on('change', '.medicine-select', function() {
-        let price = $(this).find('option:selected').data('price') || 0;
-        $(this).closest('.medicine-item').find('.medicine-price').val(price);
-        calculateMedicineTotal($(this).closest('.medicine-item'));
-    });
+        // Set index
+        const index = medicineCounter++;
+        clone.querySelector('.item-row').setAttribute('data-index', index);
 
-    $(document).on('input', '.medicine-quantity, .medicine-price', function() {
-        calculateMedicineTotal($(this).closest('.medicine-item'));
-    });
+        // Populate medicines dropdown
+        const select = clone.querySelector('.medicine-select');
+        medicinesData.forEach(medicine => {
+            const option = document.createElement('option');
+            option.value = medicine.id;
+            option.textContent = medicine.name + ' - ' + medicine.formatted_price + ' (Tồn: ' + medicine
+                .current_stock + ')';
+            option.setAttribute('data-price', medicine.sale_price);
+            option.setAttribute('data-stock', medicine.current_stock);
+            select.appendChild(option);
+        });
 
-    function calculateMedicineTotal(medicineItem) {
-        let quantity = parseInt(medicineItem.find('.medicine-quantity').val()) || 0;
-        let price = parseInt(medicineItem.find('.medicine-price').val()) || 0;
-        let total = quantity * price;
-        medicineItem.find('.medicine-total').text(new Intl.NumberFormat('vi-VN').format(total) + ' VNĐ');
-        calculateTotalFees();
+        // Set data if provided (for edit mode)
+        if (medicineData) {
+            select.value = medicineData.medicine_id;
+            clone.querySelector('.medicine-quantity').value = medicineData.quantity;
+            clone.querySelector('.medicine-price').value = formatCurrency(medicineData.price) + ' VNĐ';
+            clone.querySelector('input[name="medicines[][dosage]"]').value = medicineData.dosage || '';
+            clone.querySelector('input[name="medicines[][note]"]').value = medicineData.note || '';
+
+            const total = medicineData.quantity * medicineData.price;
+            clone.querySelector('.medicine-total').value = formatCurrency(total) + ' VNĐ';
+
+            // Show stock warning if needed
+            const stock = parseInt(medicineData.current_stock) || 0;
+            if (stock < medicineData.quantity) {
+                const warning = clone.querySelector('.stock-warning');
+                warning.style.display = 'block';
+                warning.querySelector('.stock-quantity').textContent = stock;
+            }
+        }
+
+        $('#medicines-container').append(clone);
+        updateTotalFee();
+    }
+
+    function removeMedicineItem(button) {
+        $(button).closest('.item-row').remove();
+        updateTotalFee();
+    }
+
+    function updateMedicinePrice(select) {
+        const row = $(select).closest('.item-row');
+        const selectedOption = select.options[select.selectedIndex];
+        const price = selectedOption.getAttribute('data-price') || 0;
+        const stock = parseInt(selectedOption.getAttribute('data-stock')) || 0;
+
+        row.find('.medicine-price').val(formatCurrency(price) + ' VNĐ');
+
+        // Show/hide stock warning
+        const warning = row.find('.stock-warning');
+        const quantity = parseInt(row.find('.medicine-quantity').val()) || 1;
+
+        if (stock < quantity) {
+            warning.show();
+            warning.find('.stock-quantity').text(stock);
+        } else {
+            warning.hide();
+        }
+
+        calculateMedicineTotal(row.find('.medicine-quantity')[0]);
+    }
+
+    function calculateMedicineTotal(input) {
+        const row = $(input).closest('.item-row');
+        const quantity = parseInt(input.value) || 0;
+        const select = row.find('.medicine-select')[0];
+        const selectedOption = select.options[select.selectedIndex];
+        const price = parseFloat(selectedOption.getAttribute('data-price')) || 0;
+        const stock = parseInt(selectedOption.getAttribute('data-stock')) || 0;
+        const total = quantity * price;
+
+        row.find('.medicine-total').val(formatCurrency(total) + ' VNĐ');
+
+        // Show/hide stock warning
+        const warning = row.find('.stock-warning');
+        if (stock < quantity && selectedOption.value) {
+            warning.show();
+            warning.find('.stock-quantity').text(stock);
+        } else {
+            warning.hide();
+        }
+
+        updateTotalFee();
     }
 
     // Calculate total fees
-    function calculateTotalFees() {
+    function updateTotalFee() {
         let serviceFee = 0;
         let medicineFee = 0;
 
-        $('.service-item').each(function() {
-            let quantity = parseInt($(this).find('.service-quantity').val()) || 0;
-            let price = parseInt($(this).find('.service-price').val()) || 0;
+        // Calculate service fee
+        $('#services-container .item-row').each(function() {
+            const quantity = parseInt($(this).find('.service-quantity').val()) || 0;
+            const price = parseFloat($(this).find('.service-price-value').val()) || 0;
             serviceFee += quantity * price;
         });
 
-        $('.medicine-item').each(function() {
-            let quantity = parseInt($(this).find('.medicine-quantity').val()) || 0;
-            let price = parseInt($(this).find('.medicine-price').val()) || 0;
+        // Calculate medicine fee
+        $('#medicines-container .item-row').each(function() {
+            const quantity = parseInt($(this).find('.medicine-quantity').val()) || 0;
+            const select = $(this).find('.medicine-select')[0];
+            const selectedOption = select.options[select.selectedIndex];
+            const price = parseFloat(selectedOption.getAttribute('data-price')) || 0;
             medicineFee += quantity * price;
         });
 
-        let totalFee = serviceFee + medicineFee;
+        const totalFee = serviceFee + medicineFee;
 
-        $('#total-service-fee').text(new Intl.NumberFormat('vi-VN').format(serviceFee) + ' VNĐ');
-        $('#total-medicine-fee').text(new Intl.NumberFormat('vi-VN').format(medicineFee) + ' VNĐ');
-        $('#total-fee').text(new Intl.NumberFormat('vi-VN').format(totalFee) + ' VNĐ');
-        $('#final-total-fee').text(new Intl.NumberFormat('vi-VN').format(totalFee) + ' VNĐ');
+        // Update display
+        $('#service-fee-display').text(formatCurrency(serviceFee) + ' VNĐ');
+        $('#medicine-fee-display').text(formatCurrency(medicineFee) + ' VNĐ');
+        $('#total-fee-display').text(formatCurrency(totalFee) + ' VNĐ');
+
+        // Show/hide fee summary
+        if (totalFee > 0) {
+            $('#fee-summary').show();
+        } else {
+            $('#fee-summary').hide();
+        }
+    }
+
+    // Format currency
+    function formatCurrency(amount) {
+        return new Intl.NumberFormat('vi-VN').format(amount);
+    }
+
+    // Add/Edit examination handlers
+    $(document).on('click', '.btn-add', function(e) {
+        e.preventDefault();
+        form_reset();
+        let modal = $('#kt_modal_examination_form');
+        modal.find('.modal-title').text('Tạo phiếu khám mới');
+        modal.find('input[name=id]').val('');
+        $('#kt_modal_examination_submit .indicator-label').text('Hoàn thành khám');
+    });
+
+    $(document).on('click', '.btn-edit', function(e) {
+        e.preventDefault();
+        form_reset();
+
+        let id = $(this).data('id');
+        if (id) {
+            console.log('Loading examination data for ID:', id);
+            loadExaminationData(id);
+        } else {
+            notification('error', 'Lỗi', 'Không tìm thấy ID phiếu khám');
+        }
+    });
+
+    function loadExaminationData(id) {
+        const submitBtn = $('#kt_modal_examination_submit');
+        submitBtn.attr('data-kt-indicator', 'on');
+        submitBtn.prop('disabled', true);
+
+        $.ajax({
+            url: "{{ route('examination.show', 'get-data') }}",
+            type: 'GET',
+            data: {
+                id: id
+            },
+            success: function(response) {
+                if (response.type === 'success') {
+                    let data = response.data;
+                    let modal = $('#kt_modal_examination_form');
+
+                    // Set form values
+                    modal.find('.modal-title').text('Sửa phiếu khám');
+                    modal.find('input[name=id]').val(data.id);
+                    modal.find('input[name=examination_date]').val(data.examination_date);
+                    modal.find('textarea[name=symptoms]').val(data.symptoms || '');
+                    modal.find('textarea[name=diagnosis]').val(data.diagnosis || '');
+                    modal.find('textarea[name=treatment_plan]').val(data.treatment_plan || '');
+                    modal.find('input[name=next_appointment]').val(data.next_appointment || '');
+                    modal.find('textarea[name=notes]').val(data.notes || '');
+
+                    // Show edit mode fields
+                    $('#edit-mode-fields').show();
+                    modal.find('select[name=payment_status]').val(data.payment_status);
+                    $('#kt_modal_examination_submit .indicator-label').text('Cập nhật');
+
+                    // Set patient
+                    if (data.patient) {
+                        let option = new Option(
+                            data.patient.full_name + ' (' + data.patient.phone + ')',
+                            data.patient.id,
+                            true,
+                            true
+                        );
+                        $('#patient_select').append(option);
+
+                        selectedPatientData = {
+                            id: data.patient.id,
+                            patient_code: data.patient_code,
+                            full_name: data.patient.full_name,
+                            phone: data.patient.phone
+                        };
+
+                        $('#selected-patient-code').text(data.patient_code);
+                        $('#selected-patient-phone').text(data.patient.phone);
+                        $('#patient-info-display').show();
+                    }
+
+                    // Add services
+                    if (data.services && data.services.length > 0) {
+                        data.services.forEach(service => {
+                            addServiceItem(service);
+                        });
+                    }
+
+                    // Add medicines
+                    if (data.medicines && data.medicines.length > 0) {
+                        data.medicines.forEach(medicine => {
+                            addMedicineItem(medicine);
+                        });
+                    }
+
+                    updateTotalFee();
+
+                    console.log('Examination data loaded successfully:', data);
+                } else {
+                    notification('error', 'Lỗi', response.message || 'Không thể tải dữ liệu');
+                }
+            },
+            error: function(xhr) {
+                let message = 'Có lỗi xảy ra khi tải dữ liệu';
+                if (xhr.responseJSON && xhr.responseJSON.message) {
+                    message = xhr.responseJSON.message;
+                }
+                notification('error', 'Lỗi', message);
+                console.error('Error loading examination data:', xhr);
+            },
+            complete: function() {
+                submitBtn.removeAttr('data-kt-indicator');
+                submitBtn.prop('disabled', false);
+            }
+        });
     }
 
     // Form submission
-    $('#kt_modal_add_examination_form').on('submit', function(e) {
+    $('#kt_modal_examination_form').on('submit', function(e) {
         e.preventDefault();
 
+        // Validate required fields
+        if (!selectedPatientData) {
+            notification('error', 'Lỗi', 'Vui lòng chọn bệnh nhân');
+            return;
+        }
+
+        // Prepare form data
         let formData = new FormData();
-        let data = $(this).serializeArray();
+        formData.append('_token', $('meta[name="csrf-token"]').attr('content'));
 
-        // Basic form data
-        data.forEach(function(item) {
-            formData.append(item.name, item.value);
-        });
+        // Basic fields
+        formData.append('patient_id', selectedPatientData.id);
+        formData.append('examination_date', $('input[name="examination_date"]').val());
+        formData.append('symptoms', $('textarea[name="symptoms"]').val());
+        formData.append('diagnosis', $('textarea[name="diagnosis"]').val());
+        formData.append('treatment_plan', $('textarea[name="treatment_plan"]').val());
+        formData.append('next_appointment', $('input[name="next_appointment"]').val());
+        formData.append('notes', $('textarea[name="notes"]').val());
 
-        // Services data
-        let servicesData = [];
-        $('.service-item').each(function() {
-            let serviceId = $(this).find('.service-select').val();
-            if (serviceId) {
-                servicesData.push({
-                    service_id: parseInt(serviceId),
-                    quantity: parseInt($(this).find('.service-quantity').val()) || 1,
-                    price: parseInt($(this).find('.service-price').val()) || 0
+        // Payment status for edit mode
+        if ($('#edit-mode-fields').is(':visible')) {
+            formData.append('payment_status', $('select[name="payment_status"]').val());
+        }
+
+        // Services
+        const services = [];
+        $('#services-container .item-row').each(function() {
+            const serviceId = $(this).find('.service-select').val();
+            const quantity = parseInt($(this).find('.service-quantity').val()) || 0;
+            const price = parseFloat($(this).find('.service-price-value').val()) || 0;
+
+            if (serviceId && quantity > 0) {
+                services.push({
+                    service_id: serviceId,
+                    quantity: quantity,
+                    price: price
                 });
             }
         });
-        formData.append('services', JSON.stringify(servicesData));
+        formData.append('services', JSON.stringify(services));
 
-        // Medicines data
-        let medicinesData = [];
-        $('.medicine-item').each(function() {
-            let medicineId = $(this).find('.medicine-select').val();
-            if (medicineId) {
-                medicinesData.push({
-                    medicine_id: parseInt(medicineId),
-                    quantity: parseInt($(this).find('.medicine-quantity').val()) || 1,
-                    dosage: $(this).find('.medicine-dosage').val() || '',
-                    note: $(this).find('.medicine-note').val() || '',
-                    price: parseInt($(this).find('.medicine-price').val()) || 0
+        // Medicines
+        const medicines = [];
+        $('#medicines-container .item-row').each(function() {
+            const medicineId = $(this).find('.medicine-select').val();
+            const quantity = parseInt($(this).find('.medicine-quantity').val()) || 0;
+            const dosage = $(this).find('input[name="medicines[][dosage]"]').val();
+            const note = $(this).find('input[name="medicines[][note]"]').val();
+
+            if (medicineId && quantity > 0) {
+                medicines.push({
+                    medicine_id: medicineId,
+                    quantity: quantity,
+                    dosage: dosage,
+                    note: note
                 });
             }
         });
-        formData.append('medicines', JSON.stringify(medicinesData));
+        formData.append('medicines', JSON.stringify(medicines));
 
+        // Determine URL and method
         let url = "{{ route('examination.store') }}";
         let method = 'POST';
+        const id = $('input[name="id"]').val();
+
+        if (parseInt(id)) {
+            formData.append('_method', 'PUT');
+            url = "{{ route('examination.update', ':id') }}".replace(':id', id);
+        }
 
         // Show loading
-        $('#finish-examination').attr('data-kt-indicator', 'on');
-        $('#finish-examination').prop('disabled', true);
+        $('#kt_modal_examination_submit').attr('data-kt-indicator', 'on');
+        $('#kt_modal_examination_submit').prop('disabled', true);
 
         $.ajax({
             url: url,
-            headers: {
-                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-            },
             type: method,
             data: formData,
             processData: false,
             contentType: false,
-            success: function(response) {
-                console.log('Form submission response:', response); // Debug log
-
-                notification(response.type, response.title, response.content);
-                if (response.type === 'success' && response.data) {
-                    // ← ĐÂY LÀ CHỖ QUAN TRỌNG: Set currentExaminationId
-                    currentExaminationId = response.data.examination_id;
-
-                    console.log('Set currentExaminationId to:', currentExaminationId); // Debug log
-
-                    $('#examination-code-display').text(response.data.examination_code);
-
+            success: function(data) {
+                notification(data.type, data.title, data.content);
+                if (data.type == 'success') {
                     dt.ajax.reload(null, false);
+                    $('#kt_modal_examination_form').trigger('reset');
+                    $('#kt_modal_examination').modal('hide');
                     loadStatistics();
 
-                    // Show step 4 (payment step)
-                    showStep(4);
-
-                    // Enable generate QR button
-                    $('#generate-qr').prop('disabled', false).show();
+                    // Show success message with QR option for new examinations
+                    if (data.examination_id && !parseInt(id)) {
+                        Swal.fire({
+                            title: 'Thành công!',
+                            text: 'Phiếu khám đã được tạo. Bạn có muốn tạo mã QR thanh toán không?',
+                            icon: 'success',
+                            showCancelButton: true,
+                            confirmButtonText: 'Tạo QR',
+                            cancelButtonText: 'Bỏ qua'
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                // Trigger QR generation
+                                // We need to reload the table first to get the new examination data
+                                setTimeout(() => {
+                                    $(`[data-id="${data.examination_id}"].btn-payment-qr`)
+                                        .click();
+                                }, 1000);
+                            }
+                        });
+                    }
                 }
             },
             error: function(xhr) {
-                console.error('Form submission error:', xhr); // Debug log
-
                 if (xhr.status === 422) {
                     let errors = xhr.responseJSON.errors;
                     let errorHtml = '';
@@ -658,404 +847,26 @@
                     $('.print-error-msg ul').html(errorHtml);
                     $('.print-error-msg').show();
                 } else {
-                    notification('error', 'Lỗi', 'Có lỗi xảy ra khi tạo phiếu khám');
-                }
-            },
-            complete: function() {
-                $('#finish-examination').removeAttr('data-kt-indicator');
-                $('#finish-examination').prop('disabled', false);
-            }
-        });
-    });
-
-    // Generate QR Code
-    $('#generate-qr').on('click', function() {
-        console.log('Generate QR clicked, currentExaminationId:', currentExaminationId);
-
-        if (!currentExaminationId) {
-            console.error('currentExaminationId is null!');
-            notification('error', 'Lỗi', 'Không tìm thấy ID phiếu khám. Vui lòng thử lại.');
-            return;
-        }
-
-        $(this).attr('data-kt-indicator', 'on');
-        $(this).prop('disabled', true);
-
-        $.ajax({
-            url: "{{ route('examination.generatePaymentQR', ':id') }}".replace(':id',
-                currentExaminationId),
-            type: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-            },
-            success: function(response) {
-                console.log('QR response:', response);
-
-                if (response.type === 'success') {
-                    showQRCode(response.data);
-                } else {
-                    notification(response.type, response.title, response.content);
-                }
-            },
-            error: function(xhr) {
-                console.error('QR generation error:', xhr);
-                notification('error', 'Lỗi', 'Không thể tạo mã QR thanh toán');
-            },
-            complete: function() {
-                $('#generate-qr').removeAttr('data-kt-indicator');
-                $('#generate-qr').prop('disabled', false);
-            }
-        });
-    });
-
-    // Show QR Code function
-    function showQRCode(data) {
-        console.log('showQRCode called with data:', data);
-
-        $('#qr-code-section').show();
-
-        // Xử lý QR code image
-        let qrCodeSrc = data.qr_code;
-        if (data.qr_string && !data.qr_code.startsWith('http') && !data.qr_code.startsWith('data:image')) {
-            // Tạo QR code từ string
-            qrCodeSrc =
-                `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(data.qr_string)}`;
-        }
-
-        $('#qr-code-image').attr('src', qrCodeSrc);
-        $('#bank-name').text(data.bank_name || 'VietQR');
-        $('#account-number').text(data.account_no || '');
-        $('#account-name').text(data.account_name || '');
-        $('#transfer-content').text(data.content || '');
-        $('#transfer-amount').text(data.amount || '');
-
-        // Thêm nút test payment trong môi trường development
-        if (isDevelopmentEnvironment()) {
-            if (!$('#test-buttons-container').length) {
-                $('#qr-code-section').append(`
-                <div id="test-buttons-container" class="mt-4 p-3 bg-warning bg-opacity-10 rounded">
-                    <h6 class="text-warning mb-3">
-                        <i class="fas fa-flask"></i> Development Test Tools
-                    </h6>
-                    <div class="d-flex gap-2 flex-wrap">
-                        <button type="button" class="btn btn-warning btn-sm" id="test-callback-simulation">
-                            <span class="indicator-label">
-                                <i class="fas fa-play"></i> Test Callback Simulation
-                            </span>
-                            <span class="indicator-progress">
-                                <span class="spinner-border spinner-border-sm"></span> Testing...
-                            </span>
-                        </button>
-                        <button type="button" class="btn btn-info btn-sm" id="trigger-vietqr-callback">
-                            <span class="indicator-label">
-                                <i class="fas fa-satellite-dish"></i> Trigger VietQR Callback
-                            </span>
-                            <span class="indicator-progress">
-                                <span class="spinner-border spinner-border-sm"></span> Triggering...
-                            </span>
-                        </button>
-                    </div>
-                    <div class="text-muted fs-8 mt-2">
-                        <i class="fas fa-info-circle"></i> 
-                        Test Simulation: Gửi fake callback đến endpoint của chúng ta<br>
-                        Trigger VietQR: Gọi API VietQR để họ gửi callback thật
-                    </div>
-                </div>
-            `);
-            }
-        }
-        // Bắt đầu auto-check payment status
-        // startPaymentStatusCheck();
-    }
-
-
-    // Check payment status
-    let paymentCheckInterval;
-    let paymentCheckCount = 0;
-    const MAX_PAYMENT_CHECK = 60; // Check tối đa 60 lần (5 phút)
-
-    function startPaymentStatusCheck() {
-        if (!currentExaminationId) return;
-
-        paymentCheckCount = 0;
-
-        // Check ngay lập tức
-        checkPaymentStatus();
-
-        // Set interval check mỗi 5 giây
-        paymentCheckInterval = setInterval(function() {
-            paymentCheckCount++;
-
-            if (paymentCheckCount >= MAX_PAYMENT_CHECK) {
-                stopPaymentStatusCheck();
-                showPaymentTimeout();
-                return;
-            }
-
-            checkPaymentStatus();
-        }, 5000);
-    }
-
-    function stopPaymentStatusCheck() {
-        if (paymentCheckInterval) {
-            clearInterval(paymentCheckInterval);
-            paymentCheckInterval = null;
-        }
-    }
-
-    $('#check-payment').on('click', function() {
-        checkPaymentStatus();
-    });
-
-    function checkPaymentStatus() {
-        if (!currentExaminationId) return;
-
-        $.ajax({
-            url: "{{ route('examination.checkPaymentStatus', ':id') }}".replace(':id',
-                currentExaminationId),
-            type: 'GET',
-            success: function(response) {
-                if (response.type === 'success' && response.data) {
-                    if (response.data.is_paid) {
-                        // Thanh toán thành công
-                        $('#payment-success').show();
-                        stopPaymentStatusCheck();
-
-                        // Cập nhật UI
-                        notification('success', 'Thành công', 'Thanh toán đã được xác nhận!');
-                        dt.ajax.reload(null, false);
-                        loadStatistics();
-
-                        // Auto close modal sau 3 giây
-                        setTimeout(function() {
-                            $('#kt_modal_add_examination').modal('hide');
-                            resetExaminationForm();
-                        }, 3000);
+                    let message = 'Có lỗi xảy ra';
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        message = xhr.responseJSON.message;
                     }
+                    notification('error', 'Lỗi', message);
                 }
-            },
-            error: function() {
-                console.log('Error checking payment status');
-            }
-        });
-    }
-
-    function showPaymentTimeout() {
-        $('#qr-code-section').append(`
-        <div class="alert alert-warning mt-3">
-            <i class="fas fa-clock text-warning me-2"></i>
-            <strong>Hết thời gian kiểm tra tự động</strong><br>
-            Vui lòng click "Kiểm tra thanh toán" để kiểm tra thủ công hoặc liên hệ hỗ trợ.
-        </div>
-    `);
-    }
-
-    function isDevelopmentEnvironment() {
-        // Fallback nếu chưa có Laravel config
-        if (typeof window.Laravel === 'undefined') {
-            return window.location.hostname === 'localhost' ||
-                window.location.hostname === '127.0.0.1' ||
-                window.location.hostname.includes('dev') ||
-                window.location.hostname.includes('test') ||
-                window.location.port !== '';
-        }
-
-        return window.Laravel.isDevelopment === true;
-    }
-
-    // Generate QR from table
-    $(document).on('click', '.btn-generate-qr', function(e) {
-        e.preventDefault();
-        let id = $(this).data('id');
-        console.log('id', id);
-        if (!id) {
-            notification('error', 'Lỗi', 'Không tìm thấy ID phiếu khám');
-            return;
-        }
-
-        $(this).html('<i class="fas fa-spinner fa-spin"></i> Đang tạo...');
-        if (isDevelopmentEnvironment()) {
-            $('#qr-code-display').append(`
-                <div id="test-buttons-container" class="mt-4 p-3 bg-warning bg-opacity-10 rounded">
-                    <h6 class="text-warning mb-3">
-                        <i class="fas fa-flask"></i> Development Test Tools
-                    </h6>
-                    <div class="d-flex gap-2 flex-wrap">
-                        <button type="button" class="btn btn-warning btn-sm" id="test-callback-simulation">
-                            <span class="indicator-label">
-                                <i class="fas fa-play"></i> Test Callback Simulation
-                            </span>
-                            <span class="indicator-progress">
-                                <span class="spinner-border spinner-border-sm"></span> Testing...
-                            </span>
-                        </button>
-                        <button type="button" class="btn btn-info btn-sm" id="trigger-vietqr-callback">
-                            <span class="indicator-label">
-                                <i class="fas fa-satellite-dish"></i> Trigger VietQR Callback
-                            </span>
-                            <span class="indicator-progress">
-                                <span class="spinner-border spinner-border-sm"></span> Triggering...
-                            </span>
-                        </button>
-                    </div>
-                    <div class="text-muted fs-8 mt-2">
-                        <i class="fas fa-info-circle"></i> 
-                        Test Simulation: Gửi fake callback đến endpoint của chúng ta<br>
-                        Trigger VietQR: Gọi API VietQR để họ gửi callback thật
-                    </div>
-                </div>`);
-
-        }
-        $.ajax({
-            url: "{{ route('examination.generatePaymentQR', ':id') }}".replace(':id', id),
-            type: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-            },
-            success: function(response) {
-                if (response.type === 'success') {
-                    showPaymentModal(id, response.data);
-                } else {
-                    notification(response.type, response.title, response.content);
-                }
-            },
-            error: function() {
-                notification('error', 'Lỗi', 'Không thể tạo mã QR thanh toán');
+                console.error('Error saving examination:', xhr);
             },
             complete: function() {
-                dt.ajax.reload(null, false);
+                $('#kt_modal_examination_submit').removeAttr('data-kt-indicator');
+                $('#kt_modal_examination_submit').prop('disabled', false);
             }
         });
-
-    });
-
-
-
-    function showPaymentModal(examinationId, data) {
-        currentExaminationId = examinationId;
-
-        $('#payment-examination-code').text(data.examination_code || '');
-        $('#payment-total-amount').text(data.amount);
-
-        // Xử lý QR code tương tự như trên
-        let qrCodeSrc = data.qr_code;
-        if (data.qr_code.startsWith('http')) {
-            if (data.qr_string) {
-                qrCodeSrc =
-                    `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(data.qr_string)}`;
-            }
-        } else if (!data.qr_code.startsWith('data:image') && !data.qr_code.startsWith('http')) {
-            qrCodeSrc =
-                `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(data.qr_code)}`;
-        }
-
-        $('#payment-qr-image').attr('src', qrCodeSrc);
-        $('#payment-bank-name').text(data.bank_name);
-        $('#payment-account-number').text(data.account_no);
-        $('#payment-account-name').text(data.account_name);
-        $('#payment-transfer-content').text(data.content);
-
-        // Thêm nút test payment trong modal
-        if (window.location.hostname === 'localhost' || window.location.hostname.includes('dev')) {
-            if (!$('#modal-test-payment-btn').length) {
-                $('.modal-footer').prepend(`
-                <button type="button" class="btn btn-warning me-3" id="modal-test-payment-btn">
-                    <i class="fas fa-test-tube"></i> Test Payment
-                </button>
-            `);
-            }
-        }
-
-        $('#kt_modal_payment_qr').modal('show');
-        startModalPaymentCheck();
-    }
-    let modalPaymentCheckInterval;
-
-    function startModalPaymentCheck() {
-        modalPaymentCheckInterval = setInterval(function() {
-            checkModalPaymentStatus();
-        }, 5000);
-    }
-
-    function stopModalPaymentCheck() {
-        if (modalPaymentCheckInterval) {
-            clearInterval(modalPaymentCheckInterval);
-        }
-    }
-
-    $('#check-payment-status').on('click', function() {
-        checkModalPaymentStatus();
-    });
-    $('#kt_modal_add_examination').on('hidden.bs.modal', function() {
-        stopPaymentStatusCheck();
-    });
-
-    function checkModalPaymentStatus() {
-        if (!currentExaminationId) return;
-
-        $('#check-payment-status').attr('data-kt-indicator', 'on');
-
-        $.ajax({
-            url: "{{ route('examination.checkPaymentStatus', ':id') }}".replace(':id',
-                currentExaminationId),
-            type: 'GET',
-            success: function(response) {
-                if (response.data.payment_status === 'paid') {
-                    $('#payment-status').hide();
-                    $('#payment-success-status').show();
-                    stopModalPaymentCheck();
-
-                    setTimeout(function() {
-                        $('#kt_modal_payment_qr').modal('hide');
-                        $('#success-examination-code').text($('#payment-examination-code')
-                            .text());
-                        $('#kt_modal_payment_success').modal('show');
-                        dt.ajax.reload(null, false);
-                        loadStatistics();
-                    }, 2000);
-                }
-            },
-            complete: function() {
-                $('#check-payment-status').removeAttr('data-kt-indicator');
-            }
-        });
-    }
-
-    // Modal events
-    $('#kt_modal_payment_qr').on('hidden.bs.modal', function() {
-        stopModalPaymentCheck();
-    });
-
-    // Reset form
-    function resetExaminationForm() {
-        $('#kt_modal_add_examination_form')[0].reset();
-        $('.print-error-msg').hide();
-        $('#services-container').empty();
-        $('#medicines-container').empty();
-        $('#qr-code-section').hide();
-        $('#payment-success').hide();
-        currentStep = 1;
-        currentExaminationId = null;
-        showStep(1);
-        clearPatientSelection();
-        stopPaymentStatusCheck();
-    }
-
-    $('.btn-close, #examination-cancel').on('click', function() {
-        resetExaminationForm();
-        $('#kt_modal_add_examination').modal('hide');
-    });
-
-    $(document).on('click', '.btn-add', function(e) {
-        e.preventDefault();
-        resetExaminationForm();
-        $('.modal-title').text('Tạo phiếu khám mới');
     });
 
     // Delete examination
     $(document).on('click', '.btn-delete', function(e) {
         e.preventDefault();
         let id = $(this).data('id');
+
         Swal.fire({
             text: "Bạn có muốn xóa phiếu khám này không?",
             icon: "warning",
@@ -1077,84 +888,163 @@
                     type: 'DELETE',
                     success: function(data) {
                         notification(data.type, data.title, data.content);
-                        if (data.type === 'success') {
+                        if (data.type == 'success') {
                             dt.ajax.reload(null, false);
                             loadStatistics();
                         }
                     },
-                    error: function(data) {
-                        notification('error', 'Lỗi', 'Có lỗi xảy ra khi xóa');
+                    error: function(xhr) {
+                        let message = 'Có lỗi xảy ra khi xóa phiếu khám';
+                        if (xhr.responseJSON && xhr.responseJSON.message) {
+                            message = xhr.responseJSON.message;
+                        }
+                        notification('error', 'Lỗi', message);
+                        console.error('Error deleting examination:', xhr);
                     }
                 });
             }
         });
     });
-    $(document).on('click', '#test-callback-simulation', function() {
-        if (!currentExaminationId) return;
 
-        $(this).attr('data-kt-indicator', 'on');
-        $(this).prop('disabled', true);
+    // Payment QR Modal handlers
+    $(document).on('click', '.btn-payment-qr', function(e) {
+        e.preventDefault();
+
+        const id = $(this).data('id');
+        const examinationCode = $(this).data('examination-code');
+        const patientName = $(this).data('patient-name');
+        const totalFee = $(this).data('total-fee');
+
+        // Set payment info
+        $('#payment-examination-code').text(examinationCode);
+        $('#payment-patient-name').text(patientName);
+        $('#payment-amount').text(totalFee);
+
+        // Store examination ID for later use
+        $('#kt_modal_payment_qr').data('examination-id', id);
+
+        // Reset modal state
+        $('#qr-code-section').hide();
+        $('#no-qr-section').show();
+        $('#check-payment-btn').hide();
+        $('#test-callback-btn').hide();
+
+        // Show modal
+        $('#kt_modal_payment_qr').modal('show');
+    });
+
+    // Generate QR Code
+    $('#generate-qr-btn').on('click', function() {
+        const examinationId = $('#kt_modal_payment_qr').data('examination-id');
+        const btn = $(this);
+
+        btn.attr('data-kt-indicator', 'on');
+        btn.prop('disabled', true);
+
+        $.ajax({
+            url: "{{ route('examination.generatePaymentQR', ':id') }}".replace(':id', examinationId),
+            type: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            },
+            success: function(response) {
+                if (response.type === 'success') {
+                    $('#qr-code-image').attr('src', response.qr_code);
+                    $('#no-qr-section').hide();
+                    $('#qr-code-section').show();
+                    $('#check-payment-btn').show();
+                    $('#test-callback-btn').show();
+
+                    notification(response.type, response.title, response.content);
+                } else {
+                    notification(response.type, response.title, response.content);
+                }
+            },
+            error: function(xhr) {
+                let message = 'Có lỗi xảy ra khi tạo mã QR';
+                if (xhr.responseJSON && xhr.responseJSON.content) {
+                    message = xhr.responseJSON.content;
+                }
+                notification('error', 'Lỗi', message);
+            },
+            complete: function() {
+                btn.removeAttr('data-kt-indicator');
+                btn.prop('disabled', false);
+            }
+        });
+    });
+
+    // Check Payment Status
+    $('#check-payment-btn').on('click', function() {
+        const examinationId = $('#kt_modal_payment_qr').data('examination-id');
+        const btn = $(this);
+
+        btn.attr('data-kt-indicator', 'on');
+        btn.prop('disabled', true);
+
+        $.ajax({
+            url: "{{ route('examination.checkPaymentStatus', ':id') }}".replace(':id', examinationId),
+            type: 'GET',
+            success: function(response) {
+                notification(response.type, response.title, response.content);
+
+                if (response.status === 'paid') {
+                    $('#payment-status-pending').hide();
+                    $('#payment-status-paid').show();
+                    $('#check-payment-btn').hide();
+                    $('#test-callback-btn').hide();
+
+                    // Reload table to update payment status
+                    dt.ajax.reload(null, false);
+                    loadStatistics();
+                }
+            },
+            error: function(xhr) {
+                let message = 'Có lỗi xảy ra khi kiểm tra thanh toán';
+                if (xhr.responseJSON && xhr.responseJSON.content) {
+                    message = xhr.responseJSON.content;
+                }
+                notification('error', 'Lỗi', message);
+            },
+            complete: function() {
+                btn.removeAttr('data-kt-indicator');
+                btn.prop('disabled', false);
+            }
+        });
+    });
+
+    // Test Callback (for testing)
+    $('#test-callback-btn').on('click', function() {
+        const examinationId = $('#kt_modal_payment_qr').data('examination-id');
+        const btn = $(this);
+
+        btn.attr('data-kt-indicator', 'on');
+        btn.prop('disabled', true);
 
         $.ajax({
             url: "{{ route('examination.testCallbackSimulation', ':id') }}".replace(':id',
-                currentExaminationId),
+                examinationId),
             type: 'POST',
             headers: {
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
             },
             success: function(response) {
-                notification(response.type, response.title || 'Thông báo', response.content ||
-                    response.message);
-                if (response.type === 'success') {
-                    // Refresh status
-                    setTimeout(function() {
-                        // checkPaymentStatus();
-                    }, 2000);
-                }
+                notification(response.type, response.title, response.content);
             },
-            error: function() {
-                notification('error', 'Lỗi', 'Không thể test callback simulation');
+            error: function(xhr) {
+                let message = 'Có lỗi xảy ra khi test callback';
+                if (xhr.responseJSON && xhr.responseJSON.content) {
+                    message = xhr.responseJSON.content;
+                }
+                notification('error', 'Lỗi', message);
             },
             complete: function() {
-                $('#test-callback-simulation').removeAttr('data-kt-indicator');
-                $('#test-callback-simulation').prop('disabled', false);
+                btn.removeAttr('data-kt-indicator');
+                btn.prop('disabled', false);
             }
         });
     });
 
-    // Trigger VietQR Callback Button  
-    $(document).on('click', '#trigger-vietqr-callback', function() {
-        if (!currentExaminationId) return;
-
-        $(this).attr('data-kt-indicator', 'on');
-        $(this).prop('disabled', true);
-
-        $.ajax({
-            url: "{{ route('examination.triggerVietQRCallback', ':id') }}".replace(':id',
-                currentExaminationId),
-            type: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-            },
-            success: function(response) {
-                notification(response.type, response.title || 'Thông báo', response.content ||
-                    response.message);
-                if (response.type === 'success') {
-                    // Auto check payment sau vài giây
-                    setTimeout(function() {
-                        // startPaymentStatusCheck();
-                    }, 3000);
-                }
-            },
-            error: function() {
-                notification('error', 'Lỗi', 'Không thể trigger VietQR callback');
-            },
-            complete: function() {
-                $('#trigger-vietqr-callback').removeAttr('data-kt-indicator');
-                $('#trigger-vietqr-callback').prop('disabled', false);
-            }
-        });
-    });
     // Search filters
     $(".search_table").on('change keyup', function() {
         let data = $(this).val();
@@ -1170,6 +1060,61 @@
             search_table = data;
         }
 
+        console.log('Search:', search_table, 'Status:', status_filter, 'Payment:', payment_filter, 'Date:',
+            date_filter);
         dt.ajax.reload();
+    });
+
+    // Bulk delete
+    $(document).on('click', '[data-kt-examination-table-select="delete_selected"]', function(e) {
+        e.preventDefault();
+        let selectedIds = [];
+        $('#kt_examination_table tbody input[type="checkbox"]:checked').each(function() {
+            selectedIds.push($(this).val());
+        });
+
+        if (selectedIds.length === 0) return;
+
+        Swal.fire({
+            text: "Bạn có muốn xóa " + selectedIds.length + " phiếu khám đã chọn không?",
+            icon: "warning",
+            showCancelButton: true,
+            buttonsStyling: false,
+            confirmButtonText: "Có!",
+            cancelButtonText: "Không",
+            customClass: {
+                confirmButton: "btn fw-bold btn-danger",
+                cancelButton: "btn fw-bold btn-active-light-primary",
+            }
+        }).then(function(result) {
+            if (result.value) {
+                $.ajax({
+                    url: "{{ route('examination.destroy', 'bulk') }}",
+                    headers: {
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                    },
+                    type: 'DELETE',
+                    data: {
+                        ids: selectedIds
+                    },
+                    success: function(data) {
+                        notification(data.type, data.title, data.content);
+                        if (data.type == 'success') {
+                            dt.ajax.reload(null, false);
+                            loadStatistics();
+                            $('[data-kt-check="true"]').prop('checked', false);
+                            updateBulkActions();
+                        }
+                    },
+                    error: function(xhr) {
+                        let message = 'Có lỗi xảy ra khi xóa các phiếu khám';
+                        if (xhr.responseJSON && xhr.responseJSON.message) {
+                            message = xhr.responseJSON.message;
+                        }
+                        notification('error', 'Lỗi', message);
+                    }
+                });
+            }
+        });
     });
 </script>

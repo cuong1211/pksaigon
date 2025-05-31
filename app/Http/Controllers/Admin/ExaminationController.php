@@ -3,21 +3,25 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Admin\ExaminationRequest;
 use App\Models\Examination;
 use App\Models\Patient;
+use App\Models\Service;
+use App\Models\Medicine;
+use App\Models\MedicineUsage;
 use App\Services\VietQRService;
 use Illuminate\Http\Request;
 use Yajra\DataTables\Facades\DataTables;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
 
 class ExaminationController extends Controller
 {
-    protected $vietQRService;
+    protected $vietqrService;
 
-    public function __construct(VietQRService $vietQRService)
+    public function __construct(VietQRService $vietqrService)
     {
-        $this->vietQRService = $vietQRService;
+        $this->vietqrService = $vietqrService;
     }
 
     /**
@@ -29,73 +33,81 @@ class ExaminationController extends Controller
     }
 
     /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
      * Store a newly created resource in storage.
      */
-    public function store(ExaminationRequest $request)
+    public function store(Request $request)
     {
         try {
-            $data = $request->validated();
-
-            // Tạo hoặc tìm bệnh nhân
-            if (!empty($data['patient_id'])) {
-                $patient = Patient::findOrFail($data['patient_id']);
-            } else {
-                // Tạo bệnh nhân mới
-                $patient = Patient::create([
-                    'full_name' => $data['patient_name'],
-                    'phone' => $data['patient_phone'],
-                    'address' => $data['patient_address'] ?? null,
-                    'date_of_birth' => $data['patient_dob'] ?? null,
-                    'gender' => $data['patient_gender'] ?? null,
-                    'citizen_id' => $data['patient_citizen_id'] ?? null,
-                ]);
-            }
-
-            // Tính phí dịch vụ
-            $serviceFee = 0;
-            if (!empty($data['services'])) {
-                foreach ($data['services'] as $serviceItem) {
-                    $serviceFee += ($serviceItem['quantity'] ?? 1) * ($serviceItem['price'] ?? 0);
-                }
-            }
-
-            // Tính phí thuốc
-            $medicineFee = 0;
-            if (!empty($data['medicines'])) {
-                foreach ($data['medicines'] as $medicineItem) {
-                    $medicineFee += ($medicineItem['quantity'] ?? 1) * ($medicineItem['price'] ?? 0);
-                }
-            }
-
-            // Tạo phiếu khám với trạng thái chờ thanh toán
-            $examination = Examination::create([
-                'patient_id' => $patient->id,
-                'services' => $data['services'] ?? null,
-                'medicines' => $data['medicines'] ?? null,
-                'diagnosis' => $data['diagnosis'] ?? null,
-                'symptoms' => $data['symptoms'] ?? null,
-                'treatment_plan' => $data['treatment_plan'] ?? null,
-                'next_appointment' => $data['next_appointment'] ?? null,
-                'service_fee' => $serviceFee,
-                'medicine_fee' => $medicineFee,
-                'examination_date' => $data['examination_date'] ?? today(),
-                'notes' => $data['notes'] ?? null,
-                'status' => 'waiting',
-                'payment_status' => 'pending' // Trạng thái chờ thanh toán
+            $validator = Validator::make($request->all(), [
+                'patient_id' => 'required|exists:patients,id',
+                'examination_date' => 'required|date',
+                'services' => 'nullable|json',
+                'medicines' => 'nullable|json',
+                'diagnosis' => 'nullable|string|max:1000',
+                'symptoms' => 'nullable|string|max:1000',
+                'treatment_plan' => 'nullable|string|max:2000',
+                'next_appointment' => 'nullable|date|after:examination_date',
+                'notes' => 'nullable|string|max:1000'
+            ], [
+                'patient_id.required' => 'Vui lòng chọn bệnh nhân',
+                'patient_id.exists' => 'Bệnh nhân không tồn tại',
+                'examination_date.required' => 'Ngày khám là bắt buộc',
+                'examination_date.date' => 'Ngày khám không hợp lệ',
+                'next_appointment.after' => 'Lịch tái khám phải sau ngày khám hiện tại',
+                'diagnosis.max' => 'Chuẩn đoán không được vượt quá 1000 ký tự',
+                'symptoms.max' => 'Triệu chứng không được vượt quá 1000 ký tự',
+                'treatment_plan.max' => 'Kế hoạch điều trị không được vượt quá 2000 ký tự',
+                'notes.max' => 'Ghi chú không được vượt quá 1000 ký tự'
             ]);
 
-            Log::info('Examination created', [
+            if ($validator->fails()) {
+                return response()->json([
+                    'type' => 'error',
+                    'title' => 'Lỗi validation',
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+
+            DB::beginTransaction();
+
+            // Parse JSON data
+            $services = $request->services ? json_decode($request->services, true) : [];
+            $medicines = $request->medicines ? json_decode($request->medicines, true) : [];
+
+            // Validate and calculate fees
+            $serviceFee = $this->calculateServiceFee($services);
+            $medicineFee = $this->calculateMedicineFee($medicines);
+
+            // Check medicine stock availability
+            $this->validateMedicineStock($medicines);
+
+            // Create examination
+            $examinationData = [
+                'patient_id' => $request->patient_id,
+                'examination_date' => $request->examination_date,
+                'services' => $services,
+                'symptoms' => $request->symptoms,
+                'diagnosis' => $request->diagnosis,
+                'treatment_plan' => $request->treatment_plan,
+                'next_appointment' => $request->next_appointment,
+                'service_fee' => $serviceFee,
+                'medicine_fee' => $medicineFee,
+                'total_fee' => $serviceFee + $medicineFee,
+                'status' => 'completed',
+                'payment_status' => 'pending',
+                'notes' => $request->notes
+            ];
+
+            $examination = Examination::create($examinationData);
+
+            // Create medicine usage records
+            $this->createMedicineUsageRecords($examination->id, $medicines);
+
+            DB::commit();
+
+            Log::info('Examination created successfully', [
                 'examination_id' => $examination->id,
-                'examination_code' => $examination->examination_code,
-                'patient_id' => $patient->id,
+                'patient_id' => $request->patient_id,
                 'total_fee' => $examination->total_fee
             ]);
 
@@ -103,15 +115,15 @@ class ExaminationController extends Controller
                 'type' => 'success',
                 'title' => 'Thành công',
                 'content' => 'Tạo phiếu khám thành công!',
-                'data' => [
-                    'examination_id' => $examination->id,
-                    'examination_code' => $examination->examination_code,
-                    'total_fee' => $examination->total_fee,
-                    'payment_status' => $examination->payment_status
-                ]
+                'examination_id' => $examination->id,
+                'examination_code' => $examination->examination_code
             ]);
         } catch (\Exception $e) {
-            Log::error('Examination creation error: ' . $e->getMessage());
+            DB::rollback();
+            Log::error('Error creating examination', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
 
             return response()->json([
                 'type' => 'error',
@@ -126,80 +138,116 @@ class ExaminationController extends Controller
      */
     public function show(string $id)
     {
-        if ($id == 'get-list') {
-            return $this->getList();
+        switch ($id) {
+            case 'get-list':
+                return $this->getList();
+            case 'get-statistics':
+                return $this->getStatistics();
+            case 'get-patients':
+                return $this->getPatients();
+            case 'get-services':
+                return $this->getServices();
+            case 'get-medicines':
+                return $this->getMedicines();
+            case 'get-data':
+                return $this->getData();
+            default:
+                $examination = Examination::with(['patient'])->findOrFail($id);
+                return response()->json([
+                    'type' => 'success',
+                    'data' => $examination
+                ]);
         }
-
-        if ($id == 'get-statistics') {
-            return $this->getStatistics();
-        }
-
-        $examination = Examination::with('patient')->findOrFail($id);
-        return response()->json([
-            'type' => 'success',
-            'data' => $examination
-        ]);
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(ExaminationRequest $request, string $id)
+    public function update(Request $request, string $id)
     {
         try {
             $examination = Examination::findOrFail($id);
-            $data = $request->validated();
 
-            // Kiểm tra nếu đã thanh toán thì không cho sửa
-            if ($examination->payment_status === 'paid') {
-                return response()->json([
-                    'type' => 'error',
-                    'title' => 'Lỗi',
-                    'content' => 'Không thể sửa phiếu khám đã thanh toán!'
-                ], 400);
-            }
-
-            // Tính lại phí dịch vụ
-            $serviceFee = 0;
-            if (!empty($data['services']) && is_array($data['services'])) {
-                foreach ($data['services'] as $serviceItem) {
-                    $serviceFee += ($serviceItem['quantity'] ?? 1) * ($serviceItem['price'] ?? 0);
-                }
-            }
-
-            // Tính lại phí thuốc
-            $medicineFee = 0;
-            if (!empty($data['medicines']) && is_array($data['medicines'])) {
-                foreach ($data['medicines'] as $medicineItem) {
-                    $medicineFee += ($medicineItem['quantity'] ?? 1) * ($medicineItem['price'] ?? 0);
-                }
-            }
-
-            $examination->update([
-                'services' => !empty($data['services']) ? $data['services'] : null,
-                'medicines' => !empty($data['medicines']) ? $data['medicines'] : null,
-                'diagnosis' => $data['diagnosis'] ?? null,
-                'symptoms' => $data['symptoms'] ?? null,
-                'treatment_plan' => $data['treatment_plan'] ?? null,
-                'next_appointment' => $data['next_appointment'] ?? null,
-                'service_fee' => $serviceFee,
-                'medicine_fee' => $medicineFee,
-                'examination_date' => $data['examination_date'] ?? $examination->examination_date,
-                'notes' => $data['notes'] ?? null,
-                'status' => $data['status'] ?? $examination->status
+            $validator = Validator::make($request->all(), [
+                'patient_id' => 'required|exists:patients,id',
+                'examination_date' => 'required|date',
+                'services' => 'nullable|json',
+                'medicines' => 'nullable|json',
+                'diagnosis' => 'nullable|string|max:1000',
+                'symptoms' => 'nullable|string|max:1000',
+                'treatment_plan' => 'nullable|string|max:2000',
+                'next_appointment' => 'nullable|date|after:examination_date',
+                'payment_status' => 'nullable|in:pending,paid,cancelled',
+                'notes' => 'nullable|string|max:1000'
             ]);
 
-            Log::info('Examination updated', [
+            if ($validator->fails()) {
+                return response()->json([
+                    'type' => 'error',
+                    'title' => 'Lỗi validation',
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+
+            DB::beginTransaction();
+
+            $updateData = [
+                'patient_id' => $request->patient_id,
+                'examination_date' => $request->examination_date,
+                'symptoms' => $request->symptoms,
+                'diagnosis' => $request->diagnosis,
+                'treatment_plan' => $request->treatment_plan,
+                'next_appointment' => $request->next_appointment,
+                'notes' => $request->notes
+            ];
+
+            // Update payment status if provided
+            if ($request->has('payment_status')) {
+                $updateData['payment_status'] = $request->payment_status;
+                if ($request->payment_status === 'paid' && !$examination->payment_date) {
+                    $updateData['payment_date'] = now();
+                }
+            }
+
+            // Handle services update
+            if ($request->has('services')) {
+                $services = json_decode($request->services, true) ?: [];
+                $serviceFee = $this->calculateServiceFee($services);
+                $updateData['services'] = $services;
+                $updateData['service_fee'] = $serviceFee;
+            }
+
+            // Handle medicines update
+            if ($request->has('medicines')) {
+                $medicines = json_decode($request->medicines, true) ?: [];
+
+                // Delete old medicine usage records
+                MedicineUsage::where('examination_id', $examination->id)->delete();
+
+                // Validate new medicines stock
+                $this->validateMedicineStock($medicines);
+
+                // Calculate new medicine fee
+                $medicineFee = $this->calculateMedicineFee($medicines);
+                $updateData['medicine_fee'] = $medicineFee;
+
+                // Create new medicine usage records
+                $this->createMedicineUsageRecords($examination->id, $medicines);
+            }
+
+            // Recalculate total fee if service or medicine fee changed
+            if (isset($updateData['service_fee']) || isset($updateData['medicine_fee'])) {
+                $updateData['total_fee'] = ($updateData['service_fee'] ?? $examination->service_fee) +
+                    ($updateData['medicine_fee'] ?? $examination->medicine_fee);
+            }
+
+            $examination->update($updateData);
+
+            DB::commit();
+
+            Log::info('Examination updated successfully', [
                 'examination_id' => $examination->id,
-                'examination_code' => $examination->examination_code
+                'updated_fields' => array_keys($updateData)
             ]);
 
             return response()->json([
@@ -208,7 +256,11 @@ class ExaminationController extends Controller
                 'content' => 'Cập nhật phiếu khám thành công!'
             ]);
         } catch (\Exception $e) {
-            Log::error('Examination update error: ' . $e->getMessage());
+            DB::rollback();
+            Log::error('Error updating examination', [
+                'examination_id' => $id,
+                'error' => $e->getMessage()
+            ]);
 
             return response()->json([
                 'type' => 'error',
@@ -230,21 +282,17 @@ class ExaminationController extends Controller
 
             $examination = Examination::findOrFail($id);
 
-            // Kiểm tra nếu đã thanh toán thì không cho xóa
-            if ($examination->payment_status === 'paid') {
-                return response()->json([
-                    'type' => 'error',
-                    'title' => 'Lỗi',
-                    'content' => 'Không thể xóa phiếu khám đã thanh toán!'
-                ], 400);
-            }
+            DB::beginTransaction();
 
-            Log::info('Examination deleted', [
-                'examination_id' => $examination->id,
-                'examination_code' => $examination->examination_code
-            ]);
+            // Delete medicine usage records
+            MedicineUsage::where('examination_id', $examination->id)->delete();
 
+            // Delete examination
             $examination->delete();
+
+            DB::commit();
+
+            Log::info('Examination deleted successfully', ['examination_id' => $id]);
 
             return response()->json([
                 'type' => 'success',
@@ -252,86 +300,8 @@ class ExaminationController extends Controller
                 'content' => 'Xóa phiếu khám thành công!'
             ]);
         } catch (\Exception $e) {
-            Log::error('Examination deletion error: ' . $e->getMessage());
-
-            return response()->json([
-                'type' => 'error',
-                'title' => 'Lỗi',
-                'content' => 'Có lỗi xảy ra: ' . $e->getMessage()
-            ], 500);
-        }
-    }
-
-    /**
-     * Generate QR code for payment using VietQR API
-     */
-    public function generatePaymentQR($id)
-    {
-        try {
-            $examination = Examination::with('patient')->findOrFail($id);
-
-            if ($examination->payment_status === 'paid') {
-                return response()->json([
-                    'type' => 'error',
-                    'title' => 'Lỗi',
-                    'content' => 'Phiếu khám đã được thanh toán!'
-                ], 400);
-            }
-
-            // Kiểm tra cấu hình VietQR
-            if (!$this->vietQRService->isConfigured()) {
-                throw new \Exception('VietQR chưa được cấu hình. Vui lòng kiểm tra file .env');
-            }
-
-            // FIX: Tạo content cố định và sạch cho VietQR
-            $originalContent = 'TT ' . $examination->examination_code;
-
-            // Gọi VietQR Service để tạo QR code
-            $qrData = $this->vietQRService->generateQRCode(
-                $examination->examination_code,
-                $examination->total_fee,
-                $originalContent
-            );
-
-            if (!$qrData) {
-                throw new \Exception('Không thể tạo mã QR thanh toán từ VietQR');
-            }
-
-            // FIX: Lưu thông tin QR vào database với content thực tế từ VietQR
-            $examination->update([
-                'qr_code' => $qrData['qrCode'] ?? null,
-                'qr_content' => $qrData['content'] ?? $originalContent, // Lưu content thực tế
-                'payment_method' => 'vietqr',
-                'transaction_ref_id' => $qrData['transactionRefId'] ?? null
-            ]);
-
-            Log::info('QR Payment Generated', [
-                'examination_code' => $examination->examination_code,
-                'amount' => $examination->total_fee,
-                'original_content' => $originalContent,
-                'actual_content' => $qrData['content'] ?? null,
-                'transaction_ref_id' => $qrData['transactionRefId'] ?? null
-            ]);
-
-            return response()->json([
-                'type' => 'success',
-                'title' => 'Thành công',
-                'content' => 'Tạo mã QR thanh toán thành công!',
-                'data' => [
-                    'examination_code' => $examination->examination_code,
-                    'qr_code' => $qrData['qrLink'] ?? null, // Link để hiển thị QR
-                    'qr_string' => $qrData['qrCode'], // String để tạo QR image
-                    'amount' => $examination->formatted_total_fee,
-                    'content' => $qrData['content'] ?? $originalContent, // Content thực tế từ VietQR
-                    'bank_name' => $qrData['bankName'] ?? env('VIETQR_BANK_NAME', 'VietQR'),
-                    'account_no' => $qrData['bankAccount'] ?? env('VIETQR_BANK_ACCOUNT'),
-                    'account_name' => $qrData['userBankName'] ?? env('VIETQR_ACCOUNT_NAME'),
-                    'transaction_ref_id' => $qrData['transactionRefId'] ?? null,
-                    'order_id' => $qrData['orderId'] ?? $examination->examination_code
-                ]
-            ]);
-        } catch (\Exception $e) {
-            Log::error('VietQR Generate Error', [
+            DB::rollback();
+            Log::error('Error deleting examination', [
                 'examination_id' => $id,
                 'error' => $e->getMessage()
             ]);
@@ -345,176 +315,126 @@ class ExaminationController extends Controller
     }
 
     /**
-     * Check payment status via VietQR API
-     * FIX: Cải thiện logic check payment với content chính xác
+     * Generate QR code for payment
+     */
+    public function generatePaymentQR($id)
+    {
+        try {
+            $examination = Examination::findOrFail($id);
+
+            if ($examination->payment_status !== 'pending') {
+                return response()->json([
+                    'type' => 'error',
+                    'title' => 'Lỗi',
+                    'content' => 'Phiếu khám này đã được thanh toán hoặc bị hủy!'
+                ], 400);
+            }
+
+            if (!$this->vietqrService->isConfigured()) {
+                return response()->json([
+                    'type' => 'error',
+                    'title' => 'Lỗi cấu hình',
+                    'content' => 'VietQR chưa được cấu hình. Vui lòng liên hệ quản trị viên!'
+                ], 500);
+            }
+
+            $qrData = $this->vietqrService->generateQRCode(
+                $examination->examination_code,
+                $examination->total_fee,
+                'Thanh toan phieu kham ' . $examination->examination_code
+            );
+
+            if ($qrData && isset($qrData['qrDataURL'])) {
+                $examination->update([
+                    'qr_code' => $qrData['qrDataURL'],
+                    'qr_content' => $qrData['content'] ?? ''
+                ]);
+
+                Log::info('QR Code generated successfully', [
+                    'examination_id' => $examination->id,
+                    'examination_code' => $examination->examination_code
+                ]);
+
+                return response()->json([
+                    'type' => 'success',
+                    'title' => 'Thành công',
+                    'content' => 'Tạo mã QR thành công!',
+                    'qr_code' => $qrData['qrDataURL'],
+                    'amount' => number_format($examination->total_fee, 0, '.', '.') . ' VNĐ'
+                ]);
+            } else {
+                Log::error('Failed to generate QR code', [
+                    'examination_id' => $examination->id,
+                    'vietqr_response' => $qrData
+                ]);
+
+                return response()->json([
+                    'type' => 'error',
+                    'title' => 'Lỗi',
+                    'content' => 'Không thể tạo mã QR. Vui lòng thử lại sau!'
+                ], 500);
+            }
+        } catch (\Exception $e) {
+            Log::error('Error generating QR code', [
+                'examination_id' => $id,
+                'error' => $e->getMessage()
+            ]);
+
+            return response()->json([
+                'type' => 'error',
+                'title' => 'Lỗi',
+                'content' => 'Có lỗi xảy ra: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Check payment status
      */
     public function checkPaymentStatus($id)
     {
         try {
             $examination = Examination::findOrFail($id);
 
-            // Kiểm tra trong database trước
             if ($examination->payment_status === 'paid') {
                 return response()->json([
                     'type' => 'success',
-                    'data' => [
-                        'payment_status' => 'paid',
-                        'payment_status_name' => 'Đã thanh toán',
-                        'payment_date' => $examination->payment_date,
-                        'transaction_id' => $examination->transaction_id,
-                        'is_paid' => true
-                    ]
+                    'title' => 'Thông báo',
+                    'content' => 'Phiếu khám này đã được thanh toán!',
+                    'status' => 'paid'
                 ]);
             }
 
-            // FIX: Gọi API VietQR để check transaction status với content chính xác
-            $transactionData = $this->vietQRService->checkTransactionStatus($examination->examination_code);
-            // dd($transactionData); // Debugging line, remove in production
-            if ($transactionData && is_array($transactionData) && count($transactionData) > 0) {
-                // Lấy giao dịch đầu tiên trong mảng
-                $transaction = $transactionData[count($transactionData) - 1];
+            $result = $this->vietqrService->checkTransactionStatus($examination->examination_code);
 
-                // Kiểm tra xem giao dịch đã được thanh toán chưa
-                if (isset($transaction['timePaid']) && !empty($transaction['timePaid'])) {
-                    // Kiểm tra amount và content
-                    $amount = (int) ($transaction['amount'] ?? 0);
-                    $content = $transaction['content'] ?? '';
-
-                    // So sánh với examination_code
-                    if (
-                        $amount >= $examination->total_fee &&
-                        strpos($content, $examination->examination_code) !== false
-                    ) {
-                        // Cập nhật trạng thái thanh toán
-                        $examination->update([
-                            'payment_status' => 'paid',
-                            'payment_date' => now(),
-                            'status' => 'completed',
-                            'transaction_id' => $transaction['referenceNumber'] ?? ('CHK_' . time())
-                        ]);
-
-                        Log::info('Payment Status Updated via API Check', [
-                            'examination_code' => $examination->examination_code,
-                            'actual_content' => $content,
-                            'amount_received' => $amount,
-                            'amount_required' => $examination->total_fee,
-                            'time_paid' => $transaction['timePaid'],
-                            'time_paid_formatted' => date('Y-m-d H:i:s', $transaction['timePaid']),
-                            'transaction_data' => $transaction
-                        ]);
-
-                        return response()->json([
-                            'type' => 'success',
-                            'data' => [
-                                'payment_status' => 'paid',
-                                'payment_status_name' => 'Đã thanh toán',
-                                'payment_date' => $examination->payment_date,
-                                'transaction_id' => $examination->transaction_id,
-                                'is_paid' => true,
-                                'paid_time' => $transaction['timePaid'],
-                                'paid_amount' => $amount
-                            ]
-                        ]);
-                    } else {
-                        Log::info('Payment check failed - conditions not met', [
-                            'examination_code' => $examination->examination_code,
-                            'content_check' => strpos($content, $examination->examination_code) !== false ? 'PASS' : 'FAIL',
-                            'amount_check' => $amount >= $examination->total_fee ? 'PASS' : 'FAIL',
-                            'actual_content' => $content,
-                            'amount_received' => $amount,
-                            'amount_required' => $examination->total_fee
-                        ]);
-                    }
-                } else {
-                    Log::info('Transaction not paid yet', [
-                        'examination_code' => $examination->examination_code,
-                        'timePaid' => $transaction['timePaid'] ?? 'null',
-                        'transaction_status' => $transaction['status'] ?? 'unknown'
-                    ]);
-                }
-            }
-
-            // Chưa có giao dịch thành công
-            return response()->json([
-                'type' => 'success',
-                'data' => [
-                    'payment_status' => 'pending',
-                    'payment_status_name' => 'Chờ thanh toán',
-                    'payment_date' => null,
-                    'transaction_id' => null,
-                    'is_paid' => false
-                ]
-            ]);
-        } catch (\Exception $e) {
-            Log::error('Check Payment Status Error', [
-                'examination_id' => $id,
-                'error' => $e->getMessage()
-            ]);
-
-            return response()->json([
-                'type' => 'error',
-                'title' => 'Lỗi',
-                'content' => 'Có lỗi xảy ra khi kiểm tra trạng thái thanh toán: ' . $e->getMessage()
-            ], 500);
-        }
-    }
-
-    /**
-     * Test payment callback (Development/Testing only)
-     */
-    public function testPaymentCallback($id)
-    {
-        try {
-            // Chỉ cho phép trong môi trường development
-            if (!app()->environment(['local', 'testing'])) {
-                return response()->json([
-                    'type' => 'error',
-                    'title' => 'Lỗi',
-                    'content' => 'Chức năng test payment chỉ khả dụng trong môi trường development!'
-                ], 403);
-            }
-
-            $examination = Examination::findOrFail($id);
-
-            if ($examination->payment_status === 'paid') {
-                return response()->json([
-                    'type' => 'error',
-                    'title' => 'Lỗi',
-                    'content' => 'Phiếu khám đã được thanh toán!'
-                ], 400);
-            }
-
-            // Gọi VietQR Service test payment
-            $result = $this->vietQRService->testPayment(
-                $examination->examination_code,
-                $examination->total_fee,
-                $examination->examination_code
-            );
-
-            if ($result && isset($result['status']) && $result['status'] === 'SUCCESS') {
-                // Cập nhật trạng thái thanh toán
+            if ($result && isset($result['success']) && $result['success']) {
                 $examination->update([
                     'payment_status' => 'paid',
                     'payment_date' => now(),
-                    'status' => 'completed',
-                    'transaction_id' => $result['message'] ?? 'TEST_' . time()
+                    'transaction_id' => $result['transactionId'] ?? null
                 ]);
 
-                Log::info('Test Payment Success', [
-                    'examination_code' => $examination->examination_code,
-                    'result' => $result
+                Log::info('Payment confirmed', [
+                    'examination_id' => $examination->id,
+                    'transaction_id' => $result['transactionId'] ?? null
                 ]);
 
                 return response()->json([
                     'type' => 'success',
                     'title' => 'Thành công',
-                    'content' => 'Test thanh toán thành công!'
+                    'content' => 'Thanh toán thành công!',
+                    'status' => 'paid'
+                ]);
+            } else {
+                return response()->json([
+                    'type' => 'info',
+                    'title' => 'Thông báo',
+                    'content' => 'Chưa có giao dịch thanh toán nào!',
+                    'status' => 'pending'
                 ]);
             }
-
-            throw new \Exception('Test payment không thành công: ' . ($result['message'] ?? 'Unknown error'));
         } catch (\Exception $e) {
-            Log::error('Test Payment Error', [
+            Log::error('Error checking payment status', [
                 'examination_id' => $id,
                 'error' => $e->getMessage()
             ]);
@@ -528,21 +448,71 @@ class ExaminationController extends Controller
     }
 
     /**
-     * Get list for DataTable
+     * Test callback simulation for development
+     */
+    public function testCallbackSimulation($id)
+    {
+        try {
+            $examination = Examination::findOrFail($id);
+
+            if ($examination->payment_status !== 'pending') {
+                return response()->json([
+                    'type' => 'error',
+                    'title' => 'Lỗi',
+                    'content' => 'Phiếu khám này đã được thanh toán hoặc bị hủy!'
+                ], 400);
+            }
+
+            $result = $this->vietqrService->triggerTestCallback(
+                $examination->examination_code,
+                $examination->total_fee,
+                $examination->qr_content
+            );
+
+            if ($result && isset($result['status']) && $result['status'] === 'SUCCESS') {
+                return response()->json([
+                    'type' => 'success',
+                    'title' => 'Thành công',
+                    'content' => 'Đã gửi test callback thành công! Vui lòng chờ xử lý...'
+                ]);
+            } else {
+                return response()->json([
+                    'type' => 'error',
+                    'title' => 'Lỗi',
+                    'content' => 'Không thể gửi test callback: ' . ($result['message'] ?? 'Unknown error')
+                ], 500);
+            }
+        } catch (\Exception $e) {
+            Log::error('Error in test callback simulation', [
+                'examination_id' => $id,
+                'error' => $e->getMessage()
+            ]);
+
+            return response()->json([
+                'type' => 'error',
+                'title' => 'Lỗi',
+                'content' => 'Có lỗi xảy ra: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    // ================== PRIVATE METHODS ==================
+
+    /**
+     * Get examination list for DataTable
      */
     private function getList()
     {
-        $query = Examination::with('patient')
+        $query = Examination::with(['patient'])
             ->select([
                 'id',
                 'examination_code',
                 'patient_id',
+                'examination_date',
                 'diagnosis',
                 'total_fee',
                 'payment_status',
                 'status',
-                'examination_date',
-                'next_appointment',
                 'created_at'
             ]);
 
@@ -560,17 +530,15 @@ class ExaminationController extends Controller
             });
         }
 
-        // Apply status filter
+        // Apply filters
         if (request()->has('status_filter') && !empty(request()->status_filter)) {
             $query->where('status', request()->status_filter);
         }
 
-        // Apply payment status filter
         if (request()->has('payment_filter') && !empty(request()->payment_filter)) {
             $query->where('payment_status', request()->payment_filter);
         }
 
-        // Apply date filter
         if (request()->has('date_filter') && !empty(request()->date_filter)) {
             $dateFilter = request()->date_filter;
             switch ($dateFilter) {
@@ -593,7 +561,6 @@ class ExaminationController extends Controller
             ->addColumn('patient_info', function ($examination) {
                 return [
                     'name' => $examination->patient->full_name ?? 'N/A',
-                    'code' => $examination->patient->patient_code ?? 'N/A',
                     'phone' => $examination->patient->phone ?? 'N/A'
                 ];
             })
@@ -616,11 +583,11 @@ class ExaminationController extends Controller
                 $class = $paymentClasses[$examination->payment_status] ?? 'badge-light-secondary';
                 return '<span class="badge ' . $class . '">' . $examination->payment_status_name . '</span>';
             })
-            ->addColumn('formatted_examination_date', function ($examination) {
-                return $examination->examination_date->format('d/m/Y');
+            ->addColumn('formatted_total_fee', function ($examination) {
+                return number_format($examination->total_fee, 0, '.', '.') . ' VNĐ';
             })
-            ->addColumn('formatted_next_appointment', function ($examination) {
-                return $examination->next_appointment ? $examination->next_appointment->format('d/m/Y') : '-';
+            ->addColumn('formatted_examination_date', function ($examination) {
+                return $examination->examination_date ? $examination->examination_date->format('d/m/Y') : '';
             })
             ->rawColumns(['status_badge', 'payment_badge'])
             ->make(true);
@@ -634,37 +601,179 @@ class ExaminationController extends Controller
         try {
             $total = Examination::count();
             $today = Examination::whereDate('examination_date', today())->count();
-            $pending = Examination::where('payment_status', 'pending')->count();
-            $completed = Examination::where('status', 'completed')->count();
-
-            $todayRevenue = Examination::whereDate('examination_date', today())
-                ->where('payment_status', 'paid')
-                ->sum('total_fee');
-
-            $monthRevenue = Examination::whereMonth('examination_date', now()->month)
+            $thisMonth = Examination::whereMonth('examination_date', now()->month)
                 ->whereYear('examination_date', now()->year)
-                ->where('payment_status', 'paid')
+                ->count();
+
+            $totalRevenue = Examination::where('payment_status', 'paid')->sum('total_fee');
+            $monthRevenue = Examination::where('payment_status', 'paid')
+                ->whereMonth('examination_date', now()->month)
+                ->whereYear('examination_date', now()->year)
                 ->sum('total_fee');
+
+            $pending = Examination::where('payment_status', 'pending')->count();
+            $paid = Examination::where('payment_status', 'paid')->count();
 
             return response()->json([
                 'total' => $total,
                 'today' => $today,
-                'pending' => $pending,
-                'completed' => $completed,
-                'today_revenue' => number_format($todayRevenue, 0, '.', '.') . ' VNĐ',
-                'month_revenue' => number_format($monthRevenue, 0, '.', '.') . ' VNĐ'
+                'this_month' => $thisMonth,
+                'total_revenue' => number_format($totalRevenue, 0, '.', '.') . ' VNĐ',
+                'month_revenue' => number_format($monthRevenue, 0, '.', '.') . ' VNĐ',
+                'pending_payment' => $pending,
+                'paid' => $paid
             ]);
         } catch (\Exception $e) {
-            Log::error('Statistics error: ' . $e->getMessage());
-
+            Log::error('Error loading statistics', ['error' => $e->getMessage()]);
             return response()->json([
                 'total' => 0,
                 'today' => 0,
-                'pending' => 0,
-                'completed' => 0,
-                'today_revenue' => '0 VNĐ',
-                'month_revenue' => '0 VNĐ'
+                'this_month' => 0,
+                'total_revenue' => '0 VNĐ',
+                'month_revenue' => '0 VNĐ',
+                'pending_payment' => 0,
+                'paid' => 0
             ]);
+        }
+    }
+
+    /**
+     * Get patients for selection
+     */
+    private function getPatients()
+    {
+        $search = request()->get('search', '');
+
+        $patients = Patient::where('is_active', true)
+            ->where(function ($query) use ($search) {
+                if (!empty($search)) {
+                    $query->where('full_name', 'like', "%{$search}%")
+                        ->orWhere('phone', 'like', "%{$search}%")
+                        ->orWhere('patient_code', 'like', "%{$search}%");
+                }
+            })
+            ->limit(20)
+            ->get(['id', 'patient_code', 'full_name', 'phone', 'address', 'date_of_birth']);
+
+        return response()->json($patients);
+    }
+
+    /**
+     * Get services for selection
+     */
+    private function getServices()
+    {
+        $services = Service::where('is_active', true)
+            ->select('id', 'name', 'type', 'price')
+            ->orderBy('name')
+            ->get();
+
+        return response()->json($services);
+    }
+
+    /**
+     * Get medicines for selection
+     */
+    private function getMedicines()
+    {
+        $medicines = Medicine::where('is_active', true)
+            ->select('id', 'name', 'type', 'sale_price')
+            ->get()
+            ->map(function ($medicine) {
+                return [
+                    'id' => $medicine->id,
+                    'name' => $medicine->name,
+                    'type' => $medicine->type,
+                    'type_name' => $medicine->type_name,
+                    'sale_price' => $medicine->sale_price,
+                    'current_stock' => $medicine->current_stock,
+                    'formatted_price' => number_format($medicine->sale_price, 0, '.', '.') . ' VNĐ'
+                ];
+            });
+
+        return response()->json($medicines);
+    }
+
+    /**
+     * Get examination data for editing
+     */
+    private function getData()
+    {
+        try {
+            $id = request()->get('id');
+            $examination = Examination::with(['patient', 'medicineUsages.medicine'])->findOrFail($id);
+
+            // Prepare services data
+            $services = [];
+            if ($examination->services) {
+                foreach ($examination->services as $serviceData) {
+                    $service = Service::find($serviceData['service_id']);
+                    if ($service) {
+                        $services[] = [
+                            'service_id' => $service->id,
+                            'name' => $service->name,
+                            'quantity' => $serviceData['quantity'],
+                            'price' => $serviceData['price']
+                        ];
+                    }
+                }
+            }
+
+            // Prepare medicines data from usage
+            $medicines = [];
+            foreach ($examination->medicineUsages as $usage) {
+                $medicines[] = [
+                    'medicine_id' => $usage->medicine_id,
+                    'name' => $usage->medicine->name,
+                    'quantity' => $usage->quantity_used,
+                    'price' => $usage->unit_price,
+                    'dosage' => $usage->dosage,
+                    'note' => $usage->usage_note,
+                    'current_stock' => $usage->medicine->current_stock
+                ];
+            }
+
+            $data = [
+                'id' => $examination->id,
+                'examination_code' => $examination->examination_code,
+                'patient_id' => $examination->patient_id,
+                'patient' => [
+                    'id' => $examination->patient->id,
+                    'full_name' => $examination->patient->full_name,
+                    'phone' => $examination->patient->phone,
+                    'patient_code' => $examination->patient->patient_code
+                ],
+                'examination_date' => $examination->examination_date->format('Y-m-d'),
+                'services' => $services,
+                'medicines' => $medicines,
+                'diagnosis' => $examination->diagnosis,
+                'symptoms' => $examination->symptoms,
+                'treatment_plan' => $examination->treatment_plan,
+                'next_appointment' => $examination->next_appointment ? $examination->next_appointment->format('Y-m-d') : null,
+                'service_fee' => $examination->service_fee,
+                'medicine_fee' => $examination->medicine_fee,
+                'total_fee' => $examination->total_fee,
+                'payment_status' => $examination->payment_status,
+                'status' => $examination->status,
+                'notes' => $examination->notes,
+                'qr_code' => $examination->qr_code,
+                'has_qr' => !empty($examination->qr_code)
+            ];
+
+            return response()->json([
+                'type' => 'success',
+                'data' => $data
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error getting examination data', [
+                'examination_id' => request()->get('id'),
+                'error' => $e->getMessage()
+            ]);
+
+            return response()->json([
+                'type' => 'error',
+                'message' => 'Có lỗi xảy ra: ' . $e->getMessage()
+            ], 500);
         }
     }
 
@@ -684,24 +793,19 @@ class ExaminationController extends Controller
                 ], 400);
             }
 
-            // Kiểm tra phiếu đã thanh toán
-            $paidCount = Examination::whereIn('id', $ids)
-                ->where('payment_status', 'paid')
-                ->count();
+            DB::beginTransaction();
 
-            if ($paidCount > 0) {
-                return response()->json([
-                    'type' => 'error',
-                    'title' => 'Lỗi',
-                    'content' => 'Có ' . $paidCount . ' phiếu khám đã thanh toán, không thể xóa!'
-                ], 400);
-            }
+            // Delete medicine usage records
+            MedicineUsage::whereIn('examination_id', $ids)->delete();
 
+            // Delete examinations
             $deletedCount = Examination::whereIn('id', $ids)->delete();
 
-            Log::info('Bulk examinations deleted', [
+            DB::commit();
+
+            Log::info('Bulk delete examinations', [
                 'deleted_count' => $deletedCount,
-                'ids' => $ids
+                'examination_ids' => $ids
             ]);
 
             return response()->json([
@@ -710,7 +814,11 @@ class ExaminationController extends Controller
                 'content' => "Đã xóa {$deletedCount} phiếu khám thành công!"
             ]);
         } catch (\Exception $e) {
-            Log::error('Bulk deletion error: ' . $e->getMessage());
+            DB::rollback();
+            Log::error('Error bulk deleting examinations', [
+                'examination_ids' => request()->input('ids', []),
+                'error' => $e->getMessage()
+            ]);
 
             return response()->json([
                 'type' => 'error',
@@ -719,317 +827,354 @@ class ExaminationController extends Controller
             ], 500);
         }
     }
-    public function testCallbackSimulation($id)
+
+    /**
+     * Calculate service fee from services array
+     */
+    private function calculateServiceFee(array $services): int
     {
-        try {
-            $examination = Examination::findOrFail($id);
+        $totalFee = 0;
 
-            if ($examination->payment_status === 'paid') {
-                return response()->json([
-                    'type' => 'error',
-                    'message' => 'Examination already paid'
-                ]);
+        foreach ($services as $serviceData) {
+            if (!isset($serviceData['service_id'], $serviceData['quantity'], $serviceData['price'])) {
+                continue;
             }
 
-            // STEP 1: Lấy token từ API Generate Token trước
-            $tokenResponse = $this->getVietQRToken();
-
-            if (!$tokenResponse || !isset($tokenResponse['access_token'])) {
-                throw new \Exception('Không thể lấy token từ VietQR API');
+            // Validate service exists and price matches
+            $service = Service::find($serviceData['service_id']);
+            if (!$service || !$service->is_active) {
+                throw new \Exception("Dịch vụ ID {$serviceData['service_id']} không tồn tại hoặc không hoạt động");
             }
 
-            $token = $tokenResponse['access_token'];
-
-            // STEP 2: Tạo callback data theo đúng format VietQR
-            $callbackData = [
-                'bankaccount' => env('VIETQR_BANK_ACCOUNT'),
-                'amount' => (string) $examination->total_fee, // String theo doc
-                'transType' => 'C', // Credit transaction
-                'content' => $examination->qr_content ?: ('TT ' . $examination->examination_code)
-            ];
-
-            Log::info('Simulating VietQR Callback', [
-                'examination_code' => $examination->examination_code,
-                'callback_data' => $callbackData,
-                'token_length' => strlen($token)
-            ]);
-            // STEP 3: Gửi POST request với Bearer Token đến transaction-sync endpoint
-            $response = \Illuminate\Support\Facades\Http::withHeaders([
-                'Authorization' => 'Bearer ' . $token,
-                'Content-Type' => 'application/json'
-            ])->post(
-                url('/bank/api/transaction-sync'), // Sử dụng endpoint đúng
-                $callbackData
-            );
-            // dd($response->body());
-
-            Log::info('Callback Simulation Response', [
-                'status' => $response->status(),
-                'body' => $response->body(),
-                'headers' => $response->headers()
-            ]);
-
-            if ($response->successful()) {
-                $responseData = $response->json();
-
-                return response()->json([
-                    'type' => 'success',
-                    'title' => 'Thành công',
-                    'content' => 'Test callback thành công!',
-                    'response' => $responseData
-                ]);
+            // Allow some flexibility in price (for discounts, etc.)
+            if ($serviceData['price'] < 0) {
+                throw new \Exception("Giá dịch vụ không được âm");
             }
 
-            return response()->json([
-                'type' => 'error',
-                'title' => 'Lỗi',
-                'content' => 'Test callback thất bại: ' . $response->body(),
-                'status_code' => $response->status()
-            ]);
-        } catch (\Exception $e) {
-            Log::error('Test Callback Simulation Error', [
-                'examination_id' => $id,
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+            $quantity = max(1, intval($serviceData['quantity']));
+            $price = floatval($serviceData['price']);
+            $totalFee += $quantity * $price;
+        }
+
+        return $totalFee;
+    }
+
+    /**
+     * Calculate medicine fee from medicines array
+     */
+    private function calculateMedicineFee(array $medicines): int
+    {
+        $totalFee = 0;
+
+        foreach ($medicines as $medicineData) {
+            if (!isset($medicineData['medicine_id'], $medicineData['quantity'])) {
+                continue;
+            }
+
+            $medicine = Medicine::find($medicineData['medicine_id']);
+            if (!$medicine || !$medicine->is_active) {
+                throw new \Exception("Thuốc ID {$medicineData['medicine_id']} không tồn tại hoặc không hoạt động");
+            }
+
+            $quantity = max(1, intval($medicineData['quantity']));
+            $totalFee += $quantity * $medicine->sale_price;
+        }
+
+        return $totalFee;
+    }
+
+    /**
+     * Validate medicine stock availability
+     */
+    private function validateMedicineStock(array $medicines): void
+    {
+        foreach ($medicines as $medicineData) {
+            if (!isset($medicineData['medicine_id'], $medicineData['quantity'])) {
+                continue;
+            }
+
+            $medicine = Medicine::find($medicineData['medicine_id']);
+            if (!$medicine) {
+                throw new \Exception("Thuốc ID {$medicineData['medicine_id']} không tồn tại");
+            }
+
+            $requestedQuantity = intval($medicineData['quantity']);
+            $currentStock = $medicine->current_stock;
+
+            if ($currentStock < $requestedQuantity) {
+                throw new \Exception(
+                    "Thuốc '{$medicine->name}' không đủ số lượng trong kho. " .
+                        "Còn lại: {$currentStock}, yêu cầu: {$requestedQuantity}"
+                );
+            }
+
+            if ($requestedQuantity <= 0) {
+                throw new \Exception("Số lượng thuốc '{$medicine->name}' phải lớn hơn 0");
+            }
+        }
+    }
+
+    /**
+     * Create medicine usage records
+     */
+    private function createMedicineUsageRecords(int $examinationId, array $medicines): void
+    {
+        foreach ($medicines as $medicineData) {
+            if (!isset($medicineData['medicine_id'], $medicineData['quantity'])) {
+                continue;
+            }
+
+            $medicine = Medicine::find($medicineData['medicine_id']);
+            if (!$medicine) {
+                continue; // Skip if medicine not found (should be caught in validation)
+            }
+
+            $quantity = intval($medicineData['quantity']);
+            if ($quantity <= 0) {
+                continue;
+            }
+
+            MedicineUsage::create([
+                'examination_id' => $examinationId,
+                'medicine_id' => $medicine->id,
+                'quantity_used' => $quantity,
+                'unit_price' => $medicine->sale_price,
+                'dosage' => $medicineData['dosage'] ?? '',
+                'usage_note' => $medicineData['note'] ?? ''
             ]);
 
-            return response()->json([
-                'type' => 'error',
-                'title' => 'Lỗi',
-                'content' => 'Có lỗi xảy ra: ' . $e->getMessage()
+            Log::info('Medicine usage recorded', [
+                'examination_id' => $examinationId,
+                'medicine_id' => $medicine->id,
+                'medicine_name' => $medicine->name,
+                'quantity_used' => $quantity,
+                'unit_price' => $medicine->sale_price
             ]);
         }
     }
 
     /**
-     * Lấy token từ VietQR Generate Token API
+     * Test VietQR with real data (for development/testing)
      */
-    private function getVietQRToken()
-    {
-        try {
-            $username = env('VIETQR_WEBHOOK_USERNAME');
-            $password = env('VIETQR_WEBHOOK_PASSWORD');
-
-            if (!$username || !$password) {
-                throw new \Exception('VietQR credentials not configured');
-            }
-
-            // Tạo Basic Auth header
-            $credentials = base64_encode($username . ':' . $password);
-
-            Log::info('Getting VietQR Token', [
-                'username' => $username,
-                'credentials_length' => strlen($credentials)
-            ]);
-
-            // Gọi API Generate Token của VietQR (endpoint của chúng ta)
-            $response = \Illuminate\Support\Facades\Http::withHeaders([
-                'Authorization' => 'Basic ' . $credentials,
-                'Content-Type' => 'application/json'
-            ])->post(url('api/token_generate')); // Endpoint generate token của chúng ta
-
-            Log::info('VietQR Token Response', [
-                'status' => $response->status(),
-                'body' => $response->body()
-            ]);
-
-            if ($response->successful()) {
-                return $response->json();
-            }
-
-            throw new \Exception('Token generation failed: ' . $response->body());
-        } catch (\Exception $e) {
-            Log::error('Get VietQR Token Error', [
-                'error' => $e->getMessage()
-            ]);
-            return null;
-        }
-    }
-
-    /**
-     * Test VietQR API Test Callback - gọi API của VietQR để trigger callback
-     */
-    public function triggerVietQRTestCallback($id)
-    {
-        try {
-            $examination = Examination::findOrFail($id);
-
-            if ($examination->payment_status === 'paid') {
-                return response()->json([
-                    'type' => 'error',
-                    'message' => 'Examination already paid'
-                ]);
-            }
-
-            // Gọi VietQR API Test Callback
-            $result = $this->vietQRService->triggerTestCallback(
-                $examination->examination_code,
-                $examination->total_fee,
-                $examination->qr_content
-            );
-
-            if ($result && isset($result['status']) && $result['status'] === 'SUCCESS') {
-                return response()->json([
-                    'type' => 'success',
-                    'title' => 'Thành công',
-                    'content' => 'VietQR Test Callback đã được trigger!',
-                    'message' => 'Hệ thống sẽ nhận callback trong vài giây...'
-                ]);
-            }
-
-            return response()->json([
-                'type' => 'error',
-                'title' => 'Lỗi',
-                'content' => 'Không thể trigger test callback: ' . ($result['message'] ?? 'Unknown error')
-            ]);
-        } catch (\Exception $e) {
-            Log::error('Trigger VietQR Test Callback Error', [
-                'examination_id' => $id,
-                'error' => $e->getMessage()
-            ]);
-
-            return response()->json([
-                'type' => 'error',
-                'title' => 'Lỗi',
-                'content' => 'Có lỗi xảy ra: ' . $e->getMessage()
-            ]);
-        }
-    }
     public function testVietQRWithRealData($id)
     {
         try {
             $examination = Examination::findOrFail($id);
 
-            if ($examination->payment_status === 'paid') {
+            if (!$this->vietqrService->isConfigured()) {
                 return response()->json([
                     'type' => 'error',
-                    'message' => 'Examination already paid'
-                ]);
+                    'title' => 'Lỗi cấu hình',
+                    'content' => 'VietQR chưa được cấu hình đầy đủ'
+                ], 500);
             }
 
-            // Debug configuration trước
-            $config = $this->vietQRService->debugConfiguration();
-
-            if (!$config['is_configured']) {
-                return response()->json([
-                    'type' => 'error',
-                    'title' => 'Cấu hình lỗi',
-                    'content' => 'VietQR chưa được cấu hình đầy đủ: ' . implode(', ', $config['errors']),
-                    'config' => $config
-                ]);
-            }
-
-            Log::info('Testing VietQR with Real Data', [
-                'examination_code' => $examination->examination_code,
-                'total_fee' => $examination->total_fee,
-                'qr_content' => $examination->qr_content,
-                'config' => $config
-            ]);
-
-            // Gọi VietQR Test Callback API
-            $result = $this->vietQRService->triggerTestCallback(
+            $result = $this->vietqrService->testPayment(
                 $examination->examination_code,
                 $examination->total_fee,
                 $examination->qr_content
             );
 
-            if ($result && isset($result['status'])) {
-                if ($result['status'] === 'SUCCESS') {
-                    return response()->json([
-                        'type' => 'success',
-                        'title' => 'Thành công',
-                        'content' => 'VietQR Test API đã được gọi thành công! Callback sẽ được gửi về trong vài giây...',
-                        'result' => $result
-                    ]);
-                } else {
-                    return response()->json([
-                        'type' => 'error',
-                        'title' => 'API Lỗi',
-                        'content' => 'VietQR API trả về lỗi: ' . ($result['message'] ?? 'Unknown error'),
-                        'result' => $result
-                    ]);
-                }
-            }
+            Log::info('VietQR Test Result', [
+                'examination_id' => $examination->id,
+                'examination_code' => $examination->examination_code,
+                'result' => $result
+            ]);
+
+            return response()->json([
+                'type' => 'success',
+                'title' => 'Test VietQR',
+                'content' => 'Đã gửi test request. Kiểm tra log để xem kết quả.',
+                'result' => $result
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error in VietQR test', [
+                'examination_id' => $id,
+                'error' => $e->getMessage()
+            ]);
 
             return response()->json([
                 'type' => 'error',
                 'title' => 'Lỗi',
-                'content' => 'Không thể gọi VietQR Test API',
-                'result' => $result
-            ]);
-        } catch (\Exception $e) {
-            Log::error('Test VietQR with Real Data Error', [
-                'examination_id' => $id,
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-
-            return response()->json([
-                'type' => 'error',
-                'title' => 'Exception',
                 'content' => 'Có lỗi xảy ra: ' . $e->getMessage()
-            ]);
+            ], 500);
         }
     }
 
     /**
-     * Debug VietQR với curl command
+     * Get examination summary for reports
      */
-    public function generateVietQRCurlCommand($id)
+    public function getExaminationSummary(Request $request)
+    {
+        try {
+            $startDate = $request->get('start_date', now()->startOfMonth()->format('Y-m-d'));
+            $endDate = $request->get('end_date', now()->format('Y-m-d'));
+
+            $examinations = Examination::with(['patient'])
+                ->whereBetween('examination_date', [$startDate, $endDate])
+                ->get();
+
+            $summary = [
+                'total_examinations' => $examinations->count(),
+                'total_revenue' => $examinations->where('payment_status', 'paid')->sum('total_fee'),
+                'pending_payment' => $examinations->where('payment_status', 'pending')->sum('total_fee'),
+                'by_status' => [
+                    'completed' => $examinations->where('status', 'completed')->count(),
+                    'cancelled' => $examinations->where('status', 'cancelled')->count(),
+                ],
+                'by_payment' => [
+                    'paid' => $examinations->where('payment_status', 'paid')->count(),
+                    'pending' => $examinations->where('payment_status', 'pending')->count(),
+                    'cancelled' => $examinations->where('payment_status', 'cancelled')->count(),
+                ],
+                'top_diagnoses' => $examinations->whereNotNull('diagnosis')
+                    ->groupBy('diagnosis')
+                    ->map->count()
+                    ->sortDesc()
+                    ->take(10),
+                'daily_stats' => $examinations->groupBy(function ($exam) {
+                    return $exam->examination_date->format('Y-m-d');
+                })->map(function ($dayExams) {
+                    return [
+                        'count' => $dayExams->count(),
+                        'revenue' => $dayExams->where('payment_status', 'paid')->sum('total_fee')
+                    ];
+                })
+            ];
+
+            return response()->json([
+                'type' => 'success',
+                'data' => $summary,
+                'period' => [
+                    'start_date' => $startDate,
+                    'end_date' => $endDate
+                ]
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error getting examination summary', [
+                'error' => $e->getMessage(),
+                'start_date' => $request->get('start_date'),
+                'end_date' => $request->get('end_date')
+            ]);
+
+            return response()->json([
+                'type' => 'error',
+                'message' => 'Có lỗi xảy ra: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Cancel examination
+     */
+    public function cancelExamination($id)
     {
         try {
             $examination = Examination::findOrFail($id);
 
-            // Get token
-            $token = $this->vietQRService->getToken();
-
-            if (!$token) {
+            if ($examination->payment_status === 'paid') {
                 return response()->json([
                     'type' => 'error',
-                    'message' => 'Cannot get VietQR token'
-                ]);
+                    'title' => 'Lỗi',
+                    'content' => 'Không thể hủy phiếu khám đã thanh toán!'
+                ], 400);
             }
 
-            $content = $examination->qr_content ?: ('TT ' . $examination->examination_code);
-            $sanitizedContent = $this->vietQRService->sanitizeContent($content);
+            DB::beginTransaction();
 
-            // Tạo data request thật
-            $requestData = [
-                'bankAccount' => env('VIETQR_BANK_ACCOUNT'),
-                'content' => $sanitizedContent,
-                'amount' => $examination->total_fee,
-                'bankCode' => env('VIETQR_BANK_CODE'),
-                'transType' => 'C'
-            ];
+            // Update examination status
+            $examination->update([
+                'status' => 'cancelled',
+                'payment_status' => 'cancelled'
+            ]);
 
-            // Generate curl command
-            $curlCommand = "curl -X POST \\\n";
-            $curlCommand .= "  'https://dev.vietqr.org/vqr/bank/api/test/transaction-callback' \\\n";
-            $curlCommand .= "  -H 'Content-Type: application/json' \\\n";
-            $curlCommand .= "  -H 'Authorization: Bearer {$token}' \\\n";
-            $curlCommand .= "  -H 'Accept: application/json' \\\n";
-            $curlCommand .= "  -d '" . json_encode($requestData) . "'";
+            // Note: We don't restore medicine stock here because the usage record
+            // serves as an audit trail. If needed, this can be implemented separately.
+
+            DB::commit();
+
+            Log::info('Examination cancelled', [
+                'examination_id' => $examination->id,
+                'examination_code' => $examination->examination_code
+            ]);
 
             return response()->json([
                 'type' => 'success',
-                'examination' => [
-                    'code' => $examination->examination_code,
-                    'total_fee' => $examination->total_fee,
-                    'qr_content' => $examination->qr_content,
-                    'sanitized_content' => $sanitizedContent
-                ],
-                'request_data' => $requestData,
-                'curl_command' => $curlCommand,
-                'token_info' => [
-                    'token_length' => strlen($token),
-                    'token_preview' => substr($token, 0, 50) . '...'
-                ]
+                'title' => 'Thành công',
+                'content' => 'Đã hủy phiếu khám thành công!'
             ]);
         } catch (\Exception $e) {
+            DB::rollback();
+            Log::error('Error cancelling examination', [
+                'examination_id' => $id,
+                'error' => $e->getMessage()
+            ]);
+
             return response()->json([
                 'type' => 'error',
-                'message' => $e->getMessage()
+                'title' => 'Lỗi',
+                'content' => 'Có lỗi xảy ra: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Print examination receipt
+     */
+    public function printReceipt($id)
+    {
+        try {
+            $examination = Examination::with(['patient', 'medicineUsages.medicine'])
+                ->findOrFail($id);
+
+            $services = [];
+            if ($examination->services) {
+                foreach ($examination->services as $serviceData) {
+                    $service = Service::find($serviceData['service_id']);
+                    if ($service) {
+                        $services[] = [
+                            'name' => $service->name,
+                            'quantity' => $serviceData['quantity'],
+                            'price' => $serviceData['price'],
+                            'total' => $serviceData['quantity'] * $serviceData['price']
+                        ];
+                    }
+                }
+            }
+
+            $medicines = $examination->medicineUsages->map(function ($usage) {
+                return [
+                    'name' => $usage->medicine->name,
+                    'quantity' => $usage->quantity_used,
+                    'price' => $usage->unit_price,
+                    'total' => $usage->total_price,
+                    'dosage' => $usage->dosage,
+                    'note' => $usage->usage_note
+                ];
+            });
+
+            $receiptData = [
+                'examination' => $examination,
+                'patient' => $examination->patient,
+                'services' => $services,
+                'medicines' => $medicines,
+                'print_date' => now()->format('d/m/Y H:i:s')
+            ];
+
+            return response()->json([
+                'type' => 'success',
+                'data' => $receiptData
             ]);
+        } catch (\Exception $e) {
+            Log::error('Error generating receipt', [
+                'examination_id' => $id,
+                'error' => $e->getMessage()
+            ]);
+
+            return response()->json([
+                'type' => 'error',
+                'message' => 'Có lỗi xảy ra: ' . $e->getMessage()
+            ], 500);
         }
     }
 }

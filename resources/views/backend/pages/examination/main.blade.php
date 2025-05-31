@@ -41,7 +41,7 @@
                                             fill="black" />
                                     </svg>
                                 </span>
-                                <input type="text" data-kt-examinations-table-filter="search"
+                                <input type="text" data-kt-examination-table-filter="search"
                                     class="form-control form-control-solid w-250px ps-15 search_table"
                                     placeholder="Tìm kiếm phiếu khám..." />
                             </div>
@@ -49,7 +49,15 @@
 
                         <div class="card-toolbar">
                             <div class="d-flex justify-content-end align-items-center"
-                                data-kt-examinations-table-toolbar="base">
+                                data-kt-examination-table-toolbar="base">
+                                <!-- Date Filter -->
+                                <select class="form-select form-select-solid w-150px me-3 search_table" data-filter="date">
+                                    <option value="">Tất cả thời gian</option>
+                                    <option value="today">Hôm nay</option>
+                                    <option value="week">Tuần này</option>
+                                    <option value="month">Tháng này</option>
+                                </select>
+
                                 <!-- Status Filter -->
                                 <select class="form-select form-select-solid w-150px me-3 search_table"
                                     data-filter="status">
@@ -67,14 +75,6 @@
                                     <option value="pending">Chờ thanh toán</option>
                                     <option value="paid">Đã thanh toán</option>
                                     <option value="cancelled">Đã hủy</option>
-                                </select>
-
-                                <!-- Date Filter -->
-                                <select class="form-select form-select-solid w-150px me-3 search_table" data-filter="date">
-                                    <option value="">Tất cả thời gian</option>
-                                    <option value="today">Hôm nay</option>
-                                    <option value="week">Tuần này</option>
-                                    <option value="month">Tháng này</option>
                                 </select>
 
                                 <!-- Export Button -->
@@ -96,7 +96,7 @@
 
                                 <!-- Add Examination Button -->
                                 <button type="button" class="btn btn-primary btn-add" data-bs-toggle="modal"
-                                    data-bs-target="#kt_modal_add_examination">
+                                    data-bs-target="#kt_modal_examination">
                                     <span class="svg-icon svg-icon-2">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
                                             viewBox="0 0 24 24" fill="none">
@@ -112,13 +112,13 @@
 
                             <!-- Bulk Actions (Hidden by default) -->
                             <div class="d-flex justify-content-end align-items-center d-none"
-                                data-kt-examinations-table-toolbar="selected">
+                                data-kt-examination-table-toolbar="selected">
                                 <div class="fw-bolder me-5">
-                                    <span class="me-2" data-kt-examinations-table-select="selected_count"></span>
+                                    <span class="me-2" data-kt-examination-table-select="selected_count"></span>
                                     đã chọn
                                 </div>
                                 <button type="button" class="btn btn-danger"
-                                    data-kt-examinations-table-select="delete_selected">
+                                    data-kt-examination-table-select="delete_selected">
                                     Xóa các mục đã chọn
                                 </button>
                             </div>
@@ -126,22 +126,21 @@
                     </div>
 
                     <div class="card-body pt-0">
-                        <table class="table align-middle table-row-dashed fs-6 gy-5" id="kt_examinations_table">
+                        <table class="table align-middle table-row-dashed fs-6 gy-5" id="kt_examination_table">
                             <thead>
                                 <tr class="text-start text-gray-400 fw-bolder fs-7 text-uppercase gs-0">
                                     <th class="w-10px pe-2">
                                         <div class="form-check form-check-sm form-check-custom form-check-solid me-3">
                                             <input class="form-check-input" type="checkbox" data-kt-check="true"
-                                                data-kt-check-target="#kt_examinations_table .form-check-input"
+                                                data-kt-check-target="#kt_examination_table .form-check-input"
                                                 value="1" />
                                         </div>
                                     </th>
                                     <th class="min-w-125px">Mã phiếu khám</th>
                                     <th class="min-w-200px">Thông tin bệnh nhân</th>
+                                    <th class="min-w-100px">Ngày khám</th>
                                     <th class="min-w-150px">Chuẩn đoán</th>
                                     <th class="min-w-100px">Tổng tiền</th>
-                                    <th class="min-w-100px">Ngày khám</th>
-                                    <th class="min-w-100px">Tái khám</th>
                                     <th class="min-w-100px">Trạng thái</th>
                                     <th class="min-w-100px">Thanh toán</th>
                                     <th class="text-end min-w-100px">Thao tác</th>
@@ -166,10 +165,12 @@
 
 @push('jscustom')
     <script src="assets/plugins/custom/datatables/datatables.bundle.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     @include('backend.pages.examination.js')
 @endpush
 
 @push('csscustom')
+    {{-- <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" /> --}}
     <style>
         /* Custom styles for examination management */
         .container {
@@ -177,10 +178,16 @@
             margin: 0 auto;
         }
 
+        .examination-info {
+            display: flex;
+            flex-direction: column;
+        }
+
         .examination-code {
             font-weight: 600;
             color: #3F4254;
             font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
         }
 
         .patient-info {
@@ -192,16 +199,6 @@
             font-weight: 600;
             color: #181C32;
             line-height: 1.4;
-        }
-
-        .patient-code {
-            color: #7E8299;
-            font-size: 12px;
-            background-color: #F1F1F2;
-            padding: 2px 6px;
-            border-radius: 4px;
-            display: inline-block;
-            margin-top: 2px;
         }
 
         .patient-phone {
@@ -224,38 +221,121 @@
             font-size: 14px;
         }
 
-        .qr-code-container {
+        /* Dynamic sections in modal */
+        .dynamic-section {
+            border: 2px dashed #e4e6ef;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            background-color: #f8f9fa;
+            min-height: 120px;
+            position: relative;
+        }
+
+        .section-header {
+            background: white;
+            padding: 5px 15px;
+            border-radius: 15px;
+            position: absolute;
+            top: -12px;
+            left: 20px;
+            font-weight: 600;
+            font-size: 14px;
+            color: #5e6278;
+        }
+
+        .add-item-btn {
+            width: 100%;
+            border: 2px dashed #009ef7;
+            background: transparent;
+            color: #009ef7;
+            padding: 10px;
+            border-radius: 6px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .add-item-btn:hover {
+            background: #009ef7;
+            color: white;
+        }
+
+        .item-row {
+            background: white;
+            border: 1px solid #e4e6ef;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 10px;
+            position: relative;
+        }
+
+        .remove-item {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #f1416c;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        /* Select2 custom styling */
+        .select2-container--default .select2-selection--single {
+            height: calc(1.5em + 1.3rem + 2px) !important;
+            border: 1px solid #e4e6ef !important;
+            border-radius: 0.475rem !important;
+        }
+
+        .select2-container--default .select2-selection--single .select2-selection__rendered {
+            line-height: calc(1.5em + 1.3rem) !important;
+            padding-left: 1rem !important;
+            color: #5e6278 !important;
+        }
+
+        /* Payment QR Modal */
+        .qr-container {
             text-align: center;
             padding: 20px;
         }
 
-        .qr-code-container img {
-            max-width: 250px;
-            margin: 20px auto;
-            border: 1px solid #E4E6EF;
-            padding: 10px;
+        .qr-code-image {
+            max-width: 300px;
+            width: 100%;
+            height: auto;
+            border: 2px solid #e4e6ef;
             border-radius: 8px;
+            padding: 10px;
+            background: white;
         }
 
-        .payment-info {
-            background-color: #F7F8FA;
-            padding: 15px;
-            border-radius: 8px;
+        .payment-amount {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #50cd89;
             margin: 15px 0;
         }
 
-        .service-item,
-        .medicine-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 0;
-            border-bottom: 1px solid #E4E6EF;
+        .payment-status {
+            padding: 10px;
+            border-radius: 6px;
+            margin: 10px 0;
+            font-weight: 600;
         }
 
-        .service-item:last-child,
-        .medicine-item:last-child {
-            border-bottom: none;
+        .payment-status.pending {
+            background: #fff8dd;
+            color: #f1bc00;
+            border: 1px solid #f1bc00;
+        }
+
+        .payment-status.paid {
+            background: #d7f5d7;
+            color: #50cd89;
+            border: 1px solid #50cd89;
         }
 
         /* Responsive adjustments */
@@ -273,75 +353,54 @@
         }
 
         /* DataTable custom styling */
-        #kt_examinations_table {
+        #kt_examination_table {
             border-collapse: separate;
             border-spacing: 0;
         }
 
-        #kt_examinations_table tbody tr {
+        #kt_examination_table tbody tr {
             border-bottom: 1px solid #E4E6EF;
             transition: all 0.2s ease;
         }
 
-        #kt_examinations_table tbody tr:hover {
+        #kt_examination_table tbody tr:hover {
             background-color: #F9F9F9;
             box-shadow: 0 0 20px 0 rgba(76, 87, 125, 0.02);
         }
 
-        #kt_examinations_table th {
+        #kt_examination_table th {
             background-color: #F7F8FA;
             border-bottom: 1px solid #E4E6EF;
             padding: 12px 8px;
         }
 
-        #kt_examinations_table td {
+        #kt_examination_table td {
             padding: 16px 8px;
             vertical-align: middle;
         }
 
-        /* Modal steps */
-        .step-nav {
-            display: flex;
-            justify-content: center;
-            margin-bottom: 30px;
+        /* Form enhancements */
+        .form-control:focus {
+            border-color: #009ef7;
+            box-shadow: 0 0 0 0.2rem rgba(0, 158, 247, 0.25);
         }
 
-        .step-item {
-            display: flex;
-            align-items: center;
-            margin: 0 15px;
-            position: relative;
+        .form-select:focus {
+            border-color: #009ef7;
+            box-shadow: 0 0 0 0.2rem rgba(0, 158, 247, 0.25);
         }
 
-        .step-number {
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            background-color: #E4E6EF;
-            color: #7E8299;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 600;
-            margin-right: 10px;
+        /* Button improvements */
+        .btn-primary {
+            background: linear-gradient(45deg, #009ef7, #0056b3);
+            border: none;
+            box-shadow: 0 2px 4px rgba(0, 158, 247, 0.3);
         }
 
-        .step-item.active .step-number {
-            background-color: #009EF7;
-            color: white;
-        }
-
-        .step-item.completed .step-number {
-            background-color: #50CD89;
-            color: white;
-        }
-
-        .step-content {
-            display: none;
-        }
-
-        .step-content.active {
-            display: block;
+        .btn-primary:hover {
+            background: linear-gradient(45deg, #0056b3, #004085);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0, 158, 247, 0.4);
         }
     </style>
 @endpush
