@@ -9,12 +9,6 @@
                     <!-- Page Header Box Start -->
                     <div class="page-header-box">
                         <h1 class="text-anime-style-2" data-cursor="-opaque">Liên hệ với chúng tôi</h1>
-                        <nav class="wow fadeInUp">
-                            <ol class="breadcrumb">
-                                <li class="breadcrumb-item"><a href="{{ route('home') }}">Trang chủ</a></li>
-                                <li class="breadcrumb-item active" aria-current="page">Liên hệ</li>
-                            </ol>
-                        </nav>
                     </div>
                     <!-- Page Header Box End -->
                 </div>
@@ -209,8 +203,11 @@
 @push('csscustom')
     <style>
         /* Contact Section Styles */
+        .page-header{
+            padding: 20px 0;
+        }
         .contact-us {
-            padding: 80px 0;
+            padding: 20px 0;
             background: #f8f9fa;
         }
 

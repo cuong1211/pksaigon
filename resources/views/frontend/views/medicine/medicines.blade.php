@@ -66,22 +66,12 @@
                                         <img src="{{ $medicine->image_url }}" alt="{{ $medicine->name }}">
                                     </a>
                                 </figure>
-                                @if ($medicine->is_expired)
-                                    <div class="medicine-badge expired">Hết hạn</div>
-                                @elseif($medicine->is_expiring_soon)
-                                    <div class="medicine-badge expiring">Sắp hết hạn</div>
-                                @endif
                             </div>
                             <!-- Medicine Image End -->
 
                             <!-- Medicine Content Start -->
                             <div class="medicine-content">
-                                <div class="medicine-type">
-                                    <span
-                                        class="badge badge-{{ $medicine->type === 'supplement' ? 'success' : 'primary' }}">
-                                        {{ $medicine->type_name }}
-                                    </span>
-                                </div>
+                                
 
                                 <h3 class="medicine-title">
                                     <a href="{{ route('frontend.medicines.show', $medicine->slug ?? $medicine->id) }}">
@@ -97,19 +87,7 @@
 
                                 <div class="medicine-price">
                                     <span class="current-price">{{ $medicine->formatted_sale_price }}</span>
-                                    @if ($medicine->import_price < $medicine->sale_price)
-                                        <span class="original-price">{{ $medicine->formatted_import_price }}</span>
-                                    @endif
                                 </div>
-
-                                @if ($medicine->expiry_date)
-                                    <div class="medicine-expiry">
-                                        <small class="text-muted">
-                                            <i class="fas fa-calendar-alt me-1"></i>
-                                            HSD: {{ $medicine->expiry_date->format('d/m/Y') }}
-                                        </small>
-                                    </div>
-                                @endif
                             </div>
                             <!-- Medicine Content End -->
 
@@ -154,6 +132,10 @@
 @push('csscustom')
     <style>
         /* Medicine Items Styling */
+        .page-header {
+            padding: 20px 0;
+        }
+
         .medicine-item {
             background: #fff;
             border-radius: 12px;
@@ -231,7 +213,7 @@
         }
 
         .badge-primary {
-            background: #007bff;
+            background: #1e85b4;
             color: white;
         }
 
@@ -249,7 +231,7 @@
         }
 
         .medicine-title a:hover {
-            color: #007bff;
+            color: #1e85b4;
         }
 
         .medicine-description {
@@ -297,7 +279,7 @@
             background: #f8f9fa;
             padding: 20px;
             border-radius: 10px;
-            margin-bottom: 30px;
+            margin-bottom: 15px;
         }
 
         .medicines-search .form-control {
@@ -325,19 +307,19 @@
             border-radius: 8px;
             margin: 0 4px;
             border: 1px solid #ddd;
-            color: #007bff;
+            color: #1e85b4;
             padding: 10px 15px;
         }
 
         .pagination .page-link:hover {
-            background: #007bff;
+            background: #1e85b4;
             color: white;
-            border-color: #007bff;
+            border-color: #1e85b4;
         }
 
         .pagination .page-item.active .page-link {
-            background: #007bff;
-            border-color: #007bff;
+            background: #1e85b4;
+            border-color: #1e85b4;
         }
 
         /* No medicines state */
@@ -372,6 +354,17 @@
             .medicine-title {
                 font-size: 16px;
             }
+        }
+
+        .page-medicines {
+            padding: 20px 0;
+        }
+        .mb-5{
+            margin-bottom: 0 !important;
+        }
+        .btn-primary{
+            background-color: #1e85b4;
+            border-color: #1e85b4;
         }
     </style>
 @endpush

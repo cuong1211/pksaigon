@@ -9,13 +9,6 @@
                     <!-- Page Header Box Start -->
                     <div class="page-header-box">
                         <h1 class="text-anime-style-2" data-cursor="-opaque">{{ $medicine->name }}</h1>
-                        <nav class="wow fadeInUp">
-                            <ol class="breadcrumb">
-                                <li class="breadcrumb-item"><a href="{{ route('home') }}">Trang chủ</a></li>
-                                <li class="breadcrumb-item"><a href="{{ route('frontend.medicines') }}">Sản phẩm</a></li>
-                                <li class="breadcrumb-item active" aria-current="page">{{ $medicine->name }}</li>
-                            </ol>
-                        </nav>
                     </div>
                     <!-- Page Header Box End -->
                 </div>
@@ -37,17 +30,6 @@
                                 <img src="{{ $medicine->image_url }}" alt="{{ $medicine->name }}" class="img-fluid rounded"
                                     id="mainImage">
 
-                                @if ($medicine->is_expired)
-                                    <div class="medicine-status expired">
-                                        <i class="fas fa-exclamation-triangle"></i>
-                                        Sản phẩm đã hết hạn
-                                    </div>
-                                @elseif($medicine->is_expiring_soon)
-                                    <div class="medicine-status expiring">
-                                        <i class="fas fa-clock"></i>
-                                        Sản phẩm sắp hết hạn
-                                    </div>
-                                @endif
                             </div>
                         </div>
 
@@ -59,24 +41,14 @@
                                     {{ $medicine->type_name }}
                                 </span>
 
-                                @if ($medicine->expiry_date)
-                                    <span class="medicine-expiry">
-                                        <i class="fas fa-calendar-alt"></i>
-                                        HSD: {{ $medicine->expiry_date->format('d/m/Y') }}
-                                    </span>
-                                @endif
+
                             </div>
 
                             <h1 class="medicine-title">{{ $medicine->name }}</h1>
 
                             <div class="medicine-price">
                                 <span class="current-price">{{ $medicine->formatted_sale_price }}</span>
-                                @if ($medicine->import_price < $medicine->sale_price)
-                                    <span class="original-price">{{ $medicine->formatted_import_price }}</span>
-                                    <span class="discount-percent">
-                                        -{{ round((($medicine->sale_price - $medicine->import_price) / $medicine->sale_price) * 100) }}%
-                                    </span>
-                                @endif
+
                             </div>
 
                             @if ($medicine->description)
@@ -94,15 +66,15 @@
                                 <div class="contact-details">
                                     <div class="contact-item">
                                         <i class="fas fa-phone"></i>
-                                        <span>Hotline: <a href="tel:+84123456789">+(84) 123 456 789</a></span>
+                                        <span>Hotline: <a href="tel:+84123456789">03845188881</a></span>
                                     </div>
                                     <div class="contact-item">
                                         <i class="fas fa-map-marker-alt"></i>
-                                        <span>123 Đường Nguyễn Văn Cừ, Quận 1, TP. HCM</span>
+                                        <span>65 Hùng vương, Phường 4, Quận 5, TP. Hồ Chí Minh</span>
                                     </div>
                                     <div class="contact-item">
                                         <i class="fas fa-clock"></i>
-                                        <span>Thứ 2 - Chủ nhật: 8:00 - 17:00</span>
+                                        <span>Thứ 2 - Chủ nhật: 8:00 - 18:00</span>
                                     </div>
                                 </div>
 
@@ -133,18 +105,6 @@
                                     <span class="spec-value">{{ $medicine->type_name }}</span>
                                 </div>
 
-                                @if ($medicine->expiry_date)
-                                    <div class="spec-item">
-                                        <span class="spec-label">Hạn sử dụng:</span>
-                                        <span
-                                            class="spec-value 
-                                            @if ($medicine->is_expired) text-danger 
-                                            @elseif($medicine->is_expiring_soon) text-warning 
-                                            @else text-success @endif">
-                                            {{ $medicine->expiry_date->format('d/m/Y') }}
-                                        </span>
-                                    </div>
-                                @endif
 
                                 <div class="spec-item">
                                     <span class="spec-label">Trạng thái:</span>
@@ -224,8 +184,12 @@
 @push('csscustom')
     <style>
         /* Medicine Detail Styles */
+        .page-header {
+            padding: 20px 0;
+        }
+
         .medicine-detail-section {
-            padding: 60px 0;
+            padding: 15px 0;
         }
 
         /* Main Image */
@@ -297,7 +261,7 @@
         }
 
         .badge-primary {
-            background: #007bff;
+            background: #1e85b4;
         }
 
         .medicine-expiry {
@@ -350,7 +314,7 @@
             color: #333;
             margin-bottom: 15px;
             padding-bottom: 10px;
-            border-bottom: 2px solid #007bff;
+            border-bottom: 2px solid #1e85b4;
         }
 
         .description-content {
@@ -378,7 +342,7 @@
             background: #f8f9fa;
             padding: 25px;
             border-radius: 12px;
-            border-left: 4px solid #007bff;
+            border-left: 4px solid #1e85b4;
         }
 
         .contact-info h4 {
@@ -399,13 +363,13 @@
         }
 
         .contact-item i {
-            color: #007bff;
+            color: #1e85b4;
             width: 20px;
             margin-right: 10px;
         }
 
         .contact-item a {
-            color: #007bff;
+            color: #1e85b4;
             text-decoration: none;
             font-weight: 600;
         }
@@ -443,7 +407,7 @@
             color: #333;
             margin-bottom: 20px;
             padding-bottom: 10px;
-            border-bottom: 2px solid #007bff;
+            border-bottom: 2px solid #1e85b4;
         }
 
         /* Medicine Specs */
@@ -501,7 +465,7 @@
         }
 
         .quick-contact-form .form-control:focus {
-            border-color: #007bff;
+            border-color: #1e85b4;
             box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
         }
 
@@ -529,7 +493,7 @@
         }
 
         .related-item:hover {
-            border-color: #007bff;
+            border-color: #1e85b4;
             box-shadow: 0 4px 15px rgba(0, 123, 255, 0.1);
         }
 
@@ -560,7 +524,7 @@
         }
 
         .related-info h6 a:hover {
-            color: #007bff;
+            color: #1e85b4;
         }
 
         .related-price {
@@ -664,6 +628,11 @@
             .main-image img {
                 max-height: 250px;
             }
+        }
+
+        .btn-primary {
+            background-color: #1e85b4;
+            border-color: #1e85b4;
         }
     </style>
 @endpush
