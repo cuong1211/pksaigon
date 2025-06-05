@@ -171,6 +171,7 @@
                                         <div class="content">
                                             <h5>Hotline</h5>
                                             <p><a href="tel:+84384518881">0384518881</a></p>
+                                            <p><a href="tel:+84988669292">0988669292</a></p>
                                         </div>
                                     </div>
                                     <div class="contact-item">

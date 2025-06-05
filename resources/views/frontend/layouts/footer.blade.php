@@ -6,7 +6,7 @@
                 <div class="about-footer">
                     <!-- Footer Logo & Brand Start -->
                     <div class="footer-logo d-flex align-items-center mb-3">
-                        <img src="{{ asset('frontend/images/logo.png') }}" alt="PKSG Logo" class="me-3">
+                        <img src="{{ asset('frontend/images/favicon.jpg') }}" alt="PKSG Logo" class="me-3">
                         <div class="brand-text">
                             <h4 class="brand-name mb-0">PKSG</h4>
                             <p class="brand-tagline mb-0">Phòng Khám Sài Gòn</p>
@@ -25,7 +25,7 @@
                             <div class="time-schedule">
                                 <div class="d-flex justify-content-between">
                                     <span>Thứ 2 - Chủ nhật:</span>
-                                    <span>8:00 - 17:00</span>
+                                    <span>7:00 - 19:00</span>
                                 </div>
                                
                             </div>
@@ -87,6 +87,7 @@
                             <div>
                                 <h6 class="mb-1">Hotline</h6>
                                 <a href="tel:+84123456789" class="contact-link"> 0384518881</a>
+                                <a href="tel:+84123456789" class="contact-link"> 0988669292</a>
                             </div>
                         </div>
                     </div>
@@ -114,11 +115,7 @@
                     </div>
                 </div>
                 <div class="col-lg-6">
-                    <div class="footer-bottom-links text-lg-end">
-                        <a href="#" class="me-3">Chính sách bảo mật</a>
-                        <a href="#" class="me-3">Điều khoản sử dụng</a>
-                        <a href="#">Sitemap</a>
-                    </div>
+                    
                 </div>
             </div>
         </div>

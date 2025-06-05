@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Post;
 use App\Models\Service;
 use Illuminate\Http\Request;
+use App\Services\SEOHelper;
 
 class HomeController extends Controller
 {
@@ -30,7 +31,10 @@ class HomeController extends Controller
             'total_posts' => Post::visible()->count(),
             'total_services' => Service::where('is_active', true)->count(),
         ];
-
+        $seoHelper = new SEOHelper();
+        $seoHelper->setTitle('Trang chủ')
+            ->setDescription('Phòng Khám Sài Gòn - Chăm sóc sức khỏe sản phụ khoa chuyên nghiệp với đội ngũ bác sĩ giàu kinh nghiệm và trang thiết bị hiện đại tại TP.HCM')
+            ->setKeywords('phòng khám sài gòn, sản phụ khoa, khám thai, điều trị phụ khoa, bác sĩ giàu kinh nghiệm, tp.hcm');
         return view('frontend.views.home', compact(
             'featuredPosts',
             'featuredServices',

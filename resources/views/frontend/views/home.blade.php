@@ -78,7 +78,10 @@
                         </div>
                         <div class="cta-box-content">
                             <h3>cần tư vấn khám bệnh?</h3>
-                            <p>Gọi ngay: 0384518881</p>
+                            <p>Gọi ngay: <a href="tel:0384518881">0384518881</a>
+                                <br>hoặc: <a href="tel:0988669292">0988669292</a>
+                            </p>
+                            <p>hoặc gửi email: <a href="mailto:info@pksaigon.com">info@pksaigon.com</a></p>
                         </div>
                     </div>
                 </div>
@@ -101,7 +104,7 @@
                 <div class="col-lg-4 col-md-12 col-12">
                     <!-- Cta Box Btn Start -->
                     <div class="cta-box-btn wow fadeInUp" data-wow-delay="0.5s">
-                        <a href="#" class="btn-default btn-highlighted">đặt lịch khám</a>
+                        <a href="{{ route('frontend.appointment') }}" class="btn-default btn-highlighted">đặt lịch khám</a>
                     </div>
                     <!-- Cta Box Btn End -->
                 </div>
@@ -209,7 +212,7 @@
                             <p>Chúng tôi cung cấp dịch vụ khám phụ khoa định kỳ và điều trị các bệnh lý phụ khoa.</p>
                         </div>
                         <div class="read-more-btn">
-                            <a href="#">xem thêm</a>
+                            <a href="{{route('home')}}">xem thêm</a>
                         </div>
                     </div>
                     <!-- Service Item End -->
@@ -229,7 +232,7 @@
                             </p>
                         </div>
                         <div class="read-more-btn">
-                            <a href="#">xem thêm</a>
+                            <a href="{{route('home')}}">xem thêm</a>
                         </div>
                     </div>
                     <!-- Service Item End -->
@@ -248,7 +251,7 @@
                             <p>Tư vấn các biện pháp tránh thai an toàn và kế hoạch hóa gia đình phù hợp.</p>
                         </div>
                         <div class="read-more-btn">
-                            <a href="#">xem thêm</a>
+                            <a href="{{route('home')}}">xem thêm</a>
                         </div>
                     </div>
                     <!-- Service Item End -->
@@ -267,7 +270,7 @@
                             <p>Chương trình sàng lọc ung thư cổ tử cung, ung thư vú sớm với công nghệ tiên tiến.</p>
                         </div>
                         <div class="read-more-btn">
-                            <a href="#">xem thêm</a>
+                            <a href="{{route('home')}}">xem thêm</a>
                         </div>
                     </div>
                     <!-- Service Item End -->
@@ -572,7 +575,7 @@
                             <!-- Team Social Icon Start -->
                             <div class="team-social-icon">
                                 <ul>
-                                    <li><a href="#" class="social-icon"><i class="fa-brands fa-facebook-f"></i></a>
+                                    <li><a href="https://www.facebook.com/pk.sanphukhoasaigon" class="social-icon"><i class="fa-brands fa-facebook-f"></i></a>
                                     </li>
                                 </ul>
                             </div>
@@ -583,7 +586,7 @@
                         <!-- Team Content Start -->
                         <div class="team-content">
                             <h3>BS. Nguyễn Thị Thu Hiền</h3>
-                            <p>BÁc sĩ chuyên khoa cấp 1</p>
+                            <p>Bác sĩ chuyên khoa cấp 1</p>
                         </div>
                         <!-- Team Content End -->
                     </div>
@@ -608,7 +611,6 @@
                         <!-- Team Content Start -->
                         <div class="team-content">
                             <h3>BS. Trịnh Thị Sâm</h3>
-                            <p>bác sĩ phụ khoa</p>
                         </div>
                         <!-- Team Content End -->
                     </div>
@@ -633,7 +635,6 @@
                         <!-- Team Content Start -->
                         <div class="team-content">
                             <h3>BS. Nguyễn Thị Rỳ</h3>
-                            <p>chuyên gia sản khoa</p>
                         </div>
                         <!-- Team Content End -->
                     </div>
@@ -924,6 +925,7 @@
                                 <!-- Contact Info Content Start -->
                                 <div class="contact-info-content">
                                     <p>0384518881</p>
+                                    <p>028 3837 8888</p>
                                 </div>
                                 <!-- Contact Info Content End -->
                             </div>

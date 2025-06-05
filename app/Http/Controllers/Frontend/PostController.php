@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Frontend;
 use App\Http\Controllers\Controller;
 use App\Models\Post;
 use Illuminate\Http\Request;
+use App\Services\SEOHelper;
 
 class PostController extends Controller
 {
@@ -13,45 +14,43 @@ class PostController extends Controller
      */
     public function index()
     {
-        // Lấy bài viết hiện (status = true) với phân trang
-        $posts = Post::visible() // Dùng scope visible() thay vì published()
-            ->with('author')
+        $posts = Post::visible()
             ->orderBy('published_at', 'desc')
+            ->orderBy('created_at', 'desc')
             ->paginate(9);
-        // dd($posts);
-        // Lấy bài viết nổi bật (3 bài đầu)
-        $featuredPosts = Post::visible() // Dùng scope visible()
-            ->featured() // Scope featured()
-            ->with('author')
-            ->orderBy('published_at', 'desc')
-            ->limit(3)
-            ->get();
 
-        return view('frontend.views.post.posts', compact('posts', 'featuredPosts'));
+        $seoHelper = new SEOHelper();
+        $seoHelper->setTitle('Tin tức & Blog')
+            ->setDescription('Cập nhật những thông tin y khoa và sức khỏe mới nhất từ Phòng Khám Sài Gòn')
+            ->setKeywords('tin tức y tế, blog sức khỏe, thông tin y khoa, sản phụ khoa');
+
+        return view('frontend.views.post.posts', compact('posts', 'seoHelper'));
     }
 
-    /**
-     * Hiển thị chi tiết bài viết
-     */
     public function show($slug)
     {
-        // Tìm bài viết theo slug (chỉ bài viết hiện)
         $post = Post::where('slug', $slug)
-            ->visible() // Dùng scope visible()
-            ->with('author')
+            ->where('status', true)
             ->firstOrFail();
 
-        // Tăng view count
+        // Tăng lượt xem
         $post->incrementViews();
 
-        // Lấy bài viết liên quan (4 bài ngẫu nhiên, không bao gồm bài hiện tại)
-        $relatedPosts = Post::visible() // Dùng scope visible()
+        // Lấy bài viết liên quan
+        $relatedPosts = Post::visible()
             ->where('id', '!=', $post->id)
-            ->with('author')
-            ->inRandomOrder()
-            ->limit(4)
+            ->orderBy('published_at', 'desc')
+            ->take(6)
             ->get();
 
-        return view('frontend.views.post.post_detail', compact('post', 'slug', 'relatedPosts'));
+        // SEO
+        $seoHelper = new SEOHelper();
+        $seoHelper->setTitle($post->title)
+            ->setDescription($post->excerpt)
+            ->setImage($post->featured_image_url)
+            ->setType('article')
+            ->setKeywords('tin tức y tế, ' . $post->title);
+
+        return view('frontend.views.post.post_detail', compact('post', 'relatedPosts', 'seoHelper'));
     }
 }

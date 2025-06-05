@@ -44,7 +44,8 @@
                             </div>
                             <div class="contact-info-content">
                                 <h3>Điện thoại</h3>
-                                <p><a href="tel:0384518881">0384 518 8881</a></p>
+                                <p><a href="tel:0384518881">03845188881</a></p>
+                                <p><a href="tel:0901234567">0901234567</a></p>
                                 <small>BS.Nguyễn Thị Thu Hiền</small>
                             </div>
                         </div>
@@ -59,7 +60,7 @@
                             </div>
                             <div class="contact-info-content">
                                 <h3>Giờ làm việc</h3>
-                                <p>Thứ 2 - Chủ nhật<br>8:00 AM - 5:00 PM</p>
+                                <p>Thứ 2 - Chủ nhật<br>7:00 - 19:00 PM</p>
                             </div>
                         </div>
                     </div>
@@ -163,7 +164,8 @@
                                         </div>
                                         <div class="emergency-content">
                                             <h4>Cấp cứu 24/7</h4>
-                                            <p><a href="tel:0384518881">0384 518 8881</a></p>
+                                            <p><a href="tel:0384518881">03845188881</a></p>
+                                            <p><a href="tel:0901234567">0901234567</a></p>
                                         </div>
                                     </div>
                                 </div>

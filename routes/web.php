@@ -14,6 +14,8 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
 use App\Http\Controllers\Api\VietQRWebhookController;
 use App\Http\Controllers\Api\VietQRCallbackController;
 
@@ -157,3 +159,83 @@ Route::withoutMiddleware(['web'])->group(function () {
     Route::post('examination/{id}/test-vietqr-real-data', [ExaminationController::class, 'testVietQRWithRealData'])
         ->name('examination.triggerVietQRCallback');
 });
+
+
+// SEO Routes
+Route::get('/robots.txt', [App\Http\Controllers\SitemapController::class, 'robots'])
+    ->name('robots');
+
+Route::get('/sitemap.xml', [App\Http\Controllers\SitemapController::class, 'index'])
+    ->name('sitemap');
+
+// Additional sitemaps
+Route::get('/sitemap-news.xml', [App\Http\Controllers\SitemapController::class, 'newsSitemap'])
+    ->name('sitemap.news');
+
+Route::get('/sitemap-images.xml', [App\Http\Controllers\SitemapController::class, 'imageSitemap'])
+    ->name('sitemap.images');
+
+// SEO Test routes (chỉ cho development)
+if (app()->environment('local')) {
+    Route::get('/seo-test', function() {
+        $seoHelper = new \App\Services\SEOHelper();
+        $seoHelper->setTitle('Test SEO Page')
+            ->setDescription('Testing SEO implementation on local environment')
+            ->setKeywords('test, seo, laravel, phòng khám');
+        
+        return view('frontend.views.home', compact('seoHelper'));
+    })->name('seo.test');
+    
+    Route::get('/seo-debug', function() {
+        return response()->json([
+            'app_url' => config('app.url'),
+            'current_url' => request()->url(),
+            'domain' => request()->getHost(),
+            'scheme' => request()->getScheme(),
+            'user_agent' => request()->userAgent(),
+            'routes' => [
+                'robots' => route('robots'),
+                'sitemap' => route('sitemap'),
+                'home' => route('home'),
+            ],
+            'middleware' => [
+                'gzip_enabled' => function_exists('gzencode'),
+                'cache_store' => config('cache.default'),
+            ]
+        ]);
+    })->name('seo.debug');
+}
+
+// Health check cho SEO crawlers
+Route::get('/health-seo', function() {
+    $checks = [
+        'database' => true,
+        'cache' => true,
+        'sitemap' => true,
+    ];
+    
+    try {
+        // Test database
+        DB::connection()->getPdo();
+    } catch (\Exception $e) {
+        $checks['database'] = false;
+    }
+    
+    try {
+        // Test cache
+        Cache::put('health_check', 'ok', 60);
+        $checks['cache'] = Cache::get('health_check') === 'ok';
+    } catch (\Exception $e) {
+        $checks['cache'] = false;
+    }
+    
+    $allHealthy = array_reduce($checks, function($carry, $item) {
+        return $carry && $item;
+    }, true);
+    
+    return response()->json([
+        'status' => $allHealthy ? 'healthy' : 'unhealthy',
+        'checks' => $checks,
+        'timestamp' => now()->toISOString()
+    ], $allHealthy ? 200 : 503);
+})->name('health.seo');

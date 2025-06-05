@@ -363,7 +363,7 @@
                         <!-- Team Content Start -->
                         <div class="team-content">
                             <h3>BS. Nguyễn Thị Thu Hiền</h3>
-                            <p>trưởng khoa sản</p>
+                            <p>Bác sĩ chuyên khoa cấp 1</p>
                         </div>
                         <!-- Team Content End -->
                     </div>
@@ -388,7 +388,6 @@
                         <!-- Team Content Start -->
                         <div class="team-content">
                             <h3>BS. Trịnh Thị Sâm</h3>
-                            <p>bác sĩ phụ khoa</p>
                         </div>
                         <!-- Team Content End -->
                     </div>
@@ -413,7 +412,6 @@
                         <!-- Team Content Start -->
                         <div class="team-content">
                             <h3>BS. Nguyễn Thị Rỳ</h3>
-                            <p>chuyên gia sản khoa</p>
                         </div>
                         <!-- Team Content End -->
                     </div>

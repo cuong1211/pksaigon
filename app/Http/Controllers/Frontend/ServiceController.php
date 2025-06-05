@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Frontend;
 use App\Http\Controllers\Controller;
 use App\Models\Service;
 use Illuminate\Http\Request;
+use App\Services\SEOHelper;
 
 class ServiceController extends Controller
 {
@@ -59,11 +60,11 @@ class ServiceController extends Controller
         ];
 
         $currentType = $type;
-        
+
         // Tên trang theo loại
         $typeNames = [
             'procedure' => 'Thủ thuật',
-            'laboratory' => 'Xét nghiệm', 
+            'laboratory' => 'Xét nghiệm',
             'other' => 'Dịch vụ khác'
         ];
         $pageTitle = $typeNames[$type];
@@ -77,21 +78,26 @@ class ServiceController extends Controller
             ->where('is_active', true)
             ->firstOrFail();
 
-        // Lấy các dịch vụ liên quan cùng loại
         $relatedServices = Service::where('type', $service->type)
             ->where('id', '!=', $service->id)
             ->where('is_active', true)
-            ->limit(4)
+            ->take(4)
             ->get();
 
-        // Lấy tất cả dịch vụ để hiển thị trong sidebar
-        $allServices = Service::where('is_active', true)
-            ->orderBy('type')
-            ->orderBy('name')
-            ->get()
-            ->groupBy('type');
+        $allServices = [
+            'procedure' => Service::where('type', 'procedure')->where('is_active', true)->get(),
+            'laboratory' => Service::where('type', 'laboratory')->where('is_active', true)->get(),
+            'other' => Service::where('type', 'other')->where('is_active', true)->get(),
+        ];
 
-        return view('frontend.views.service.service_detail', compact('service', 'slug', 'relatedServices', 'allServices'));
+        // SEO
+        $seoHelper = new SEOHelper();
+        $seoHelper->setTitle($service->name . ' - Dịch vụ ' . $service->type_name)
+            ->setDescription($service->description ? strip_tags($service->description) : 'Dịch vụ ' . $service->name . ' chất lượng cao tại Phòng Khám Sài Gòn')
+            ->setImage($service->image_url)
+            ->setKeywords($service->name . ', dịch vụ ' . $service->type_name . ', phòng khám sài gòn');
+
+        return view('frontend.views.service.service_detail', compact('service', 'relatedServices', 'allServices', 'seoHelper'));
     }
 
     // API để lấy dịch vụ theo loại (có thể dùng cho AJAX)

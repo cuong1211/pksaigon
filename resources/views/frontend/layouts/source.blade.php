@@ -8,10 +8,44 @@
 <meta name="description" content="">
 <meta name="keywords" content="">
 <meta name="author" content="Awaiken">
-<!-- Page Title -->
-<title>PKSPKSG</title>
+{{-- SEO Meta Tags --}}
+@if (isset($seoHelper))
+    {!! $seoHelper->renderMeta() !!}
+@else
+    <title>{{ $title ?? 'Phòng Khám Sài Gòn - Chăm sóc sức khỏe chuyên nghiệp' }}</title>
+    <meta name="description"
+        content="{{ $description ?? 'Phòng khám chuyên khoa sản phụ khoa với đội ngũ bác sĩ giàu kinh nghiệm, trang thiết bị hiện đại tại TP.HCM' }}">
+    <meta name="keywords"
+        content="{{ $keywords ?? 'phòng khám sài gòn, sản phụ khoa, bác sĩ, khám thai, điều trị phụ khoa' }}">
+
+    {{-- Open Graph --}}
+    <meta property="og:title" content="{{ $title ?? 'Phòng Khám Sài Gòn' }}">
+    <meta property="og:description"
+        content="{{ $description ?? 'Phòng khám chuyên khoa sản phụ khoa với đội ngũ bác sĩ giàu kinh nghiệm' }}">
+    <meta property="og:image" content="{{ $ogImage ?? asset('frontend/images/logo.png') }}">
+    <meta property="og:url" content="{{ url()->current() }}">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Phòng Khám Sài Gòn">
+
+    {{-- Twitter Card --}}
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{{ $title ?? 'Phòng Khám Sài Gòn' }}">
+    <meta name="twitter:description" content="{{ $description ?? 'Phòng khám chuyên khoa sản phụ khoa' }}">
+    <meta name="twitter:image" content="{{ $ogImage ?? asset('frontend/images/logo.png') }}">
+@endif
+
+{{-- Canonical URL --}}
+<link rel="canonical" href="{{ $canonicalUrl ?? url()->current() }}">
+
+{{-- Schema.org JSON-LD --}}
+@if (isset($seoHelper))
+    {!! $seoHelper->generateSchema('Organization') !!}
+@endif
+
+@stack('schema')
+
 <!-- Favicon Icon -->
-<link rel="shortcut icon" type="image/x-icon" href="images/favicon.png">
+<link rel="shortcut icon" type="image/x-icon" href="images/favicon_1.png">
 
 <!-- Google Fonts - Be Vietnam Pro -->
 <link rel="preconnect" href="https://fonts.googleapis.com">

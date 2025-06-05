@@ -66,7 +66,8 @@
                                 <div class="contact-details">
                                     <div class="contact-item">
                                         <i class="fas fa-phone"></i>
-                                        <span>Hotline: <a href="tel:+84123456789">0384518881</a></span>
+                                        <span>Hotline: <a href="tel:+84123456789">0384518881</a>
+                                            <br><a href="tel:+84988669292">0988669292</a></span>
                                     </div>
                                     <div class="contact-item">
                                         <i class="fas fa-map-marker-alt"></i>
