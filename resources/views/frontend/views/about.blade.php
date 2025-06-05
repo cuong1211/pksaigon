@@ -8,12 +8,6 @@
                     <!-- Page Header Box Start -->
                     <div class="page-header-box">
                         <h1 class="text-anime-style-2" data-cursor="-opaque"><span>Giới thiệu</span> về chúng tôi</h1>
-                        <nav class="wow fadeInUp">
-                            <ol class="breadcrumb">
-                                <li class="breadcrumb-item"><a href="{{ route('home') }}">Trang chủ</a></li>
-                                <li class="breadcrumb-item active" aria-current="page">Giới thiệu</li>
-                            </ol>
-                        </nav>
                     </div>
                     <!-- Page Header Box End -->
                 </div>
@@ -192,7 +186,7 @@
                         <!-- Expertise Experience Image Start -->
                         <div class="expertise-experience-img">
                             <figure class="image-anime reveal">
-                                <img src="images/expertise-experience-img.jpg" alt="Phòng khám PKSG">
+                                <img src="images/sc-4_2.png" alt="Phòng khám PKSG">
                             </figure>
                         </div>
                         <!-- Expertise Experience Image End -->
@@ -208,7 +202,7 @@
                 <div class="row">
                     <div class="col-lg-12">
                         <!-- Visit Clinic Start -->
-                        <div class="visit-clinic parallaxie">
+                        <div class="visit-clinic parallaxie" style="background-image: url('images/about-1.jpg');">
                             <!-- Visit Clinic Content Start -->
                             <div class="visit-clinic-content">
                                 <!-- Section Title Start -->
@@ -221,8 +215,9 @@
 
                                 <!-- Visit Clinic Btn Start -->
                                 <div class="visit-clinic-btn wow fadeInUp" data-wow-delay="0.25s" data-cursor-text="Play">
-                                    <a href="https://www.youtube.com/watch?v=Y-x0efG1seA" class="popup-video play-btn">Xem
+                                    <a href="https://youtube.com/shorts/LfRGxCOX3hA?feature=share" class="popup-video play-btn">Xem
                                         video</a>
+                                        
                                 </div>
                                 <!-- Visit Clinic Btn End -->
                             </div>
@@ -236,7 +231,7 @@
         <!-- Intro Clinic Video Section End -->
 
         <!-- Our Counter Section Start -->
-        <div class="our-counter">
+        {{-- <div class="our-counter">
             <div class="container">
                 <div class="row">
                     <div class="col-lg-3 col-md-6">
@@ -316,7 +311,7 @@
                     </div>
                 </div>
             </div>
-        </div>
+        </div> --}}
         <!-- Our Counter Section End -->
 
         <!-- Icon Start Image Start -->
@@ -334,36 +329,30 @@
                 <div class="col-lg-12">
                     <!-- Section Title Start -->
                     <div class="section-title">
-                        <h3 class="wow fadeInUp">Đội ngũ của chúng tôi</h3>
-                        <h2 class="text-anime-style-2" data-cursor="-opaque"><span>Đội ngũ bác sĩ</span> chuyên khoa
-                        </h2>
-                        <p class="wow fadeInUp" data-wow-delay="0.25s">Đội ngũ bác sĩ giàu kinh nghiệm, tận tâm và chuyên
-                            nghiệp.</p>
+                        <h3 class="wow fadeInUp">đội ngũ của chúng tôi</h3>
+                        <h2 class="text-anime-style-2" data-cursor="-opaque"><span>Đội ngũ bác sĩ</span> chuyên khoa uy
+                            tín</h2>
+                        <p class="wow fadeInUp" data-wow-delay="0.25s">Đội ngũ bác sĩ giàu kinh nghiệm và tận tâm trong
+                            lĩnh vực sản phụ khoa.</p>
                     </div>
                     <!-- Section Title End -->
                 </div>
             </div>
 
             <div class="row">
-                <div class="col-lg-3 col-md-6">
+                <div class="col-lg-4 col-md-6">
                     <!-- Team Member Item Start -->
                     <div class="team-member-item wow fadeInUp">
                         <!-- Team Image Start -->
                         <div class="team-image">
                             <figure class="image-anime">
-                                <img src="images/team-1.jpg" alt="BS. Nguyễn Thị Hồng">
+                                <img src="images/bs-3.png" alt="">
                             </figure>
 
                             <!-- Team Social Icon Start -->
                             <div class="team-social-icon">
                                 <ul>
                                     <li><a href="#" class="social-icon"><i class="fa-brands fa-facebook-f"></i></a>
-                                    </li>
-                                    <li><a href="#" class="social-icon"><i class="fa-brands fa-youtube"></i></a>
-                                    </li>
-                                    <li><a href="#" class="social-icon"><i class="fa-brands fa-instagram"></i></a>
-                                    </li>
-                                    <li><a href="#" class="social-icon"><i class="fa-brands fa-x-twitter"></i></a>
                                     </li>
                                 </ul>
                             </div>
@@ -373,127 +362,68 @@
 
                         <!-- Team Content Start -->
                         <div class="team-content">
-                            <h3>BS. Nguyễn Thị Hồng</h3>
-                            <p>Trưởng khoa Sản phụ khoa</p>
+                            <h3>BS. Nguyễn Thị Thu Hiền</h3>
+                            <p>trưởng khoa sản</p>
                         </div>
                         <!-- Team Content End -->
                     </div>
                     <!-- Team Member Item End -->
                 </div>
 
-                <div class="col-lg-3 col-md-6">
+                <div class="col-lg-4 col-md-6">
                     <!-- Team Member Item Start -->
                     <div class="team-member-item wow fadeInUp" data-wow-delay="0.25s">
                         <!-- Team Image Start -->
                         <div class="team-image">
                             <figure class="image-anime">
-                                <img src="images/team-2.jpg" alt="BS. Trần Văn Minh">
+                                <img src="images/bs_1.png" alt="">
                             </figure>
 
                             <!-- Team Social Icon Start -->
-                            <div class="team-social-icon">
-                                <ul>
-                                    <li><a href="#" class="social-icon"><i class="fa-brands fa-facebook-f"></i></a>
-                                    </li>
-                                    <li><a href="#" class="social-icon"><i class="fa-brands fa-youtube"></i></a>
-                                    </li>
-                                    <li><a href="#" class="social-icon"><i class="fa-brands fa-instagram"></i></a>
-                                    </li>
-                                    <li><a href="#" class="social-icon"><i class="fa-brands fa-x-twitter"></i></a>
-                                    </li>
-                                </ul>
-                            </div>
+
                             <!-- Team Social Icon End -->
                         </div>
                         <!-- Team Image End -->
 
                         <!-- Team Content Start -->
                         <div class="team-content">
-                            <h3>BS. Trần Văn Minh</h3>
-                            <p>Bác sĩ Sản khoa</p>
+                            <h3>BS. Trịnh Thị Sâm</h3>
+                            <p>bác sĩ phụ khoa</p>
                         </div>
                         <!-- Team Content End -->
                     </div>
                     <!-- Team Member Item End -->
                 </div>
 
-                <div class="col-lg-3 col-md-6">
+                <div class="col-lg-4 col-md-6">
                     <!-- Team Member Item Start -->
                     <div class="team-member-item wow fadeInUp" data-wow-delay="0.5s">
                         <!-- Team Image Start -->
                         <div class="team-image">
                             <figure class="image-anime">
-                                <img src="images/team-3.jpg" alt="BS. Lê Thị Mai">
+                                <img src="images/bs_2.png" alt="">
                             </figure>
 
                             <!-- Team Social Icon Start -->
-                            <div class="team-social-icon">
-                                <ul>
-                                    <li><a href="#" class="social-icon"><i class="fa-brands fa-facebook-f"></i></a>
-                                    </li>
-                                    <li><a href="#" class="social-icon"><i class="fa-brands fa-youtube"></i></a>
-                                    </li>
-                                    <li><a href="#" class="social-icon"><i class="fa-brands fa-instagram"></i></a>
-                                    </li>
-                                    <li><a href="#" class="social-icon"><i class="fa-brands fa-x-twitter"></i></a>
-                                    </li>
-                                </ul>
-                            </div>
+
                             <!-- Team Social Icon End -->
                         </div>
                         <!-- Team Image End -->
 
                         <!-- Team Content Start -->
                         <div class="team-content">
-                            <h3>BS. Lê Thị Mai</h3>
-                            <p>Bác sĩ Phụ khoa</p>
+                            <h3>BS. Nguyễn Thị Rỳ</h3>
+                            <p>chuyên gia sản khoa</p>
                         </div>
                         <!-- Team Content End -->
                     </div>
                     <!-- Team Member Item End -->
                 </div>
 
-                <div class="col-lg-3 col-md-6">
-                    <!-- Team Member Item Start -->
-                    <div class="team-member-item wow fadeInUp" data-wow-delay="0.75s">
-                        <!-- Team Image Start -->
-                        <div class="team-image">
-                            <figure class="image-anime">
-                                <img src="images/team-4.jpg" alt="BS. Phạm Hoàng Nam">
-                            </figure>
-
-                            <!-- Team Social Icon Start -->
-                            <div class="team-social-icon">
-                                <ul>
-                                    <li><a href="#" class="social-icon"><i class="fa-brands fa-facebook-f"></i></a>
-                                    </li>
-                                    <li><a href="#" class="social-icon"><i class="fa-brands fa-youtube"></i></a>
-                                    </li>
-                                    <li><a href="#" class="social-icon"><i class="fa-brands fa-instagram"></i></a>
-                                    </li>
-                                    <li><a href="#" class="social-icon"><i class="fa-brands fa-x-twitter"></i></a>
-                                    </li>
-                                </ul>
-                            </div>
-                            <!-- Team Social Icon End -->
-                        </div>
-                        <!-- Team Image End -->
-
-                        <!-- Team Content Start -->
-                        <div class="team-content">
-                            <h3>BS. Phạm Hoàng Nam</h3>
-                            <p>Bác sĩ Nhi khoa</p>
-                        </div>
-                        <!-- Team Content End -->
-                    </div>
-                    <!-- Team Member Item End -->
-                </div>
             </div>
         </div>
         <!-- Icon Start Image Start -->
-        <div class="icon-star-image">
-            <img src="images/icon-star.svg" alt="">
-        </div>
+
         <!-- Icon Start Image End -->
     </div>
     <!-- Our Team End -->

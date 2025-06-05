@@ -1,7 +1,6 @@
 @extends('frontend.layouts.index')
 
 @section('content')
-
     <!-- Page Appointment Start -->
     <div class="page-book-appointment">
         <div class="container">
@@ -162,14 +161,16 @@
                                         <div class="icon"><i class="fas fa-map-marker-alt"></i></div>
                                         <div class="content">
                                             <h5>Địa chỉ</h5>
-                                            <p>123 Nguyễn Văn Cừ<br>Quận 1, TP. Hồ Chí Minh</p>
+                                            <p>65 Hùng vương, Phường 4,
+                                                <br>Quận 5, TP. Hồ Chí Minh
+                                            </p>
                                         </div>
                                     </div>
                                     <div class="contact-item">
                                         <div class="icon"><i class="fas fa-phone"></i></div>
                                         <div class="content">
                                             <h5>Hotline</h5>
-                                            <p><a href="tel:+84123456789">(028) 3822 5678</a></p>
+                                            <p><a href="tel:+84123456789">03845188881</a></p>
                                         </div>
                                     </div>
                                     <div class="contact-item">

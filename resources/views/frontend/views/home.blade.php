@@ -46,7 +46,7 @@
                                 </figure>
                             </div>
                             <div class="export-dantist-content">
-                                <h3>BS. Nguyễn Thị Thu Hiển</h3>
+                                <h3>BS. Nguyễn Thị Thu Hiền</h3>
                                 <p>bác sĩ sản phụ khoa</p>
                             </div>
                         </div>
@@ -78,7 +78,7 @@
                         </div>
                         <div class="cta-box-content">
                             <h3>cần tư vấn khám bệnh?</h3>
-                            <p>Gọi ngay: (028) 3822 5678</p>
+                            <p>Gọi ngay: 03845188881</p>
                         </div>
                     </div>
                 </div>
@@ -447,7 +447,7 @@
                     <!-- How It Work Image Start -->
                     <div class="how-it-work-img">
                         <figure class="reveal image-anime">
-                            <img src="images/sc-4_1.png" alt="">
+                            <img src="images/sc-4_2.png" alt="">
                         </figure>
                     </div>
                     <!-- How It Work Image End -->
@@ -583,7 +583,7 @@
                         <!-- Team Content Start -->
                         <div class="team-content">
                             <h3>BS. Nguyễn Thị Thu Hiền</h3>
-                            <p>trưởng khoa sản</p>
+                            <p>BÁc sĩ chuyên khoa cấp 1</p>
                         </div>
                         <!-- Team Content End -->
                     </div>
@@ -607,7 +607,7 @@
 
                         <!-- Team Content Start -->
                         <div class="team-content">
-                            <h3>BS. Nguyễn Thị Rỳ</h3>
+                            <h3>BS. Trịnh Thị Sâm</h3>
                             <p>bác sĩ phụ khoa</p>
                         </div>
                         <!-- Team Content End -->
@@ -632,7 +632,7 @@
 
                         <!-- Team Content Start -->
                         <div class="team-content">
-                            <h3>BS. Trịnh Thị Sâm</h3>
+                            <h3>BS. Nguyễn Thị Rỳ</h3>
                             <p>chuyên gia sản khoa</p>
                         </div>
                         <!-- Team Content End -->
