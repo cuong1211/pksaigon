@@ -1,4 +1,4 @@
-<footer class="main-footer">
+<footer class="main-footer" style="margin-top: 0">
     <div class="container">
         <div class="row">
             <!-- About Section -->
@@ -8,8 +8,8 @@
                     <div class="footer-logo d-flex align-items-center mb-3">
                         <img src="{{ asset('frontend/images/favicon.jpg') }}" alt="PKSG Logo" class="me-3">
                         <div class="brand-text">
-                            <h4 class="brand-name mb-0">PKSG</h4>
-                            <p class="brand-tagline mb-0">Phòng Khám Sài Gòn</p>
+                            <h4 class="brand-name mb-0">THU HIỀN</h4>
+                            <p class="brand-tagline mb-0">Phòng Khám Sản phụ khoa</p>
                         </div>
                     </div>
                     <!-- Footer Logo & Brand End -->
@@ -87,6 +87,7 @@
                             <div>
                                 <h6 class="mb-1">Hotline</h6>
                                 <a href="tel:+84123456789" class="contact-link"> 0384518881</a>
+                                <br>
                                 <a href="tel:+84123456789" class="contact-link"> 0988669292</a>
                             </div>
                         </div>

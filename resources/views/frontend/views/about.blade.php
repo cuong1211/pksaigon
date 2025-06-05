@@ -215,9 +215,10 @@
 
                                 <!-- Visit Clinic Btn Start -->
                                 <div class="visit-clinic-btn wow fadeInUp" data-wow-delay="0.25s" data-cursor-text="Play">
-                                    <a href="https://youtube.com/shorts/LfRGxCOX3hA?feature=share" class="popup-video play-btn">Xem
+                                    <a href="https://youtube.com/shorts/LfRGxCOX3hA?feature=share"
+                                        class="popup-video play-btn">Xem
                                         video</a>
-                                        
+
                                 </div>
                                 <!-- Visit Clinic Btn End -->
                             </div>
@@ -426,3 +427,13 @@
     </div>
     <!-- Our Team End -->
 @endsection
+@push('csscustom')
+    <style>
+        .page-header {
+            padding: 20px 0;
+        }
+        .our-services{
+            padding:  0;
+        }
+    </style>
+@endpush

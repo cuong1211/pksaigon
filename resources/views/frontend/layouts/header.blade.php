@@ -17,12 +17,12 @@
                     <a class="navbar-brand" href="{{ route('home') }}">
                         <div class="brand-container">
                             <div class="logo-wrapper">
-                                <img src="{{ asset('frontend/images/logo.png') }}" alt="PKSG Logo" class="brand-logo">
+                                <img src="{{ asset('frontend/images/favicon.jpg') }}" alt="PKSG Logo" class="brand-logo">
                                 <div class="logo-glow"></div>
                             </div>
                             <div class="brand-content">
-                                <div class="brand-main">PKSG</div>
-                                <div class="brand-subtitle">Phòng Khám Sài Gòn</div>
+                                <div class="brand-main">Thu Hiền</div>
+                                <div class="brand-subtitle">Phòng Khám Sản phụ Khoa</div>
                             </div>
                         </div>
                     </a>
@@ -95,10 +95,9 @@
     <!-- Drawer Header -->
     <div class="drawer-header">
         <div class="drawer-brand">
-            <img src="{{ asset('frontend/images/logo.png') }}" alt="PKSG Logo">
+            <img src="{{ asset('frontend/images/favicon.jpg') }}" alt="PKSG Logo">
             <div class="drawer-brand-text">
-                <h4>PKSG</h4>
-                <p>Phòng Khám Sài Gòn</p>
+                <h4>Thu Hiền</h4>
             </div>
         </div>
         <button class="drawer-close" id="drawerClose">
