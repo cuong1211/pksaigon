@@ -27,7 +27,7 @@
                                     <span>Thứ 2 - Chủ nhật:</span>
                                     <span>7:00 - 19:00</span>
                                 </div>
-                               
+
                             </div>
                         </div>
                     </div>
@@ -96,7 +96,8 @@
                     <div class="social-links mt-4">
                         <h6 class="mb-3 text-white">Kết nối với chúng tôi</h6>
                         <div class="d-flex gap-2">
-                            <a href="https://www.facebook.com/pk.sanphukhoasaigon" class="social-link facebook" title="Facebook">
+                            <a href="https://www.facebook.com/pk.sanphukhoasaigon" class="social-link facebook"
+                                title="Facebook">
                                 <i class="fab fa-facebook-f"></i>
                             </a>
                         </div>
@@ -115,19 +116,30 @@
                     </div>
                 </div>
                 <div class="col-lg-6">
-                    
+
                 </div>
             </div>
         </div>
     </div>
 
     <!-- Back to Top Button -->
-    <div class="back-to-top" id="backToTop">
-        <i class="fas fa-chevron-up"></i>
+    <div class="floating-buttons">
+        <!-- Messenger Button -->
+        <a href="https://m.me/pk.sanphukhoasaigon" class="floating-btn messenger-btn" target="_blank">
+            <i class="fab fa-facebook-messenger"></i>
+            <span class="tooltip">Chat với chúng tôi</span>
+        </a>
+
+        <!-- Phone Button -->
+        <a href="tel:+84384518881" class="floating-btn phone-btn">
+            <i class="fas fa-phone"></i>
+            <span class="tooltip">Gọi: 0384 518 881</span>
+        </a>
+
+        <!-- Back to Top Button -->
+        <div class="floating-btn back-to-top" id="backToTop">
+            <i class="fas fa-chevron-up"></i>
+            <span class="tooltip">Lên đầu trang</span>
+        </div>
     </div>
 </footer>
-
-    
-
-
-    
