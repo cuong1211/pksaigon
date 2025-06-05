@@ -86,7 +86,7 @@
                             <i class="fas fa-phone me-3"></i>
                             <div>
                                 <h6 class="mb-1">Hotline</h6>
-                                <a href="tel:+84123456789" class="contact-link"> 03845188881</a>
+                                <a href="tel:+84123456789" class="contact-link"> 0384518881</a>
                             </div>
                         </div>
                     </div>

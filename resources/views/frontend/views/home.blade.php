@@ -78,7 +78,7 @@
                         </div>
                         <div class="cta-box-content">
                             <h3>cần tư vấn khám bệnh?</h3>
-                            <p>Gọi ngay: 03845188881</p>
+                            <p>Gọi ngay: 0384518881</p>
                         </div>
                     </div>
                 </div>
@@ -923,7 +923,7 @@
 
                                 <!-- Contact Info Content Start -->
                                 <div class="contact-info-content">
-                                    <p>03845188881</p>
+                                    <p>0384518881</p>
                                 </div>
                                 <!-- Contact Info Content End -->
                             </div>

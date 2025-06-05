@@ -170,7 +170,7 @@
                                         <div class="icon"><i class="fas fa-phone"></i></div>
                                         <div class="content">
                                             <h5>Hotline</h5>
-                                            <p><a href="tel:+84123456789">03845188881</a></p>
+                                            <p><a href="tel:+84384518881">0384518881</a></p>
                                         </div>
                                     </div>
                                     <div class="contact-item">

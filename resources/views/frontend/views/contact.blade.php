@@ -44,7 +44,7 @@
                             </div>
                             <div class="contact-info-content">
                                 <h3>Điện thoại</h3>
-                                <p><a href="tel:03845188881">0384 518 8881</a></p>
+                                <p><a href="tel:0384518881">0384 518 8881</a></p>
                                 <small>BS.Nguyễn Thị Thu Hiền</small>
                             </div>
                         </div>
@@ -163,7 +163,7 @@
                                         </div>
                                         <div class="emergency-content">
                                             <h4>Cấp cứu 24/7</h4>
-                                            <p><a href="tel:03845188881">0384 518 8881</a></p>
+                                            <p><a href="tel:0384518881">0384 518 8881</a></p>
                                         </div>
                                     </div>
                                 </div>
