@@ -14,11 +14,19 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        // Đăng ký middleware alias
-        $middleware->web(append: [
-            GzipMiddleware::class,
-            HtmlCacheMiddleware::class,
+        // CHỈ APPLY CACHE VÀ GZIP CHO FRONTEND
+        // Không apply cho admin để tránh xung đột session
+        $middleware->group('web', [
+            \Illuminate\Cookie\Middleware\EncryptCookies::class,
+            \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
+            \Illuminate\Session\Middleware\StartSession::class,
+            \Illuminate\View\Middleware\ShareErrorsFromSession::class,
+            \Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class,
+            \Illuminate\Routing\Middleware\SubstituteBindings::class,
+            // Thêm middleware SEO chỉ cho frontend
         ]);
+
+        // Đăng ký middleware alias
         $middleware->alias([
             'check.auth' => \App\Http\Middleware\CheckAuth::class,
             'vietqr.auth' => \App\Http\Middleware\VietQRAuth::class,

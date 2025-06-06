@@ -17,7 +17,7 @@
                     <a class="navbar-brand" href="{{ route('home') }}">
                         <div class="brand-container">
                             <div class="logo-wrapper">
-                                <img src="{{ asset('frontend/images/favicon.jpg') }}" alt="PKSG Logo" class="brand-logo">
+                                <img src="{{ asset('frontend/images/favicon.jpg') }}" alt="PKSG Logo" class="">
                                 <div class="logo-glow"></div>
                             </div>
                             <div class="brand-content">

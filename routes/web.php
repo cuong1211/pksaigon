@@ -16,8 +16,6 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
-use App\Http\Controllers\Api\VietQRWebhookController;
-use App\Http\Controllers\Api\VietQRCallbackController;
 
 use App\Http\Controllers\Frontend\HomeController;
 use App\Http\Controllers\Frontend\AboutController;
@@ -29,47 +27,71 @@ use App\Http\Controllers\Frontend\AppointmentController as FrontendAppointmentCo
 
 /*
 |--------------------------------------------------------------------------
-| Web Routes
+| Web Routes - FRONTEND (có cache và gzip)
 |--------------------------------------------------------------------------
 */
 
-// Route cho trang chủ frontend
-Route::get('/', [HomeController::class, 'index'])->name('home');
-Route::get('/about', [AboutController::class, 'index'])->name('about');
+// Group các route frontend với SEO middleware
+Route::middleware(['gzip', 'html.cache'])->group(function () {
+    // Frontend routes
+    Route::get('/', [HomeController::class, 'index'])->name('home');
+    Route::get('/about', [AboutController::class, 'index'])->name('about');
 
-// Services Routes
-Route::get('/services', [FrontendServiceController::class, 'index'])->name('frontend.services');
-Route::get('/services/type/{type}', [FrontendServiceController::class, 'indexByType'])->name('frontend.services.type');
-Route::get('/services/{slug}', [FrontendServiceController::class, 'show'])->name('frontend.services.show');
-// API route để lấy dịch vụ theo loại (cho AJAX nếu cần)
-Route::get('/api/services/type/{type}', [FrontendServiceController::class, 'getServicesByType'])->name('frontend.services.by-type');
+    // Services Routes
+    Route::get('/services', [FrontendServiceController::class, 'index'])->name('frontend.services');
+    Route::get('/services/type/{type}', [FrontendServiceController::class, 'indexByType'])->name('frontend.services.type');
+    Route::get('/services/{slug}', [FrontendServiceController::class, 'show'])->name('frontend.services.show');
 
-// Contact Routes
-Route::get('/contact', [FrontendContactController::class, 'index'])->name('contact');
-Route::post('/contact', [FrontendContactController::class, 'store'])->name('contact.store');
+    // Contact Routes - chỉ GET
+    Route::get('/contact', [FrontendContactController::class, 'index'])->name('contact');
 
-// Posts/Blog Routes
-Route::get('/posts', [FrontendPostController::class, 'index'])->name('frontend.posts');
-Route::get('/posts/{slug}', [FrontendPostController::class, 'show'])->name('frontend.posts.show');
+    // Posts/Blog Routes
+    Route::get('/posts', [FrontendPostController::class, 'index'])->name('frontend.posts');
+    Route::get('/posts/{slug}', [FrontendPostController::class, 'show'])->name('frontend.posts.show');
 
-// Medicines Routes
-Route::get('/medicines', [FrontendMedicineController::class, 'index'])->name('frontend.medicines');
-Route::get('/medicines/{slug}', [FrontendMedicineController::class, 'show'])->name('frontend.medicines.show');
+    // Medicines Routes
+    Route::get('/medicines', [FrontendMedicineController::class, 'index'])->name('frontend.medicines');
+    Route::get('/medicines/{slug}', [FrontendMedicineController::class, 'show'])->name('frontend.medicines.show');
 
-// Appointment Routes
+    // Appointment - chỉ GET
+    Route::get('/appointment', [FrontendAppointmentController::class, 'index'])->name('frontend.appointment');
 
-Route::get('/appointment', [FrontendAppointmentController::class, 'index'])->name('frontend.appointment');
-Route::post('/appointment', [FrontendAppointmentController::class, 'store'])->name('frontend.appointment.store');
+    // SEO Routes
+    Route::get('/robots.txt', [App\Http\Controllers\SitemapController::class, 'robots'])->name('robots');
+    Route::get('/sitemap.xml', [App\Http\Controllers\SitemapController::class, 'index'])->name('sitemap');
+    Route::get('/sitemap-news.xml', [App\Http\Controllers\SitemapController::class, 'newsSitemap'])->name('sitemap.news');
+    Route::get('/sitemap-images.xml', [App\Http\Controllers\SitemapController::class, 'imageSitemap'])->name('sitemap.images');
+});
 
-// API Routes cho Frontend (không cần auth)
-Route::get('/api/services', [FrontendAppointmentController::class, 'getServices'])->name('frontend.services.api');
+/*
+|--------------------------------------------------------------------------
+| Web Routes - KHÔNG CACHE (POST, admin, auth)
+|--------------------------------------------------------------------------
+*/
 
-// Routes cho authentication
-Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
-Route::post('/login', [AuthController::class, 'postLogin'])->name('backend.postLogin');
-Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
+// Routes cần session nhưng không cache
+Route::group([], function () {
+    // POST routes cho frontend
+    Route::post('/contact', [FrontendContactController::class, 'store'])->name('contact.store');
+    Route::post('/appointment', [FrontendAppointmentController::class, 'store'])->name('frontend.appointment.store');
 
-// Group routes cho admin (yêu cầu đăng nhập)
+    // API Routes cho Frontend (không cần auth)
+    Route::get('/api/services/type/{type}', [FrontendServiceController::class, 'getServicesByType'])->name('frontend.services.by-type');
+    Route::get('/api/services', [FrontendAppointmentController::class, 'getServices'])->name('frontend.services.api');
+
+    // Routes cho authentication
+    Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
+    Route::post('/login', [AuthController::class, 'postLogin'])->name('backend.postLogin');
+    Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
+});
+
+/*
+|--------------------------------------------------------------------------
+| Admin Routes - KHÔNG BAO GIỜ CACHE
+|--------------------------------------------------------------------------
+*/
+
+// Group routes cho admin (yêu cầu đăng nhập) - KHÔNG CACHE
 Route::middleware(['auth'])->group(function () {
     Route::prefix('admin')->group(function () {
         // Dashboard
@@ -78,7 +100,6 @@ Route::middleware(['auth'])->group(function () {
         })->name('admin');
 
         // Posts Management
-        // Posts Management
         Route::resource('posts', PostController::class);
         Route::get('posts/get-data/{id}', [PostController::class, 'getData'])->name('posts.getData');
         Route::patch('posts/{id}/toggle-featured', [PostController::class, 'toggleFeatured'])->name('posts.toggle-featured');
@@ -86,6 +107,7 @@ Route::middleware(['auth'])->group(function () {
         // Services Management
         Route::resource('service', ServiceController::class);
         Route::get('service/get-data/{id}', [ServiceController::class, 'getData'])->name('service.getData');
+
         // Medicine Management
         Route::resource('medicine', MedicineController::class);
         Route::get('medicine/get-data/{id}', [MedicineController::class, 'getData'])->name('medicine.getData');
@@ -103,12 +125,10 @@ Route::middleware(['auth'])->group(function () {
         Route::post('examination/{id}/generate-qr', [ExaminationController::class, 'generatePaymentQR'])->name('examination.generatePaymentQR');
         Route::get('examination/{id}/check-payment', [ExaminationController::class, 'checkPaymentStatus'])->name('examination.checkPaymentStatus');
 
-
         Route::resource('appointment', AppointmentController::class);
         Route::post('appointment/{id}/confirm', [AppointmentController::class, 'confirm'])->name('appointment.confirm');
         Route::post('appointment/{id}/cancel', [AppointmentController::class, 'cancel'])->name('appointment.cancel');
         Route::post('appointment/{id}/complete', [AppointmentController::class, 'complete'])->name('appointment.complete');
-
 
         Route::prefix('medicine-statistics')->name('medicine-statistics.')->group(function () {
             Route::get('/', [App\Http\Controllers\Admin\MedicineStatisticsController::class, 'index'])->name('index');
@@ -119,6 +139,7 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/type-statistics', [App\Http\Controllers\Admin\MedicineStatisticsController::class, 'getTypeStatistics'])->name('type-statistics');
             Route::get('/export', [App\Http\Controllers\Admin\MedicineStatisticsController::class, 'exportReport'])->name('export');
         });
+
         // Route tạo slug cho service
         Route::get('create-slug', function (Request $request) {
             $name = $request->get('name');
@@ -139,6 +160,11 @@ Route::middleware(['auth'])->group(function () {
     });
 });
 
+/*
+|--------------------------------------------------------------------------
+| Utility Routes
+|--------------------------------------------------------------------------
+*/
 
 // Route storage link (cho development)
 Route::get('/storage-link', function () {
@@ -146,12 +172,9 @@ Route::get('/storage-link', function () {
     return 'Storage link created!';
 });
 
-// Hoặc nếu VietQR yêu cầu path cụ thể:
+// Test routes và webhook (không cache)
 Route::post('examination/{id}/test-callback-simulation', [ExaminationController::class, 'testCallbackSimulation'])
     ->name('examination.testCallbackSimulation');
-
-// Test VietQR API với data thật
-
 
 Route::withoutMiddleware(['web'])->group(function () {
     Route::post('/bank/api/transaction-sync', [VietQRController::class, 'transactionSync'])
@@ -160,33 +183,18 @@ Route::withoutMiddleware(['web'])->group(function () {
         ->name('examination.triggerVietQRCallback');
 });
 
-
-// SEO Routes
-Route::get('/robots.txt', [App\Http\Controllers\SitemapController::class, 'robots'])
-    ->name('robots');
-
-Route::get('/sitemap.xml', [App\Http\Controllers\SitemapController::class, 'index'])
-    ->name('sitemap');
-
-// Additional sitemaps
-Route::get('/sitemap-news.xml', [App\Http\Controllers\SitemapController::class, 'newsSitemap'])
-    ->name('sitemap.news');
-
-Route::get('/sitemap-images.xml', [App\Http\Controllers\SitemapController::class, 'imageSitemap'])
-    ->name('sitemap.images');
-
-// SEO Test routes (chỉ cho development)
+// Health check và SEO test routes
 if (app()->environment('local')) {
-    Route::get('/seo-test', function() {
+    Route::get('/seo-test', function () {
         $seoHelper = new \App\Services\SEOHelper();
         $seoHelper->setTitle('Test SEO Page')
             ->setDescription('Testing SEO implementation on local environment')
             ->setKeywords('test, seo, laravel, phòng khám');
-        
+
         return view('frontend.views.home', compact('seoHelper'));
     })->name('seo.test');
-    
-    Route::get('/seo-debug', function() {
+
+    Route::get('/seo-debug', function () {
         return response()->json([
             'app_url' => config('app.url'),
             'current_url' => request()->url(),
@@ -204,35 +212,41 @@ if (app()->environment('local')) {
             ]
         ]);
     })->name('seo.debug');
+
+    // Route để clear cache manually
+    Route::get('/clear-cache', function () {
+        Cache::flush();
+        Artisan::call('cache:clear');
+        Artisan::call('config:clear');
+        Artisan::call('view:clear');
+        return 'All cache cleared!';
+    })->name('clear.cache');
 }
 
-// Health check cho SEO crawlers
-Route::get('/health-seo', function() {
+Route::get('/health-seo', function () {
     $checks = [
         'database' => true,
         'cache' => true,
         'sitemap' => true,
     ];
-    
+
     try {
-        // Test database
         DB::connection()->getPdo();
     } catch (\Exception $e) {
         $checks['database'] = false;
     }
-    
+
     try {
-        // Test cache
         Cache::put('health_check', 'ok', 60);
         $checks['cache'] = Cache::get('health_check') === 'ok';
     } catch (\Exception $e) {
         $checks['cache'] = false;
     }
-    
-    $allHealthy = array_reduce($checks, function($carry, $item) {
+
+    $allHealthy = array_reduce($checks, function ($carry, $item) {
         return $carry && $item;
     }, true);
-    
+
     return response()->json([
         'status' => $allHealthy ? 'healthy' : 'unhealthy',
         'checks' => $checks,
