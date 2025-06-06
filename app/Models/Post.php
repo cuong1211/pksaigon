@@ -1,5 +1,6 @@
 <?php
 
+// app/Models/Post.php
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
@@ -119,14 +120,14 @@ class Post extends Model
         return $this->status ? 'Hiện' : 'Ẩn';
     }
 
-    // Accessor cho đường dẫn ảnh đại diện
+    // FIX: Accessor cho đường dẫn ảnh đại diện
     public function getFeaturedImageUrlAttribute()
     {
         if ($this->featured_image && Storage::disk('public')->exists($this->featured_image)) {
-            return asset('storage/' . $this->featured_image);
+            return url('storage/' . $this->featured_image);
         }
 
-        return asset('images/default-post.jpg');
+        return url('images/default-post.jpg');
     }
 
     // Method để tăng lượt xem
