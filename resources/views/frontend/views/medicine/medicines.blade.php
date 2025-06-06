@@ -57,7 +57,12 @@
                                 <figure>
                                     <a href="{{ route('frontend.medicines.show', $medicine->slug ?? $medicine->id) }}"
                                         class="image-anime">
-                                        <img src="{{ $medicine->image_url }}" alt="{{ $medicine->name }}">
+                                        @if ($medicine->image && file_exists(public_path('storage/' . $medicine->image)))
+                                            <img src="{{ $medicine->image_url }}" alt="{{ $medicine->name }}">
+                                        @else
+                                            <img src="{{ asset('frontend/images/favicon_1.png') }}"
+                                                alt="Default Medicine Image">
+                                        @endif
                                     </a>
                                 </figure>
                             </div>
@@ -65,7 +70,7 @@
 
                             <!-- Medicine Content Start -->
                             <div class="medicine-content">
-                                
+
 
                                 <h3 class="medicine-title">
                                     <a href="{{ route('frontend.medicines.show', $medicine->slug ?? $medicine->id) }}">
@@ -353,10 +358,12 @@
         .page-medicines {
             padding: 20px 0;
         }
-        .mb-5{
+
+        .mb-5 {
             margin-bottom: 0 !important;
         }
-        .btn-primary{
+
+        .btn-primary {
             background-color: #1e85b4;
             border-color: #1e85b4;
         }

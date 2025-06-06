@@ -54,9 +54,9 @@
                                     @else
                                         @php
                                             $iconMap = [
-                                                'procedure' => 'frontend/images/icon-services-1.svg',
-                                                'laboratory' => 'frontend/images/icon-services-2.svg',
-                                                'other' => 'frontend/images/icon-services-3.svg',
+                                                'procedure' => 'frontend/images/favicon_1.png',
+                                                'laboratory' => 'frontend/images/favicon_1.png',
+                                                'other' => 'frontend/images/favicon_1.png',
                                             ];
                                             $iconPath = $iconMap[$service->type] ?? $iconMap['other'];
                                             $iconUrl = app()->environment('production')

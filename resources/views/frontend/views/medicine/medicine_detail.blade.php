@@ -27,9 +27,13 @@
                         <!-- Medicine Images -->
                         <div class="medicine-images wow fadeInUp">
                             <div class="main-image">
-                                <img src="{{ $medicine->image_url }}" alt="{{ $medicine->name }}" class="img-fluid rounded"
-                                    id="mainImage">
-
+                                @if ($medicine->image && file_exists(public_path('storage/' . $medicine->image)))
+                                    <img src="{{ $medicine->image_url }}" alt="{{ $medicine->name }}"
+                                        class="img-fluid rounded" id="mainImage">
+                                @else
+                                    <img src="{{ asset('frontend/images/favicon_1.png') }}" class="img-fluid rounded"
+                                        alt="Default Medicine Image">
+                                @endif
                             </div>
                         </div>
 
