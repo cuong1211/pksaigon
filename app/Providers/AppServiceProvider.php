@@ -3,22 +3,18 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Facades\URL;
 
 class AppServiceProvider extends ServiceProvider
 {
-    /**
-     * Register any application services.
-     */
-    public function register(): void
+    public function boot()
     {
-        //
-    }
-
-    /**
-     * Bootstrap any application services.
-     */
-    public function boot(): void
-    {
-        //
+        // Loại bỏ /public/ khỏi URL
+        URL::forceRootUrl(config('app.url'));
+        
+        // Cấu hình public path
+        $this->app->bind('path.public', function() {
+            return base_path();
+        });
     }
 }
