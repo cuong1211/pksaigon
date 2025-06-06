@@ -183,64 +183,82 @@ Route::withoutMiddleware(['web'])->group(function () {
         ->name('examination.triggerVietQRCallback');
 });
 
-// Health check và SEO test routes
-if (app()->environment('local')) {
-    Route::get('/seo-test', function () {
-        $seoHelper = new \App\Services\SEOHelper();
-        $seoHelper->setTitle('Test SEO Page')
-            ->setDescription('Testing SEO implementation on local environment')
-            ->setKeywords('test, seo, laravel, phòng khám');
+// Thêm vào cuối file routes/web.php
 
-        return view('frontend.views.home', compact('seoHelper'));
-    })->name('seo.test');
+// SEO Routes cho Phòng Khám Phụ Sản Thu Hiền
+Route::get('/robots.txt', [App\Http\Controllers\SitemapController::class, 'robots'])
+    ->name('robots');
 
-    Route::get('/seo-debug', function () {
-        return response()->json([
-            'app_url' => config('app.url'),
-            'current_url' => request()->url(),
-            'domain' => request()->getHost(),
-            'scheme' => request()->getScheme(),
-            'user_agent' => request()->userAgent(),
-            'routes' => [
-                'robots' => route('robots'),
-                'sitemap' => route('sitemap'),
-                'home' => route('home'),
-            ],
-            'middleware' => [
-                'gzip_enabled' => function_exists('gzencode'),
-                'cache_store' => config('cache.default'),
-            ]
-        ]);
-    })->name('seo.debug');
+Route::get('/sitemap.xml', [App\Http\Controllers\SitemapController::class, 'index'])
+    ->name('sitemap');
 
-    // Route để clear cache manually
-    Route::get('/clear-cache', function () {
-        Cache::flush();
-        Artisan::call('cache:clear');
-        Artisan::call('config:clear');
-        Artisan::call('view:clear');
-        return 'All cache cleared!';
-    })->name('clear.cache');
-}
+// Additional sitemaps
+Route::get('/sitemap-news.xml', [App\Http\Controllers\SitemapController::class, 'newsSitemap'])
+    ->name('sitemap.news');
 
+Route::get('/sitemap-images.xml', [App\Http\Controllers\SitemapController::class, 'imageSitemap'])
+    ->name('sitemap.images');
+
+Route::get('/sitemap-videos.xml', [App\Http\Controllers\SitemapController::class, 'videoSitemap'])
+    ->name('sitemap.videos');
+
+// Landing pages cho SEO (có thể thêm các trang landing chuyên biệt)
+Route::get('/kham-thai-quan-5', function () {
+    $seoHelper = app(\App\Services\SEOHelper::class);
+    $seoHelper->setTitle('Khám thai tại Quận 5 - Phòng Khám Phụ Sản Thu Hiền')
+        ->setDescription('Dịch vụ khám thai chuyên nghiệp tại Quận 5, TP.HCM. Đội ngũ bác sĩ giàu kinh nghiệm, trang thiết bị hiện đại. Đặt lịch ngay: 0384 518 881')
+        ->setKeywords('khám thai quận 5, phòng khám thai sản, bác sĩ sản khoa giỏi, siêu âm thai, khám thai định kỳ');
+
+    return view('frontend.views.home', compact('seoHelper'));
+})->name('seo.kham-thai-quan-5');
+
+Route::get('/phu-khoa-sai-gon', function () {
+    $seoHelper = app(\App\Services\SEOHelper::class);
+    $seoHelper->setTitle('Phụ khoa Sài Gòn - Chuyên khoa phụ nữ Thu Hiền')
+        ->setDescription('Điều trị các bệnh phụ khoa tại Sài Gòn. Phòng Khám Thu Hiền chuyên khoa phụ nữ với đội ngũ bác sĩ chuyên nghiệp, bảo mật tuyệt đối')
+        ->setKeywords('phụ khoa sài gòn, điều trị phụ khoa, viêm nhiễm phụ khoa, bác sĩ phụ khoa giỏi, khám phụ khoa uy tín');
+
+    return view('frontend.views.home', compact('seoHelper'));
+})->name('seo.phu-khoa-sai-gon');
+
+Route::get('/sieu-am-thai-4d', function () {
+    $seoHelper = app(\App\Services\SEOHelper::class);
+    $seoHelper->setTitle('Siêu âm thai 4D tại Thu Hiền - Công nghệ hiện đại')
+        ->setDescription('Dịch vụ siêu âm thai 4D với công nghệ hiện đại nhất tại Phòng Khám Thu Hiền. Hình ảnh rõ nét, an toàn cho mẹ và bé')
+        ->setKeywords('siêu âm thai 4D, siêu âm thai, công nghệ siêu âm hiện đại, siêu âm màu, khám thai');
+
+    return view('frontend.views.home', compact('seoHelper'));
+})->name('seo.sieu-am-thai-4d');
+
+// Health check cho SEO crawlers
 Route::get('/health-seo', function () {
     $checks = [
         'database' => true,
         'cache' => true,
         'sitemap' => true,
+        'services_active' => true,
     ];
 
     try {
+        // Test database
         DB::connection()->getPdo();
     } catch (\Exception $e) {
         $checks['database'] = false;
     }
 
     try {
+        // Test cache
         Cache::put('health_check', 'ok', 60);
         $checks['cache'] = Cache::get('health_check') === 'ok';
     } catch (\Exception $e) {
         $checks['cache'] = false;
+    }
+
+    try {
+        // Test services
+        $checks['services_active'] = \App\Models\Service::where('is_active', true)->count() > 0;
+    } catch (\Exception $e) {
+        $checks['services_active'] = false;
     }
 
     $allHealthy = array_reduce($checks, function ($carry, $item) {
@@ -249,7 +267,196 @@ Route::get('/health-seo', function () {
 
     return response()->json([
         'status' => $allHealthy ? 'healthy' : 'unhealthy',
+        'clinic_name' => 'Phòng Khám Phụ Sản Thu Hiền',
         'checks' => $checks,
-        'timestamp' => now()->toISOString()
+        'timestamp' => now()->toISOString(),
+        'version' => '1.0.0'
     ], $allHealthy ? 200 : 503);
 })->name('health.seo');
+
+// SEO Test routes (chỉ cho development và staging)
+if (app()->environment(['local', 'staging'])) {
+    Route::get('/seo-test', function () {
+        $seoHelper = app(\App\Services\SEOHelper::class);
+        $seoHelper->setTitle('Test SEO Page - Thu Hiền Clinic')
+            ->setDescription('Testing SEO implementation for Phòng Khám Phụ Sản Thu Hiền')
+            ->setKeywords('test, seo, laravel, phòng khám phụ sản thu hiền');
+
+        return view('frontend.views.home', compact('seoHelper'));
+    })->name('seo.test');
+
+    Route::get('/seo-debug', function () {
+        return response()->json([
+            'clinic_info' => [
+                'name' => 'Phòng Khám Phụ Sản Thu Hiền',
+                'address' => '65 Hùng Vương, Phường 4, Quận 5, TP.HCM',
+                'phones' => ['0384518881', '0988669292'],
+                'email' => 'info@phongkhamthuhien.com'
+            ],
+            'app_url' => config('app.url'),
+            'current_url' => request()->url(),
+            'domain' => request()->getHost(),
+            'scheme' => request()->getScheme(),
+            'user_agent' => request()->userAgent(),
+            'routes' => [
+                'robots' => route('robots'),
+                'sitemap' => route('sitemap'),
+                'sitemap_news' => route('sitemap.news'),
+                'sitemap_images' => route('sitemap.images'),
+                'home' => route('home'),
+                'services' => route('frontend.services'),
+                'appointment' => route('frontend.appointment'),
+            ],
+            'seo_pages' => [
+                'kham_thai_quan_5' => route('seo.kham-thai-quan-5'),
+                'phu_khoa_sai_gon' => route('seo.phu-khoa-sai-gon'),
+                'sieu_am_thai_4d' => route('seo.sieu-am-thai-4d'),
+            ],
+            'middleware' => [
+                'gzip_enabled' => function_exists('gzencode'),
+                'cache_store' => config('cache.default'),
+                'environment' => app()->environment(),
+            ],
+            'database' => [
+                'services_count' => \App\Models\Service::count(),
+                'active_services' => \App\Models\Service::where('is_active', true)->count(),
+                'posts_count' => \App\Models\Post::count(),
+                'published_posts' => \App\Models\Post::where('status', true)->count(),
+                'medicines_count' => \App\Models\Medicine::count(),
+            ]
+        ]);
+    })->name('seo.debug');
+
+    Route::get('/test-schema', function () {
+        $seoHelper = app(\App\Services\SEOHelper::class);
+
+        // Test Organization Schema
+        $organizationSchema = $seoHelper->generateSchema('Organization');
+
+        // Test Service Schema
+        $serviceSchema = $seoHelper->generateSchema('Service', [
+            'name' => 'Khám thai định kỳ',
+            'description' => 'Dịch vụ khám thai định kỳ chuyên nghiệp',
+            'price' => 200000
+        ]);
+
+        // Test Article Schema
+        $articleSchema = $seoHelper->generateSchema('Article', [
+            'title' => 'Chăm sóc sức khỏe phụ nữ',
+            'description' => 'Hướng dẫn chăm sóc sức khỏe phụ nữ',
+            'published_at' => now()->toISOString(),
+            'updated_at' => now()->toISOString()
+        ]);
+
+        // Test FAQ Schema
+        $faqSchema = $seoHelper->generateSchema('FAQ', [
+            'questions' => [
+                [
+                    '@type' => 'Question',
+                    'name' => 'Phòng khám có khám ngoài giờ không?',
+                    'acceptedAnswer' => [
+                        '@type' => 'Answer',
+                        'text' => 'Phòng khám mở cửa từ 7:00 - 19:00 hàng ngày. Trường hợp khẩn cấp, vui lòng gọi hotline 0384 518 881'
+                    ]
+                ],
+                [
+                    '@type' => 'Question',
+                    'name' => 'Có cần đặt lịch trước không?',
+                    'acceptedAnswer' => [
+                        '@type' => 'Answer',
+                        'text' => 'Để được phục vụ tốt nhất, khách hàng nên đặt lịch trước qua hotline hoặc website'
+                    ]
+                ]
+            ]
+        ]);
+
+        return view('test-schema', compact('organizationSchema', 'serviceSchema', 'articleSchema', 'faqSchema'));
+    })->name('test.schema');
+}
+
+// Redirect old URLs to new structure (nếu có)
+Route::get('/old-page', function () {
+    return redirect()->route('home', [], 301);
+});
+
+// AMP pages (nếu muốn hỗ trợ AMP)
+Route::get('/amp/{slug}', function ($slug) {
+    $post = \App\Models\Post::where('slug', $slug)->where('status', true)->firstOrFail();
+
+    $seoHelper = app(\App\Services\SEOHelper::class);
+    $seoHelper->setTitle($post->title . ' - Phòng Khám Phụ Sản Thu Hiền')
+        ->setDescription($post->excerpt ?: 'Tin tức sức khỏe phụ nữ từ Phòng Khám Thu Hiền')
+        ->setKeywords('tin tức sức khỏe, phụ nữ, thai sản, phụ khoa');
+
+    return view('frontend.amp.post', compact('post', 'seoHelper'));
+})->name('amp.post');
+
+// Progressive Web App manifest
+Route::get('/manifest.json', function () {
+    return response()->json([
+        'name' => 'Phòng Khám Phụ Sản Thu Hiền',
+        'short_name' => 'Thu Hiền Clinic',
+        'description' => 'Phòng khám chuyên khoa sản phụ khoa tại TP.HCM',
+        'start_url' => '/',
+        'display' => 'standalone',
+        'background_color' => '#ffffff',
+        'theme_color' => '#1e85b4',
+        'icons' => [
+            [
+                'src' => asset('frontend/images/favicon.jpg'),
+                'sizes' => '192x192',
+                'type' => 'image/jpeg'
+            ],
+            [
+                'src' => asset('frontend/images/favicon.jpg'),
+                'sizes' => '512x512',
+                'type' => 'image/jpeg'
+            ]
+        ]
+    ], 200, [
+        'Content-Type' => 'application/manifest+json'
+    ]);
+})->name('manifest');
+
+// Service Worker cho PWA
+Route::get('/sw.js', function () {
+    $content = "
+const CACHE_NAME = 'thu-hien-clinic-v1';
+const urlsToCache = [
+  '/',
+  '/services',
+  '/appointment',
+  '/contact',
+  '/css/bootstrap.min.css',
+  '/css/custom.css',
+  '/js/jquery-3.7.1.min.js',
+  '/js/bootstrap.min.js'
+];
+
+self.addEventListener('install', function(event) {
+  event.waitUntil(
+    caches.open(CACHE_NAME)
+      .then(function(cache) {
+        return cache.addAll(urlsToCache);
+      })
+  );
+});
+
+self.addEventListener('fetch', function(event) {
+  event.respondWith(
+    caches.match(event.request)
+      .then(function(response) {
+        if (response) {
+          return response;
+        }
+        return fetch(event.request);
+      }
+    )
+  );
+});
+";
+
+    return response($content, 200, [
+        'Content-Type' => 'application/javascript'
+    ]);
+})->name('service-worker');

@@ -1,51 +1,118 @@
-<!-- CÁCH 1: Thêm vào file resources/views/frontend/layouts/source.blade.php -->
-
 <!-- Meta -->
 <base href="{{ asset('frontend') }}/">
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="">
-<meta name="keywords" content="">
-<meta name="author" content="Awaiken">
+
 {{-- SEO Meta Tags --}}
 @if (isset($seoHelper))
     {!! $seoHelper->renderMeta() !!}
 @else
-    <title>{{ $title ?? 'Phòng Khám Sài Gòn - Chăm sóc sức khỏe chuyên nghiệp' }}</title>
+    <title>{{ $title ?? 'Phòng Khám Phụ Sản Thu Hiền - Chăm sóc sức khỏe phụ nữ chuyên nghiệp' }}</title>
     <meta name="description"
-        content="{{ $description ?? 'Phòng khám chuyên khoa sản phụ khoa với đội ngũ bác sĩ giàu kinh nghiệm, trang thiết bị hiện đại tại TP.HCM' }}">
+        content="{{ $description ?? 'Phòng Khám Phụ Sản Thu Hiền - Chuyên khoa sản phụ khoa với đội ngũ bác sĩ giàu kinh nghiệm, trang thiết bị hiện đại tại Quận 5, TP.HCM. Khám thai, điều trị phụ khoa, tư vấn sức khỏe sinh sản.' }}">
     <meta name="keywords"
-        content="{{ $keywords ?? 'phòng khám sài gòn, sản phụ khoa, bác sĩ, khám thai, điều trị phụ khoa' }}">
+        content="{{ $keywords ?? 'phòng khám phụ sản thu hiền, phụ khoa sài gòn, khám thai, điều trị phụ khoa, bác sĩ phụ sản, sức khỏe phụ nữ, khám phụ khoa quận 5, siêu âm thai, viêm nhiễm phụ khoa' }}">
 
     {{-- Open Graph --}}
-    <meta property="og:title" content="{{ $title ?? 'Phòng Khám Sài Gòn' }}">
+    <meta property="og:title" content="{{ $title ?? 'Phòng Khám Phụ Sản Thu Hiền' }}">
     <meta property="og:description"
-        content="{{ $description ?? 'Phòng khám chuyên khoa sản phụ khoa với đội ngũ bác sĩ giàu kinh nghiệm' }}">
-    <meta property="og:image" content="{{ $ogImage ?? asset('frontend/images/logo.png') }}">
+        content="{{ $description ?? 'Chuyên khoa sản phụ khoa với đội ngũ bác sĩ giàu kinh nghiệm, trang thiết bị hiện đại tại Quận 5, TP.HCM' }}">
+    <meta property="og:image" content="{{ $ogImage ?? asset('frontend/images/favicon_1.png') }}">
     <meta property="og:url" content="{{ url()->current() }}">
     <meta property="og:type" content="website">
-    <meta property="og:site_name" content="Phòng Khám Sài Gòn">
+    <meta property="og:site_name" content="Phòng Khám Phụ Sản Thu Hiền">
+    <meta property="og:locale" content="vi_VN">
 
     {{-- Twitter Card --}}
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="{{ $title ?? 'Phòng Khám Sài Gòn' }}">
-    <meta name="twitter:description" content="{{ $description ?? 'Phòng khám chuyên khoa sản phụ khoa' }}">
-    <meta name="twitter:image" content="{{ $ogImage ?? asset('frontend/images/logo.png') }}">
+    <meta name="twitter:title" content="{{ $title ?? 'Phòng Khám Phụ Sản Thu Hiền' }}">
+    <meta name="twitter:description"
+        content="{{ $description ?? 'Chuyên khoa sản phụ khoa với đội ngũ bác sĩ giàu kinh nghiệp' }}">
+    <meta name="twitter:image" content="{{ $ogImage ?? asset('frontend/images/favicon_1.png') }}">
+
+    {{-- Geo Location Meta --}}
+    <meta name="geo.region" content="VN-SG">
+    <meta name="geo.placename" content="Hồ Chí Minh">
+    <meta name="geo.position" content="10.762622;106.660172">
+    <meta name="ICBM" content="10.762622, 106.660172">
+
+    {{-- Medical/Healthcare specific meta --}}
+    <meta name="medical-specialty" content="Obstetrics and Gynecology">
+    <meta name="healthcare-facility" content="Medical Clinic">
 @endif
 
 {{-- Canonical URL --}}
 <link rel="canonical" href="{{ $canonicalUrl ?? url()->current() }}">
+{{-- Alternate language versions (nếu có) --}}
+<link rel="alternate" hreflang="vi" href="{{ url()->current() }}">
+<link rel="alternate" hreflang="x-default" href="{{ url()->current() }}">
 
 {{-- Schema.org JSON-LD --}}
 @if (isset($seoHelper))
     {!! $seoHelper->generateSchema('Organization') !!}
+@else
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "MedicalClinic",
+        "name": "Phòng Khám Phụ Sản Thu Hiền",
+        "alternateName": "Thu Hiền Clinic",
+        "url": "{{ url('/') }}",
+        "logo": "{{ asset('frontend/images/favicon.jpg') }}",
+        "image": "{{ asset('frontend/images/favicon.jpg') }}",
+        "description": "Phòng khám chuyên khoa sản phụ khoa với đội ngũ bác sĩ giàu kinh nghiệm, trang thiết bị hiện đại tại Quận 5, TP.HCM",
+        "address": {
+            "@type": "PostalAddress",
+            "streetAddress": "65 Hùng Vương, Phường 4",
+            "addressLocality": "Quận 5",
+            "addressRegion": "TP. Hồ Chí Minh",
+            "postalCode": "700000",
+            "addressCountry": "VN"
+        },
+        "geo": {
+            "@type": "GeoCoordinates",
+            "latitude": "10.762622",
+            "longitude": "106.660172"
+        },
+        "telephone": ["+84384518881", "+84988669292"],
+        "email": "info@phongkhamthuhien.com",
+        "openingHours": ["Mo-Su 07:00-19:00"],
+        "openingHoursSpecification": [{
+            "@type": "OpeningHoursSpecification",
+            "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+            "opens": "07:00",
+            "closes": "19:00"
+        }],
+        "medicalSpecialty": ["Obstetrics and Gynecology", "Reproductive Health", "Women's Health"],
+        "serviceType": [
+            "Khám thai định kỳ",
+            "Siêu âm thai",
+            "Điều trị viêm nhiễm phụ khoa",
+            "Tư vấn kế hoạch hóa gia đình",
+            "Khám sức khỏe sinh sản"
+        ],
+        "paymentAccepted": ["Cash", "Credit Card", "Bank Transfer"],
+        "currenciesAccepted": "VND",
+        "priceRange": "100000-2000000",
+        "areaServed": ["Quận 5", "Quận 1", "Quận 3", "Quận 4", "Quận 6", "Quận 8", "Quận 10", "Quận 11", "TP. Hồ Chí Minh"]
+    }
+    </script>
 @endif
 
 @stack('schema')
 
 <!-- Favicon Icon -->
 <link rel="shortcut icon" type="image/x-icon" href="images/favicon_1.png">
+
+<!-- Preload important resources -->
+<link rel="preload" href="{{ asset('frontend/images/favicon.jpg') }}" as="image">
+<link rel="preload" href="css/bootstrap.min.css" as="style">
+<link rel="preload" href="css/custom.css" as="style">
+
+<!-- DNS Prefetch for external resources -->
+<link rel="dns-prefetch" href="//fonts.googleapis.com">
+<link rel="dns-prefetch" href="//fonts.gstatic.com">
 
 <!-- Google Fonts - Be Vietnam Pro -->
 <link rel="preconnect" href="https://fonts.googleapis.com">

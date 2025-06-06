@@ -171,7 +171,7 @@
 
                         <!-- About Us Footer Start -->
                         <div class="about-us-footer wow fadeInUp" data-wow-delay="0.75s">
-                            <a href="#" class="btn-default">tìm hiểu thêm</a>
+                            <a href="{{ route('about') }}" class="btn-default">tìm hiểu thêm</a>
                         </div>
                         <!-- About Us Footer End -->
                     </div>
@@ -213,7 +213,7 @@
                             <p>Chúng tôi cung cấp dịch vụ khám phụ khoa định kỳ và điều trị các bệnh lý phụ khoa.</p>
                         </div>
                         <div class="read-more-btn">
-                            <a href="{{ route('home') }}">xem thêm</a>
+                            <a href="{{ route('frontend.services.show', 'kham-phu-khoa') }}">xem thêm</a>
                         </div>
                     </div>
                     <!-- Service Item End -->
@@ -233,7 +233,7 @@
                             </p>
                         </div>
                         <div class="read-more-btn">
-                            <a href="{{ route('home') }}">xem thêm</a>
+                            <a href="{{ route('frontend.services.show', 'kham-thai') }}">xem thêm</a>
                         </div>
                     </div>
                     <!-- Service Item End -->
@@ -248,11 +248,12 @@
                             </div>
                         </div>
                         <div class="service-body">
-                            <h3>tư vấn kế hoạch hóa gia đình</h3>
-                            <p>Tư vấn các biện pháp tránh thai an toàn và kế hoạch hóa gia đình phù hợp.</p>
+                            <h3>thủ thuật chuyên khoa</h3>
+                            <p>Các thủ thuật chuyên khoa sản phụ khoa như điều trị tổn thương cổ tử cung, áp xe, và các can
+                                thiệp khác.</p>
                         </div>
                         <div class="read-more-btn">
-                            <a href="{{ route('home') }}">xem thêm</a>
+                            <a href="{{ route('frontend.services.type', 'procedure') }}">xem thêm</a>
                         </div>
                     </div>
                     <!-- Service Item End -->
@@ -267,11 +268,12 @@
                             </div>
                         </div>
                         <div class="service-body">
-                            <h3>sàng lọc ung thư</h3>
-                            <p>Chương trình sàng lọc ung thư cổ tử cung, ung thư vú sớm với công nghệ tiên tiến.</p>
+                            <h3>xét nghiệm chẩn đoán</h3>
+                            <p>Xét nghiệm và chẩn đoán hình ảnh toàn diện với máy móc hiện đại, kết quả nhanh chóng và chính
+                                xác.</p>
                         </div>
                         <div class="read-more-btn">
-                            <a href="{{ route('home') }}">xem thêm</a>
+                            <a href="{{ route('frontend.services.type', 'laboratory') }}">xem thêm</a>
                         </div>
                     </div>
                     <!-- Service Item End -->
@@ -288,7 +290,6 @@
                 </div>
             </div>
         </div>
-
     </div>
     <!-- Our Serviceds Section End -->
 
@@ -343,7 +344,8 @@
                             <!-- Why Choose Content Start -->
                             <div class="why-choose-content">
                                 <h3>phương pháp điều trị cá nhân hóa</h3>
-                                <p>Phòng khám phụ sản Thu Hiền áp dụng phương án điều trị riêng biệt cho từng bệnh nhân, phù hợp với tình trạng
+                                <p>Phòng khám phụ sản Thu Hiền áp dụng phương án điều trị riêng biệt cho từng bệnh nhân, phù
+                                    hợp với tình trạng
                                     sức khỏe và nhu cầu cá nhân.</p>
                             </div>
                             <!-- Why Choose Content End -->
@@ -361,7 +363,8 @@
                             <!-- Why Choose Content Start -->
                             <div class="why-choose-content">
                                 <h3>dịch vụ thanh toán tiện lợi</h3>
-                                <p>Phòng khám phụ sản Thu Hiền hỗ trợ đa dạng hình thức thanh toán bao gồm tiền mặt, chuyển khoản, QR code.</p>
+                                <p>Phòng khám phụ sản Thu Hiền hỗ trợ đa dạng hình thức thanh toán bao gồm tiền mặt, chuyển
+                                    khoản, QR code.</p>
                             </div>
                             <!-- Why Choose Content End -->
                         </div>
@@ -394,7 +397,8 @@
                             <!-- Why Choose Content Start -->
                             <div class="why-choose-content">
                                 <h3>thời gian làm việc linh hoạt</h3>
-                                <p>Phòng khám phụ sản Thu Hiền phục vụ từ 7:00 - 19:00 hàng ngày, sẵn sàng hỗ trợ khám và tư vấn khi bạn cần.
+                                <p>Phòng khám phụ sản Thu Hiền phục vụ từ 7:00 - 19:00 hàng ngày, sẵn sàng hỗ trợ khám và tư
+                                    vấn khi bạn cần.
                                 </p>
                             </div>
                             <!-- Why Choose Content End -->
@@ -412,7 +416,8 @@
                             <!-- Why Choose Content Start -->
                             <div class="why-choose-content">
                                 <h3>niềm tin từ hàng nghìn bệnh nhân</h3>
-                                <p>Phòng khám phụ sản Thu Hiền vinh dự nhận được sự tin tưởng và phản hồi tích cực từ nhiều bệnh nhân đã được
+                                <p>Phòng khám phụ sản Thu Hiền vinh dự nhận được sự tin tưởng và phản hồi tích cực từ nhiều
+                                    bệnh nhân đã được
                                     chăm sóc.</p>
                             </div>
                             <!-- Why Choose Content End -->
@@ -430,7 +435,8 @@
                             <!-- Why Choose Content Start -->
                             <div class="why-choose-content">
                                 <h3>trang thiết bị y tế hiện đại</h3>
-                                <p>Phòng khám phụ sản Thu Hiền đầu tư trang bị máy móc y tế tiên tiến để đảm bảo chẩn đoán chính xác và điều
+                                <p>Phòng khám phụ sản Thu Hiền đầu tư trang bị máy móc y tế tiên tiến để đảm bảo chẩn đoán
+                                    chính xác và điều
                                     trị hiệu quả nhất.</p>
                             </div>
                             <!-- Why Choose Content End -->
@@ -850,7 +856,12 @@
                                 <div class="post-featured-image" data-cursor-text="View">
                                     <figure>
                                         <a href="{{ route('frontend.posts.show', $post->slug) }}" class="image-anime">
-                                            <img src="{{ $post->featured_image_url }}" alt="{{ $post->title }}">
+                                            @if ($post->featured_image && file_exists(public_path('storage/' . $post->featured_image)))
+                                                <img src="{{ $post->featured_image_url }}" alt="{{ $post->title }}">
+                                            @else
+                                                <img src="{{ asset('frontend/images/favicon_1.png') }}"
+                                                    alt="Default Image">
+                                            @endif
                                         </a>
                                     </figure>
                                 </div>
