@@ -227,9 +227,15 @@ class ServiceController extends Controller
         return DataTables::of($services)
             ->addColumn('image_display', function ($service) {
                 if ($service->image && Storage::disk('public')->exists($service->image)) {
-                    return asset('storage/' . $service->image);
+                    $url = app()->environment('production')
+                        ? url('public/storage/' . $service->image)
+                        : url('storage/' . $service->image);
+                    return $url;
                 }
-                return asset('images/default-service.png');
+                $defaultUrl = app()->environment('production')
+                    ? url('public/images/default-service.png')
+                    : url('images/default-service.png');
+                return $defaultUrl;
             })
             ->addColumn('status_badge', function ($service) {
                 if ($service->is_active) {
