@@ -242,11 +242,17 @@ class MedicineController extends Controller
         $medicines = $query->orderBy('created_at', 'desc')->get();
 
         return DataTables::of($medicines)
-            ->addColumn('image_display', function ($medicine) {
-                if ($medicine->image && Storage::disk('public')->exists($medicine->image)) {
-                    return asset('storage/' . $medicine->image);
+            ->addColumn('image_display', function ($medicines) {
+                if ($medicines->image && Storage::disk('public')->exists($medicines->image)) {
+                    $url = app()->environment('production')
+                        ? url('public/storage/' . $medicines->image)
+                        : url('storage/' . $medicines->image);
+                    return $url;
                 }
-                return asset('images/default-medicine.png');
+                $defaultUrl = app()->environment('production')
+                    ? url('public/images/default-service.png')
+                    : url('images/default-service.png');
+                return $defaultUrl;
             })
             ->addColumn('status_badge', function ($medicine) {
                 if ($medicine->is_active) {

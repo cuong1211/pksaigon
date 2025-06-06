@@ -346,7 +346,6 @@ class ServiceController extends Controller
     {
         try {
             $service = Service::findOrFail($id);
-
             // Chuẩn bị dữ liệu trả về
             $data = [
                 'id' => $service->id,

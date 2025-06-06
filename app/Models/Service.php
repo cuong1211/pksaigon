@@ -28,13 +28,20 @@ class Service extends Model
     ];
 
     // FIX: Cập nhật accessor để lấy URL đầy đủ của ảnh
+    // Accessor để lấy URL đầy đủ của ảnh
     public function getImageUrlAttribute()
     {
         if ($this->image && Storage::disk('public')->exists($this->image)) {
-            // Sử dụng URL::to thay vì asset để đảm bảo đường dẫn đúng
-            return url('storage/' . $this->image);
+            $url = app()->environment('production')
+                ? url('public/storage/' . $this->image)
+                : url('storage/' . $this->image);
+            return $url;
         }
-        return url('images/default-service.png'); // Ảnh mặc định
+
+        $defaultUrl = app()->environment('production')
+            ? url('public/images/default-service.png')
+            : url('images/default-service.png');
+        return $defaultUrl;
     }
 
     // Accessor để lấy tên loại dịch vụ

@@ -33,10 +33,16 @@ class Medicine extends Model
     public function getImageUrlAttribute()
     {
         if ($this->image && Storage::disk('public')->exists($this->image)) {
-            // Sử dụng URL::to thay vì asset để đảm bảo đường dẫn đúng
-            return url('storage/' . $this->image);
+            $url = app()->environment('production')
+                ? url('public/storage/' . $this->image)
+                : url('storage/' . $this->image);
+            return $url;
         }
-        return url('images/default-medicine.png');
+
+        $defaultUrl = app()->environment('production')
+            ? url('public/images/default-medicine.png')
+            : url('images/default-medicine.png');
+        return $defaultUrl;
     }
 
     // Accessor để lấy tên loại thuốc
