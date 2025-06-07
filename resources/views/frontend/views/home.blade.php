@@ -648,7 +648,7 @@
                         <!-- Team Image Start -->
                         <div class="team-image">
                             <figure class="image-anime">
-                                <img src="images/bs_5.png" alt="">
+                                <img src="images/bs_6.png" alt="">
                             </figure>
 
                             <!-- Team Social Icon Start -->
