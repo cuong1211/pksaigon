@@ -404,7 +404,7 @@
 
                         <!-- Team Content Start -->
                         <div class="team-content">
-                            <h3>BS. Cao Thị Thu Cúc</h3>
+                            <h3>Th.S Cao Thị Thu Cúc</h3>
                         </div>
                         <!-- Team Content End -->
                     </div>
