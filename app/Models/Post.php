@@ -1,5 +1,6 @@
 <?php
 
+// app/Models/Post.php
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
@@ -67,7 +68,7 @@ class Post extends Model
             if (empty($post->slug)) {
                 $post->slug = static::generateUniqueSlug($post->title);
             }
-            
+
             if (empty($post->author_id)) {
                 $post->author_id = Auth::check() ? Auth::id() : null;
             }
@@ -81,7 +82,7 @@ class Post extends Model
             if ($post->isDirty('title') && !$post->isDirty('slug')) {
                 $post->slug = static::generateUniqueSlug($post->title, $post->id);
             }
-            
+
             if ($post->isDirty('status') && $post->status && empty($post->published_at)) {
                 $post->published_at = now();
             }
@@ -119,14 +120,20 @@ class Post extends Model
         return $this->status ? 'Hiện' : 'Ẩn';
     }
 
-    // Accessor cho đường dẫn ảnh đại diện
+    // FIX: Accessor cho đường dẫn ảnh đại diện
     public function getFeaturedImageUrlAttribute()
     {
         if ($this->featured_image && Storage::disk('public')->exists($this->featured_image)) {
-            return asset('storage/' . $this->featured_image);
+            $url = app()->environment('production')
+                ? url('public/storage/' . $this->featured_image)
+                : url('storage/' . $this->featured_image);
+            return $url;
         }
 
-        return asset('images/default-post.jpg');
+        $defaultUrl = app()->environment('production')
+            ? url('public/images/default-post.jpg')
+            : url('images/default-post.jpg');
+        return $defaultUrl;
     }
 
     // Method để tăng lượt xem

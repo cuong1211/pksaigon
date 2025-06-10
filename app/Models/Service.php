@@ -1,5 +1,6 @@
 <?php
 
+// app/Models/Service.php
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -26,13 +27,21 @@ class Service extends Model
         'is_active' => 'boolean'
     ];
 
+    // FIX: Cập nhật accessor để lấy URL đầy đủ của ảnh
     // Accessor để lấy URL đầy đủ của ảnh
     public function getImageUrlAttribute()
     {
         if ($this->image && Storage::disk('public')->exists($this->image)) {
-            return Storage::url($this->image);
+            $url = app()->environment('production')
+                ? url('public/storage/' . $this->image)
+                : url('storage/' . $this->image);
+            return $url;
         }
-        return asset('images/default-service.png'); // Ảnh mặc định
+
+        $defaultUrl = app()->environment('production')
+            ? url('public/images/default-service.png')
+            : url('images/default-service.png');
+        return $defaultUrl;
     }
 
     // Accessor để lấy tên loại dịch vụ

@@ -186,25 +186,54 @@
             if (typeof tinymce !== 'undefined') {
                 tinymce.remove('#service_description');
                 tinymce.init({
+                    language: '{{ app()->getLocale() === 'vi' ? 'vi_VN' : 'en_US' }}',
                     selector: '#service_description',
-                    height: 300,
-                    menubar: false,
-                    plugins: [
-                        'advlist autolink lists link image charmap print preview anchor',
-                        'searchreplace visualblocks code fullscreen',
-                        'insertdatetime media table paste code help wordcount'
-                    ],
-                    toolbar: 'undo redo | formatselect | bold italic backcolor | \
-                             alignleft aligncenter alignright alignjustify | \
-                             bullist numlist outdent indent | removeformat | help',
-                    content_style: 'body { font-family: "Be Vietnam Pro", sans-serif; font-size:14px }',
-                    language: 'vi',
-                    branding: false,
                     setup: function(editor) {
-                        editor.on('change', function() {
-                            editor.save();
+                        editor.on('init', function() {
+                            this.getDoc().body.style.fontSize = '14px';
+                            this.getDoc().body.style.fontFamily = 'Arial, sans-serif';
                         });
-                    }
+
+                    },
+                    images_file_types: 'jpg,svg,webp',
+                    file_picker_types: 'file image media',
+                    plugins: 'image code table lists link media fullscreen emoticons',
+                    toolbar: 'undo redo | blocks | bold italic | alignleft aligncenter alignright alignjustify | indent outdent | bullist numlist | code | table | link image attachment',
+                    image_title: true,
+                    automatic_uploads: true,
+                    image_advtab: true,
+                    image_caption: true,
+                    content_css: [],
+                    image_dimensions: false,
+                    image_class_list: [{
+                        title: 'Responsive',
+                        value: 'md:w-2/3 m-auto w-full'
+                    }],
+                    file_picker_callback: (cb, value, meta) => {
+                        const input = document.createElement('input');
+                        input.setAttribute('type', 'file');
+                        input.setAttribute('accept', 'image/*');
+
+                        input.addEventListener('change', (e) => {
+                            const file = e.target.files[0];
+
+                            const reader = new FileReader();
+                            reader.addEventListener('load', () => {
+                                const id = 'blobid' + (new Date()).getTime();
+                                const blobCache = tinymce.activeEditor.editorUpload.blobCache;
+                                const base64 = reader.result.split(',')[1];
+                                const blobInfo = blobCache.create(id, file, base64);
+                                blobCache.add(blobInfo);
+
+                                cb(blobInfo.blobUri(), {
+                                    title: file.name
+                                });
+                            });
+                            reader.readAsDataURL(file);
+                        });
+
+                        input.click();
+                    },
                 });
             }
         }

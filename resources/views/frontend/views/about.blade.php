@@ -186,7 +186,7 @@
                         <!-- Expertise Experience Image Start -->
                         <div class="expertise-experience-img">
                             <figure class="image-anime reveal">
-                                <img src="images/sc-4_2.png" alt="Phòng khám PKSG">
+                                <img src="images/team.jpg" alt="Phòng khám PKSG">
                             </figure>
                         </div>
                         <!-- Expertise Experience Image End -->
@@ -341,7 +341,7 @@
             </div>
 
             <div class="row">
-                <div class="col-lg-4 col-md-6">
+                <div class="col-lg-3 col-md-6">
                     <!-- Team Member Item Start -->
                     <div class="team-member-item wow fadeInUp">
                         <!-- Team Image Start -->
@@ -351,12 +351,7 @@
                             </figure>
 
                             <!-- Team Social Icon Start -->
-                            <div class="team-social-icon">
-                                <ul>
-                                    <li><a href="#" class="social-icon"><i class="fa-brands fa-facebook-f"></i></a>
-                                    </li>
-                                </ul>
-                            </div>
+
                             <!-- Team Social Icon End -->
                         </div>
                         <!-- Team Image End -->
@@ -364,38 +359,12 @@
                         <!-- Team Content Start -->
                         <div class="team-content">
                             <h3>BS. Nguyễn Thị Thu Hiền</h3>
-                            <p>Bác sĩ chuyên khoa cấp 1</p>
                         </div>
                         <!-- Team Content End -->
                     </div>
                     <!-- Team Member Item End -->
                 </div>
-
-                <div class="col-lg-4 col-md-6">
-                    <!-- Team Member Item Start -->
-                    <div class="team-member-item wow fadeInUp" data-wow-delay="0.25s">
-                        <!-- Team Image Start -->
-                        <div class="team-image">
-                            <figure class="image-anime">
-                                <img src="images/bs_1.png" alt="">
-                            </figure>
-
-                            <!-- Team Social Icon Start -->
-
-                            <!-- Team Social Icon End -->
-                        </div>
-                        <!-- Team Image End -->
-
-                        <!-- Team Content Start -->
-                        <div class="team-content">
-                            <h3>BS. Trịnh Thị Sâm</h3>
-                        </div>
-                        <!-- Team Content End -->
-                    </div>
-                    <!-- Team Member Item End -->
-                </div>
-
-                <div class="col-lg-4 col-md-6">
+                <div class="col-lg-3 col-md-6">
                     <!-- Team Member Item Start -->
                     <div class="team-member-item wow fadeInUp" data-wow-delay="0.5s">
                         <!-- Team Image Start -->
@@ -418,7 +387,52 @@
                     </div>
                     <!-- Team Member Item End -->
                 </div>
+                <div class="col-lg-3 col-md-6">
+                    <!-- Team Member Item Start -->
+                    <div class="team-member-item wow fadeInUp" data-wow-delay="0.5s">
+                        <!-- Team Image Start -->
+                        <div class="team-image">
+                            <figure class="image-anime">
+                                <img src="images/bs_4.png" alt="">
+                            </figure>
 
+                            <!-- Team Social Icon Start -->
+
+                            <!-- Team Social Icon End -->
+                        </div>
+                        <!-- Team Image End -->
+
+                        <!-- Team Content Start -->
+                        <div class="team-content">
+                            <h3>Th.S Cao Thị Thu Cúc</h3>
+                        </div>
+                        <!-- Team Content End -->
+                    </div>
+                    <!-- Team Member Item End -->
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <!-- Team Member Item Start -->
+                    <div class="team-member-item wow fadeInUp" data-wow-delay="0.5s">
+                        <!-- Team Image Start -->
+                        <div class="team-image">
+                            <figure class="image-anime">
+                                <img src="images/bs_6.png" alt="">
+                            </figure>
+
+                            <!-- Team Social Icon Start -->
+
+                            <!-- Team Social Icon End -->
+                        </div>
+                        <!-- Team Image End -->
+
+                        <!-- Team Content Start -->
+                        <div class="team-content">
+                            <h3>DS. Lê Thị Trà Hương</h3>
+                        </div>
+                        <!-- Team Content End -->
+                    </div>
+                    <!-- Team Member Item End -->
+                </div>
             </div>
         </div>
         <!-- Icon Start Image Start -->
@@ -432,8 +446,9 @@
         .page-header {
             padding: 20px 0;
         }
-        .our-services{
-            padding:  0;
+
+        .our-services {
+            padding: 0;
         }
     </style>
 @endpush

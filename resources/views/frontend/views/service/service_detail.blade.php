@@ -122,7 +122,22 @@
                         <!-- Service Featured Image Start -->
                         <div class="service-featured-image">
                             <figure class="reveal image-anime">
-                                <img src="{{ $service->image_url }}" alt="{{ $service->name }}">
+                                @if ($service->image || !file_exists(public_path('storage/' . $service->image)))
+                                    <img src="{{ $service->image_url }}" alt="{{ $service->name }}">
+                                @else
+                                    @php
+                                        $iconMap = [
+                                            'procedure' => 'frontend/images/favicon_1.png',
+                                            'laboratory' => 'frontend/images/favicon_1.png',
+                                            'other' => 'frontend/images/favicon_1.png',
+                                        ];
+                                        $iconPath = $iconMap[$service->type] ?? $iconMap['other'];
+                                        $iconUrl = app()->environment('production')
+                                            ? url('public/' . $iconPath)
+                                            : url($iconPath);
+                                    @endphp
+                                    <img src="{{ $iconUrl }}" alt="{{ $service->name }}">
+                                @endif
                             </figure>
                             <div class="service-overlay-info">
                                 <div class="service-type-large">
@@ -745,7 +760,8 @@
                 gap: 10px;
                 align-items: flex-start;
             }
-            .service-faqs{
+
+            .service-faqs {
                 padding-bottom: 30px;
             }
         }

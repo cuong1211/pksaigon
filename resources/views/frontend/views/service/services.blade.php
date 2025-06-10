@@ -8,26 +8,26 @@
                     <div class="filter-tabs text-center">
                         <ul class="nav nav-pills justify-content-center">
                             <li class="nav-item">
-                                <a class="nav-link {{ (!isset($currentType) || $currentType == 'all') ? 'active' : '' }}" 
-                                   href="{{ route('frontend.services') }}">
+                                <a class="nav-link {{ !isset($currentType) || $currentType == 'all' ? 'active' : '' }}"
+                                    href="{{ route('frontend.services') }}">
                                     Tất cả ({{ $stats['total'] ?? 0 }})
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link {{ (isset($currentType) && $currentType == 'procedure') ? 'active' : '' }}" 
-                                   href="{{ route('frontend.services.type', 'procedure') }}">
+                                <a class="nav-link {{ isset($currentType) && $currentType == 'procedure' ? 'active' : '' }}"
+                                    href="{{ route('frontend.services.type', 'procedure') }}">
                                     Thủ thuật ({{ $stats['procedure'] ?? 0 }})
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link {{ (isset($currentType) && $currentType == 'laboratory') ? 'active' : '' }}" 
-                                   href="{{ route('frontend.services.type', 'laboratory') }}">
+                                <a class="nav-link {{ isset($currentType) && $currentType == 'laboratory' ? 'active' : '' }}"
+                                    href="{{ route('frontend.services.type', 'laboratory') }}">
                                     Xét nghiệm ({{ $stats['laboratory'] ?? 0 }})
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link {{ (isset($currentType) && $currentType == 'other') ? 'active' : '' }}" 
-                                   href="{{ route('frontend.services.type', 'other') }}">
+                                <a class="nav-link {{ isset($currentType) && $currentType == 'other' ? 'active' : '' }}"
+                                    href="{{ route('frontend.services.type', 'other') }}">
                                     Dịch vụ khác ({{ $stats['other'] ?? 0 }})
                                 </a>
                             </li>
@@ -43,22 +43,27 @@
     <div class="page-services">
         <div class="container">
             <div class="row">
-                @if($services->count() > 0)
-                    @foreach($services as $index => $service)
+                @if ($services->count() > 0)
+                    @foreach ($services as $index => $service)
                         <div class="col-lg-4 col-md-6">
                             <!-- Service Item Start -->
                             <div class="service-item wow fadeInUp" data-wow-delay="{{ ($index % 8) * 0.2 }}s">
                                 <div class="service-image">
-                                    @if($service->image && file_exists(public_path('storage/' . $service->image)))
-                                        <img src="{{ asset('storage/' . $service->image) }}" alt="{{ $service->name }}">
+                                    @if ($service->image && file_exists(public_path('storage/' . $service->image)))
+                                        <img src="{{ $service->image_url }}" alt="{{ $service->name }}">
                                     @else
-                                        @if($service->type == 'procedure')
-                                            <img src="{{ asset('frontend/images/icon-services-1.svg') }}" alt="">
-                                        @elseif($service->type == 'laboratory')
-                                            <img src="{{ asset('frontend/images/icon-services-2.svg') }}" alt="">
-                                        @else
-                                            <img src="{{ asset('frontend/images/icon-services-3.svg') }}" alt="">
-                                        @endif
+                                        @php
+                                            $iconMap = [
+                                                'procedure' => 'frontend/images/favicon_1.png',
+                                                'laboratory' => 'frontend/images/favicon_1.png',
+                                                'other' => 'frontend/images/favicon_1.png',
+                                            ];
+                                            $iconPath = $iconMap[$service->type] ?? $iconMap['other'];
+                                            $iconUrl = app()->environment('production')
+                                                ? url('public/' . $iconPath)
+                                                : url($iconPath);
+                                        @endphp
+                                        <img src="{{ $iconUrl }}" alt="">
                                     @endif
                                 </div>
                                 <div class="service-body">
@@ -87,86 +92,86 @@
 @endsection
 
 @push('csscustom')
-<style>
-/* Services Filter */
-.services-filter {
-    padding: 40px 0;
-    background: #f8f9fa;
-}
+    <style>
+        /* Services Filter */
+        .services-filter {
+            padding: 40px 0;
+            background: #f8f9fa;
+        }
 
-.services-filter .nav-pills {
-    gap: 15px;
-}
+        .services-filter .nav-pills {
+            gap: 15px;
+        }
 
-.services-filter .nav-link {
-    color: #666;
-    text-decoration: none;
-    font-weight: 600;
-    border-radius: 25px;
-    padding: 10px 20px;
-    border: 2px solid #e9ecef;
-    background: white;
-    transition: all 0.3s ease;
-}
+        .services-filter .nav-link {
+            color: #666;
+            text-decoration: none;
+            font-weight: 600;
+            border-radius: 25px;
+            padding: 10px 20px;
+            border: 2px solid #e9ecef;
+            background: white;
+            transition: all 0.3s ease;
+        }
 
-.services-filter .nav-link:hover {
-    background: #f8f9fa;
-    border-color: #1e85b4;
-    color: #1e85b4;
-    text-decoration: none;
-}
+        .services-filter .nav-link:hover {
+            background: #f8f9fa;
+            border-color: #1e85b4;
+            color: #1e85b4;
+            text-decoration: none;
+        }
 
-.services-filter .nav-link.active {
-    background: #1e85b4;
-    border-color: #1e85b4;
-    color: white;
-}
+        .services-filter .nav-link.active {
+            background: #1e85b4;
+            border-color: #1e85b4;
+            color: white;
+        }
 
-/* Service Items */
-.service-item {
-    position: relative;
-    overflow: hidden;
-}
+        /* Service Items */
+        .service-item {
+            position: relative;
+            overflow: hidden;
+        }
 
-.service-image {
-    width: 100%;
-    height: 200px;
-    overflow: hidden;
-    margin-bottom: 20px;
-    border-radius: 8px;
-}
+        .service-image {
+            width: 100%;
+            height: 200px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            border-radius: 8px;
+        }
 
-.service-image img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: transform 0.3s ease;
-}
+        .service-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
 
-.service-item:hover .service-image img {
-    transform: scale(1.05);
-}
+        .service-item:hover .service-image img {
+            transform: scale(1.05);
+        }
 
-/* No services */
-.no-services {
-    padding: 60px 0;
-}
+        /* No services */
+        .no-services {
+            padding: 60px 0;
+        }
 
-/* Responsive */
-@media (max-width: 768px) {
-    .services-filter .nav-pills {
-        flex-wrap: wrap;
-        gap: 10px;
-    }
-    
-    .services-filter .nav-link {
-        padding: 8px 15px;
-        font-size: 14px;
-    }
-    
-    .service-image {
-        height: 150px;
-    }
-}
-</style>
+        /* Responsive */
+        @media (max-width: 768px) {
+            .services-filter .nav-pills {
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+
+            .services-filter .nav-link {
+                padding: 8px 15px;
+                font-size: 14px;
+            }
+
+            .service-image {
+                height: 150px;
+            }
+        }
+    </style>
 @endpush

@@ -60,7 +60,6 @@ class PostController extends Controller
                 'title' => 'Thành công',
                 'content' => 'Bài viết đã được tạo thành công!'
             ]);
-
         } catch (\Exception $e) {
             return response()->json([
                 'type' => 'error',
@@ -85,7 +84,7 @@ class PostController extends Controller
 
         try {
             $post = Post::with('author')->findOrFail($id);
-            
+
             return response()->json([
                 'type' => 'success',
                 'data' => $post
@@ -143,7 +142,6 @@ class PostController extends Controller
                 'title' => 'Thành công',
                 'content' => 'Bài viết đã được cập nhật thành công!'
             ]);
-
         } catch (\Exception $e) {
             return response()->json([
                 'type' => 'error',
@@ -177,7 +175,6 @@ class PostController extends Controller
                 'title' => 'Thành công',
                 'content' => 'Bài viết đã được xóa thành công!'
             ]);
-
         } catch (\Exception $e) {
             return response()->json([
                 'type' => 'error',
@@ -230,7 +227,7 @@ class PostController extends Controller
         $query = Post::with('author')->select([
             'id',
             'title',
-            'slug', 
+            'slug',
             'content',
             'featured_image',
             'status',
@@ -243,15 +240,15 @@ class PostController extends Controller
         // Apply search filter
         if (request()->has('search_table') && !empty(request()->search_table)) {
             $search = request()->search_table;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('title', 'like', "%{$search}%")
-                  ->orWhere('content', 'like', "%{$search}%")
-                  ->orWhere('slug', 'like', "%{$search}%");
+                    ->orWhere('content', 'like', "%{$search}%")
+                    ->orWhere('slug', 'like', "%{$search}%");
             });
         }
-        
+
         // Apply status filter
-      
+
 
         $posts = $query->orderBy('created_at', 'desc')->get();
 
@@ -263,7 +260,16 @@ class PostController extends Controller
                 return Str::limit(strip_tags($post->content), 100);
             })
             ->addColumn('featured_image_url', function ($post) {
-                return $post->featured_image_url;
+                if ($post->featured_image && Storage::disk('public')->exists($post->featured_image)) {
+                    $url = app()->environment('production')
+                        ? url('public/storage/' . $post->featured_image)
+                        : url('storage/' . $post->featured_image);
+                    return $url;
+                }
+                $defaultUrl = app()->environment('production')
+                    ? url('public/images/default-post.jpg')
+                    : url('images/default-post.jpg');
+                return $defaultUrl;
             })
             ->addColumn('status_badge', function ($post) {
                 if ($post->status) {
@@ -323,7 +329,6 @@ class PostController extends Controller
                 'title' => 'Thành công',
                 'content' => 'Trạng thái nổi bật đã được cập nhật!'
             ]);
-
         } catch (\Exception $e) {
             return response()->json([
                 'type' => 'error',

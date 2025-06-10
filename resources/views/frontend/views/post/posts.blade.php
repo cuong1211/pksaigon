@@ -35,7 +35,11 @@
                                 <div class="post-featured-image" data-cursor-text="Xem">
                                     <figure>
                                         <a href="{{ route('frontend.posts.show', $post->slug) }}" class="image-anime">
-                                            <img src="{{ $post->featured_image_url }}" alt="{{ $post->title }}">
+                                            @if ($post->featured_image && file_exists(public_path('storage/' . $post->featured_image)))
+                                                <img src="{{ $post->featured_image_url }}" alt="{{ $post->title }}">
+                                            @else
+                                                <img src="{{ asset('frontend/images/favicon_1.png') }}" alt="Default Image">
+                                            @endif
                                         </a>
                                     </figure>
                                 </div>

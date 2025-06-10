@@ -1,5 +1,6 @@
 <?php
 
+// app/Models/Medicine.php
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -28,13 +29,20 @@ class Medicine extends Model
         'is_active' => 'boolean'
     ];
 
-    // Accessor để lấy URL đầy đủ của ảnh
+    // FIX: Cập nhật accessor để lấy URL đầy đủ của ảnh
     public function getImageUrlAttribute()
     {
         if ($this->image && Storage::disk('public')->exists($this->image)) {
-            return asset('storage/' . $this->image);
+            $url = app()->environment('production')
+                ? url('public/storage/' . $this->image)
+                : url('storage/' . $this->image);
+            return $url;
         }
-        return asset('images/default-medicine.png');
+
+        $defaultUrl = app()->environment('production')
+            ? url('public/images/default-medicine.png')
+            : url('images/default-medicine.png');
+        return $defaultUrl;
     }
 
     // Accessor để lấy tên loại thuốc
@@ -73,18 +81,6 @@ class Medicine extends Model
         return $this->expiry_date->isPast();
     }
 
-    // Kiểm tra thuốc sắp hết số lượng
-    public function getIsLowStockAttribute()
-    {
-        return $this->current_stock <= 10; // Ngưỡng cảnh báo 10
-    }
-
-    // Kiểm tra thuốc có đủ số lượng không
-    public function getIsInStockAttribute()
-    {
-        return $this->current_stock > 0;
-    }
-
     // Tính số lượng tồn kho hiện tại
     public function getCurrentStockAttribute()
     {
@@ -103,21 +99,6 @@ class Medicine extends Model
     public function scopeByType($query, $type)
     {
         return $query->where('type', $type);
-    }
-
-    // Scope để lọc thuốc có trong kho
-    public function scopeInStock($query)
-    {
-        return $query->whereHas('imports')->whereDoesntHave('usages', function ($q) {
-            $q->selectRaw('SUM(quantity_used)')->havingRaw('SUM(quantity_used) >= (SELECT SUM(quantity) FROM medicine_imports WHERE medicine_id = medicines.id)');
-        });
-    }
-
-    // Scope để lọc thuốc sắp hết (có thể customize logic này)
-    public function scopeLowStock($query)
-    {
-        // Logic phức tạp hơn để tính toán low stock
-        return $query->whereHas('imports');
     }
 
     // Relationship với medicine imports

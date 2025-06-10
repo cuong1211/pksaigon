@@ -17,7 +17,7 @@
                     <a class="navbar-brand" href="{{ route('home') }}">
                         <div class="brand-container">
                             <div class="logo-wrapper">
-                                <img src="{{ asset('frontend/images/favicon.jpg') }}" alt="PKSG Logo" class="brand-logo">
+                                <img src="{{ asset('frontend/images/favicon.jpg') }}" alt="PKSG Logo" class="">
                                 <div class="logo-glow"></div>
                             </div>
                             <div class="brand-content">
@@ -175,3 +175,46 @@
         </div>
     </div>
 </div>
+<script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "SiteNavigationElement",
+        "name": [
+            {
+                "@type": "WebPage",
+                "name": "Trang chủ",
+                "url": "{{ route('home') }}"
+            },
+            {
+                "@type": "WebPage", 
+                "name": "Giới thiệu",
+                "url": "{{ route('about') }}"
+            },
+            {
+                "@type": "WebPage",
+                "name": "Dịch vụ chuyên khoa",
+                "url": "{{ route('frontend.services') }}"
+            },
+            {
+                "@type": "WebPage",
+                "name": "Thực phẩm chức năng",
+                "url": "{{ route('frontend.medicines') }}"
+            },
+            {
+                "@type": "WebPage",
+                "name": "Tin tức sức khỏe",
+                "url": "{{ route('frontend.posts') }}"
+            },
+            {
+                "@type": "WebPage",
+                "name": "Liên hệ",
+                "url": "{{ route('contact') }}"
+            },
+            {
+                "@type": "WebPage",
+                "name": "Đặt lịch khám",
+                "url": "{{ route('frontend.appointment') }}"
+            }
+        ]
+    }
+    </script>

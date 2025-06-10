@@ -81,7 +81,8 @@
                             <p>Gọi ngay: <a href="tel:0384518881" class="contact-link">0384518881</a>
                                 <br>hoặc: <a href="tel:0988669292" class="contact-link">0988669292</a>
                             </p>
-                            <p>hoặc gửi email: <a href="mailto:info@pksaigon.com" class="contact-link">info@pksaigon.com</a></p>
+                            <p>hoặc gửi email: <a href="mailto:info@pksaigon.com" class="contact-link">info@pksaigon.com</a>
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -149,11 +150,11 @@
                         <!-- Section Title Start -->
                         <div class="section-title">
                             <h3 class="wow fadeInUp">về chúng tôi</h3>
-                            <h2 class="text-anime-style-2" data-cursor="-opaque"><span>Hành trình</span> chăm sóc sức khỏe
-                                phụ nữ bắt đầu từ đây</h2>
-                            <p class="wow fadeInUp" data-wow-delay="0.25s">Phòng khám Sản phụ khoa Sài Gòn cam kết mang đến
-                                dịch vụ chăm sóc sức khỏe chuyên nghiệp, tận tâm với các dịch vụ khám thai, điều trị phụ
-                                khoa và chăm sóc sức khỏe sinh sản toàn diện cho phụ nữ.</p>
+                            <h2 class="text-anime-style-2" data-cursor="-opaque"><span>Đồng hành</span> cùng sức khỏe phụ nữ
+                                mọi giai đoạn</h2>
+                            <p class="wow fadeInUp" data-wow-delay="0.25s">Phòng khám phụ sản Thu Hiền với
+                                đội ngũ bác sĩ giàu kinh nghiệm, trang thiết bị hiện đại, cam kết mang đến dịch vụ chăm sóc
+                                sức khỏe chất lượng cao, tận tâm và an toàn cho phụ nữ ở mọi độ tuổi.</p>
                         </div>
                         <!-- Section Title End -->
 
@@ -170,7 +171,7 @@
 
                         <!-- About Us Footer Start -->
                         <div class="about-us-footer wow fadeInUp" data-wow-delay="0.75s">
-                            <a href="#" class="btn-default">tìm hiểu thêm</a>
+                            <a href="{{ route('about') }}" class="btn-default">tìm hiểu thêm</a>
                         </div>
                         <!-- About Us Footer End -->
                     </div>
@@ -212,7 +213,7 @@
                             <p>Chúng tôi cung cấp dịch vụ khám phụ khoa định kỳ và điều trị các bệnh lý phụ khoa.</p>
                         </div>
                         <div class="read-more-btn">
-                            <a href="{{ route('home') }}">xem thêm</a>
+                            <a href="{{ route('frontend.services.show', 'kham-phu-khoa') }}">xem thêm</a>
                         </div>
                     </div>
                     <!-- Service Item End -->
@@ -232,7 +233,7 @@
                             </p>
                         </div>
                         <div class="read-more-btn">
-                            <a href="{{ route('home') }}">xem thêm</a>
+                            <a href="{{ route('frontend.services.show', 'kham-thai') }}">xem thêm</a>
                         </div>
                     </div>
                     <!-- Service Item End -->
@@ -247,11 +248,12 @@
                             </div>
                         </div>
                         <div class="service-body">
-                            <h3>tư vấn kế hoạch hóa gia đình</h3>
-                            <p>Tư vấn các biện pháp tránh thai an toàn và kế hoạch hóa gia đình phù hợp.</p>
+                            <h3>thủ thuật chuyên khoa</h3>
+                            <p>Các thủ thuật chuyên khoa sản phụ khoa như điều trị tổn thương cổ tử cung, áp xe, và các can
+                                thiệp khác.</p>
                         </div>
                         <div class="read-more-btn">
-                            <a href="{{ route('home') }}">xem thêm</a>
+                            <a href="{{ route('frontend.services.type', 'procedure') }}">xem thêm</a>
                         </div>
                     </div>
                     <!-- Service Item End -->
@@ -266,11 +268,12 @@
                             </div>
                         </div>
                         <div class="service-body">
-                            <h3>sàng lọc ung thư</h3>
-                            <p>Chương trình sàng lọc ung thư cổ tử cung, ung thư vú sớm với công nghệ tiên tiến.</p>
+                            <h3>xét nghiệm chẩn đoán</h3>
+                            <p>Xét nghiệm và chẩn đoán hình ảnh toàn diện với máy móc hiện đại, kết quả nhanh chóng và chính
+                                xác.</p>
                         </div>
                         <div class="read-more-btn">
-                            <a href="{{ route('home') }}">xem thêm</a>
+                            <a href="{{ route('frontend.services.type', 'laboratory') }}">xem thêm</a>
                         </div>
                     </div>
                     <!-- Service Item End -->
@@ -287,7 +290,6 @@
                 </div>
             </div>
         </div>
-
     </div>
     <!-- Our Serviceds Section End -->
 
@@ -299,10 +301,11 @@
                     <!-- Section Title Start -->
                     <div class="section-title">
                         <h3 class="wow fadeInUp">tại sao chọn chúng tôi</h3>
-                        <h2 class="text-anime-style-2" data-cursor="-opaque"><span>Chẩn đoán và điều trị</span> các bệnh
-                            phụ khoa</h2>
-                        <p class="wow fadeInUp" data-wow-delay="0.25s">Chúng tôi cam kết mang đến dịch vụ chăm sóc sức
-                            khỏe tốt nhất.</p>
+                        <h2 class="text-anime-style-2" data-cursor="-opaque"><span>Phòng khám Thu Hiền</span> - Địa chỉ
+                            tin cậy cho phụ nữ</h2>
+                        <p class="wow fadeInUp" data-wow-delay="0.25s">Phòng khám phụ sản Thu Hiền cam kết mang đến dịch
+                            vụ chăm sóc sức khỏe
+                            chuyên khoa sản phụ khoa chất lượng cao, an toàn và tận tâm nhất.</p>
                     </div>
                     <!-- Section Title End -->
                 </div>
@@ -322,8 +325,9 @@
 
                             <!-- Why Choose Content Start -->
                             <div class="why-choose-content">
-                                <h3>bác sĩ giàu kinh nghiệm</h3>
-                                <p>Đội ngũ bác sĩ chuyên khoa sản phụ khoa với nhiều năm kinh nghiệm và trình độ cao.</p>
+                                <h3>đội ngũ bác sĩ chuyên khoa tại Thu Hiền</h3>
+                                <p>Bác sĩ chuyên khoa sản phụ khoa với nhiều năm kinh nghiệm, được đào tạo bài bản và cập
+                                    nhật kiến thức thường xuyên.</p>
                             </div>
                             <!-- Why Choose Content End -->
                         </div>
@@ -339,9 +343,10 @@
 
                             <!-- Why Choose Content Start -->
                             <div class="why-choose-content">
-                                <h3>chăm sóc cá nhân hóa</h3>
-                                <p>Mỗi bệnh nhân được chăm sóc theo phương án điều trị riêng biệt phù hợp với tình trạng sức
-                                    khỏe.</p>
+                                <h3>phương pháp điều trị cá nhân hóa</h3>
+                                <p>Phòng khám phụ sản Thu Hiền áp dụng phương án điều trị riêng biệt cho từng bệnh nhân, phù
+                                    hợp với tình trạng
+                                    sức khỏe và nhu cầu cá nhân.</p>
                             </div>
                             <!-- Why Choose Content End -->
                         </div>
@@ -357,9 +362,9 @@
 
                             <!-- Why Choose Content Start -->
                             <div class="why-choose-content">
-                                <h3>hình thức thanh toán linh hoạt</h3>
-                                <p>Chấp nhận nhiều hình thức thanh toán và hỗ trợ bảo hiểm y tế để thuận tiện cho bệnh nhân.
-                                </p>
+                                <h3>dịch vụ thanh toán tiện lợi</h3>
+                                <p>Phòng khám phụ sản Thu Hiền hỗ trợ đa dạng hình thức thanh toán bao gồm tiền mặt, chuyển
+                                    khoản, QR code.</p>
                             </div>
                             <!-- Why Choose Content End -->
                         </div>
@@ -391,8 +396,10 @@
 
                             <!-- Why Choose Content Start -->
                             <div class="why-choose-content">
-                                <h3>dịch vụ cấp cứu</h3>
-                                <p>Sẵn sàng phục vụ 24/7 cho các trường hợp cấp cứu sản khoa và phụ khoa.</p>
+                                <h3>thời gian làm việc linh hoạt</h3>
+                                <p>Phòng khám phụ sản Thu Hiền phục vụ từ 7:00 - 19:00 hàng ngày, sẵn sàng hỗ trợ khám và tư
+                                    vấn khi bạn cần.
+                                </p>
                             </div>
                             <!-- Why Choose Content End -->
                         </div>
@@ -408,8 +415,10 @@
 
                             <!-- Why Choose Content Start -->
                             <div class="why-choose-content">
-                                <h3>đánh giá tích cực từ bệnh nhân</h3>
-                                <p>Nhận được nhiều phản hồi tích cực và lời cảm ơn từ các bệnh nhân đã điều trị.</p>
+                                <h3>niềm tin từ hàng nghìn bệnh nhân</h3>
+                                <p>Phòng khám phụ sản Thu Hiền vinh dự nhận được sự tin tưởng và phản hồi tích cực từ nhiều
+                                    bệnh nhân đã được
+                                    chăm sóc.</p>
                             </div>
                             <!-- Why Choose Content End -->
                         </div>
@@ -425,9 +434,10 @@
 
                             <!-- Why Choose Content Start -->
                             <div class="why-choose-content">
-                                <h3>công nghệ tiên tiến</h3>
-                                <p>Trang bị máy móc y tế hiện đại nhất để đảm bảo chẩn đoán chính xác và điều trị hiệu quả.
-                                </p>
+                                <h3>trang thiết bị y tế hiện đại</h3>
+                                <p>Phòng khám phụ sản Thu Hiền đầu tư trang bị máy móc y tế tiên tiến để đảm bảo chẩn đoán
+                                    chính xác và điều
+                                    trị hiệu quả nhất.</p>
                             </div>
                             <!-- Why Choose Content End -->
                         </div>
@@ -450,7 +460,7 @@
                     <!-- How It Work Image Start -->
                     <div class="how-it-work-img">
                         <figure class="reveal image-anime">
-                            <img src="images/sc-4_2.png" alt="">
+                            <img src="images/team.jpg" alt="">
                         </figure>
                     </div>
                     <!-- How It Work Image End -->
@@ -461,11 +471,11 @@
                         <!-- Section Title Start -->
                         <div class="section-title">
                             <h3 class="wow fadeInUp">quy trình làm việc</h3>
-                            <h2 class="text-anime-style-2" data-cursor="-opaque"><span>Chúng tôi làm gì</span> cho sức
-                                khỏe của bạn</h2>
-                            <p class="wow fadeInUp" data-wow-delay="0.25s">Chúng tôi cam kết về sự bền vững. Phòng khám
-                                thực hiện các sáng kiến thân thiện với môi trường như hồ sơ điện tử để giảm lãng phí giấy và
-                                thiết bị tiết kiệm năng lượng.</p>
+                            <h2 class="text-anime-style-2" data-cursor="-opaque"><span>Quy trình khám</span> chuyên nghiệp
+                                và tận tâm</h2>
+                            <p class="wow fadeInUp" data-wow-delay="0.25s">Từ đặt lịch hẹn, thăm khám sơ bộ, thực hiện
+                                dịch vụ đến theo dõi sau điều trị. Mỗi bước được thực hiện theo quy trình chuẩn y khoa với
+                                sự chăm sóc tận tình nhất.</p>
                         </div>
                         <!-- Section Title End -->
 
@@ -563,7 +573,7 @@
             </div>
 
             <div class="row">
-                <div class="col-lg-4 col-md-6">
+                <div class="col-lg-3 col-md-6">
                     <!-- Team Member Item Start -->
                     <div class="team-member-item wow fadeInUp">
                         <!-- Team Image Start -->
@@ -573,13 +583,7 @@
                             </figure>
 
                             <!-- Team Social Icon Start -->
-                            <div class="team-social-icon">
-                                <ul>
-                                    <li><a href="https://www.facebook.com/pk.sanphukhoasaigon" class="social-icon"><i
-                                                class="fa-brands fa-facebook-f"></i></a>
-                                    </li>
-                                </ul>
-                            </div>
+
                             <!-- Team Social Icon End -->
                         </div>
                         <!-- Team Image End -->
@@ -587,38 +591,12 @@
                         <!-- Team Content Start -->
                         <div class="team-content">
                             <h3>BS. Nguyễn Thị Thu Hiền</h3>
-                            <p>Bác sĩ chuyên khoa cấp 1</p>
                         </div>
                         <!-- Team Content End -->
                     </div>
                     <!-- Team Member Item End -->
                 </div>
-
-                <div class="col-lg-4 col-md-6">
-                    <!-- Team Member Item Start -->
-                    <div class="team-member-item wow fadeInUp" data-wow-delay="0.25s">
-                        <!-- Team Image Start -->
-                        <div class="team-image">
-                            <figure class="image-anime">
-                                <img src="images/bs_1.png" alt="">
-                            </figure>
-
-                            <!-- Team Social Icon Start -->
-
-                            <!-- Team Social Icon End -->
-                        </div>
-                        <!-- Team Image End -->
-
-                        <!-- Team Content Start -->
-                        <div class="team-content">
-                            <h3>BS. Trịnh Thị Sâm</h3>
-                        </div>
-                        <!-- Team Content End -->
-                    </div>
-                    <!-- Team Member Item End -->
-                </div>
-
-                <div class="col-lg-4 col-md-6">
+                <div class="col-lg-3 col-md-6">
                     <!-- Team Member Item Start -->
                     <div class="team-member-item wow fadeInUp" data-wow-delay="0.5s">
                         <!-- Team Image Start -->
@@ -641,7 +619,52 @@
                     </div>
                     <!-- Team Member Item End -->
                 </div>
+                <div class="col-lg-3 col-md-6">
+                    <!-- Team Member Item Start -->
+                    <div class="team-member-item wow fadeInUp" data-wow-delay="0.5s">
+                        <!-- Team Image Start -->
+                        <div class="team-image">
+                            <figure class="image-anime">
+                                <img src="images/bs_4.png" alt="">
+                            </figure>
 
+                            <!-- Team Social Icon Start -->
+
+                            <!-- Team Social Icon End -->
+                        </div>
+                        <!-- Team Image End -->
+
+                        <!-- Team Content Start -->
+                        <div class="team-content">
+                            <h3>Th.S Cao Thị Thu Cúc</h3>
+                        </div>
+                        <!-- Team Content End -->
+                    </div>
+                    <!-- Team Member Item End -->
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <!-- Team Member Item Start -->
+                    <div class="team-member-item wow fadeInUp" data-wow-delay="0.5s">
+                        <!-- Team Image Start -->
+                        <div class="team-image">
+                            <figure class="image-anime">
+                                <img src="images/bs_6.png" alt="">
+                            </figure>
+
+                            <!-- Team Social Icon Start -->
+
+                            <!-- Team Social Icon End -->
+                        </div>
+                        <!-- Team Image End -->
+
+                        <!-- Team Content Start -->
+                        <div class="team-content">
+                            <h3>DS. Lê Thị Trà Hương</h3>
+                        </div>
+                        <!-- Team Content End -->
+                    </div>
+                    <!-- Team Member Item End -->
+                </div>
             </div>
         </div>
         <!-- Icon Start Image Start -->
@@ -833,7 +856,12 @@
                                 <div class="post-featured-image" data-cursor-text="View">
                                     <figure>
                                         <a href="{{ route('frontend.posts.show', $post->slug) }}" class="image-anime">
-                                            <img src="{{ $post->featured_image_url }}" alt="{{ $post->title }}">
+                                            @if ($post->featured_image && file_exists(public_path('storage/' . $post->featured_image)))
+                                                <img src="{{ $post->featured_image_url }}" alt="{{ $post->title }}">
+                                            @else
+                                                <img src="{{ asset('frontend/images/favicon_1.png') }}"
+                                                    alt="Default Image">
+                                            @endif
                                         </a>
                                     </figure>
                                 </div>
