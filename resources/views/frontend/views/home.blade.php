@@ -33,7 +33,7 @@
                         <!-- Hero Img Start -->
                         <div class="hero-img">
                             <figure>
-                                <img src="images/bs-3-1.png" alt="">
+                                <img src="images/bs-7_1.png" alt="">
                             </figure>
                         </div>
                         <!-- Hero Img End -->
@@ -42,7 +42,7 @@
                         <div class="export-dantist-box">
                             <div class="icon-box">
                                 <figure class="image-anime">
-                                    <img src="images/bs-3-2.png" alt="">
+                                    <img src="images/bs-7_2.png" alt="">
                                 </figure>
                             </div>
                             <div class="export-dantist-content">
@@ -579,7 +579,7 @@
                         <!-- Team Image Start -->
                         <div class="team-image">
                             <figure class="image-anime">
-                                <img src="images/bs-7.png" alt="">
+                                <img src="images/bs-8.png" alt="">
                             </figure>
 
                             <!-- Team Social Icon Start -->
